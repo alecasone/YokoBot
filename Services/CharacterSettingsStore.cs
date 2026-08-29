@@ -27,6 +27,136 @@ internal sealed class CharacterSettingsStore
         finally { _gate.Release(); }
     }
 
+    public async Task<IReadOnlyList<ulong>> GetOcRoleIdsAsync(ulong guildId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            return GetSettings(data, guildId).OcRoleIds.ToArray();
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<CharacterRoleConfiguration> GetOcRoleConfigurationAsync(ulong guildId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var settings = GetSettings(data, guildId);
+            return new CharacterRoleConfiguration(
+                settings.OcDefaultRoleIds.ToArray(),
+                settings.OcRoleIds.ToArray(),
+                settings.OcRemovedRoleIds.ToArray());
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task ReplaceOcAddedRolesAsync(
+        ulong guildId,
+        IEnumerable<ulong> defaultRoleIds,
+        IEnumerable<ulong> sequentialRoleIds)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var settings = GetSettings(data, guildId);
+            settings.OcDefaultRoleIds = defaultRoleIds.Distinct().ToList();
+            var defaults = settings.OcDefaultRoleIds.ToHashSet();
+            settings.OcRoleIds = sequentialRoleIds.Where(roleId => !defaults.Contains(roleId)).Distinct().ToList();
+            await SaveUnsafeAsync(data);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task ReplaceOcRemovedRolesAsync(ulong guildId, IEnumerable<ulong> roleIds)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            GetSettings(data, guildId).OcRemovedRoleIds = roleIds.Distinct().ToList();
+            await SaveUnsafeAsync(data);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<IReadOnlyList<CharacterApprovalMessage>> GetApprovalMessagesAsync(ulong guildId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            return GetSettings(data, guildId).ApprovalMessages
+                .Select(message => new CharacterApprovalMessage
+                {
+                    Destination = message.Destination,
+                    ChannelId = message.ChannelId,
+                    Template = message.Template
+                })
+                .ToArray();
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task AddApprovalMessageAsync(ulong guildId, CharacterApprovalMessage message)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            GetSettings(data, guildId).ApprovalMessages.Add(message);
+            await SaveUnsafeAsync(data);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<int> ClearApprovalMessagesAsync(ulong guildId)
+    {
+        var removed = 0;
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var messages = GetSettings(data, guildId).ApprovalMessages;
+            removed = messages.Count;
+            if (removed > 0)
+            {
+                messages.Clear();
+                await SaveUnsafeAsync(data);
+            }
+        }
+        finally { _gate.Release(); }
+        return removed;
+    }
+
+    public async Task<int> RemoveApprovalMessagesAsync(ulong guildId, IEnumerable<int> oneBasedIndexes)
+    {
+        var removed = 0;
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var messages = GetSettings(data, guildId).ApprovalMessages;
+            var indexes = oneBasedIndexes
+                .Select(index => index - 1)
+                .Where(index => index >= 0 && index < messages.Count)
+                .Distinct()
+                .OrderByDescending(index => index)
+                .ToArray();
+            foreach (var index in indexes)
+            {
+                messages.RemoveAt(index);
+                removed++;
+            }
+            if (removed > 0) await SaveUnsafeAsync(data);
+        }
+        finally { _gate.Release(); }
+        return removed;
+    }
+
     public async Task<bool> AddPropertyAsync(ulong guildId, string property)
     {
         var normalized = CharacterSchema.Normalize(property);

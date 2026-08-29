@@ -253,7 +253,7 @@ internal sealed class AutoModerationService
 
             var template = rule.ApprovalMessageTemplate ?? "**{automod}** requests `{action}` for {user}. {message}";
             var content = Render(template, user, rule, renderedUserMessage ?? "No user message was sent.") +
-                          "\n\nReply to this message with `Confirm, Yoko.` or `Cancel, Yoko.`";
+                          "\n\nReply to this message with `Execute, Yoko.` or `Cancel, Yoko.`";
             try
             {
                 var approvalMessage = await approvalChannel.SendMessageAsync(content);

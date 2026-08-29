@@ -18,9 +18,35 @@ The server-wide default character structure is managed with `/charadmin properti
 
 Suggested approval values are managed with `/charadmin autofill add field value` and `/charadmin autofill remove field value`. Adding a suggestion for an unknown field also adds that field to the default structure. Suggestions appear in the approval command for its built-in quick fields and inside the private fillout prompt for dynamic fields. Settings are isolated by server and stored in `data/character-settings.json`.
 
+Character approval roles are configured with `/charadmin roles add` and `/charadmin roles remove`. Each command opens a private prompt and deletes the administrator's reply. The **add** reply replaces the complete add configuration: prefix always-added roles with `*`, then mention the numbered OC roles left-to-right in their exact intended order—for example, `* @Member @1st-OC @2nd-OC @3rd-OC`. The unstarred role count becomes the per-user character cap. Approving character N ensures every starred default is present, grants the first N sequential roles, and stores `ocRoleIndex: N` on that character.
+
+The **remove** reply replaces the list of fixed roles removed whenever a character is approved, such as `@No OC`; it does not edit or delete roles from the numbered ladder. Reply `none` in either setup to clear that configuration. Deleting a character removes the now-unused numbered role and compacts every later character index and role. Starred defaults remain untouched. The configuration is reconciled again when Yoko starts. Yoko needs **Manage Roles**, and its highest role must be above every configured role.
+
+Use `/charadmin approvemessage add` to configure messages sent when a character is approved. The private wizard first asks for a destination: reply `dm`, `here` to dynamically use whichever channel `/character approve` is later invoked in, or mention a fixed text channel such as `#general`. Its next reply is stored verbatim as the message template, including Markdown and emoji. `{user}` becomes the character owner's mention and `{charactername}` becomes the approved character's name. After saving, the wizard asks whether to add another message and repeats the destination/template flow when the answer is `yes`.
+
+Each add-wizard run appends messages to the existing list. `/charadmin approvemessage delete` displays a numbered destination/template summary and accepts comma-separated selections such as `1`, `1,3`, or `1,4,5`. Reply `clear` or `none` at an add-wizard destination prompt to remove every configured approval message. A delivery failure does not undo character approval; the private approval response reports how many configured messages succeeded or failed.
+
 After selecting a user, Discord autocompletes that user's available character names. Edit/remove commands also autocomplete the baseline fields and any custom fields already stored on the selected character.
 
 Every new character reference defaults to `link/sheet`; set its URL with the `reference` field. Region currently accepts text, with a dedicated validation point ready for the future region catalog.
+
+## Overworld and scene tracking
+
+Administrators set the server's current fictional date with `/overworld worlddate date`. Accepted inputs are `dd-mm-yyyy`, `ddmmyyyy`, and `dd/mm/yyyy`; Yoko validates and normalizes them to `dd-mm-yyyy`. Per-server world state is represented by `UniverseData` and stored in `data/universe.json` so more universe properties can be added later.
+
+Members create scenes with `/scenetracker create character day [title]`. The character is autocompleted from the caller's approved characters. The chosen day must exist within the month and year of the current world date. Each scene stores a snapshot of that resulting world date; when no title is supplied, the formatted scene date becomes its title.
+
+Active scenes are managed with:
+
+- `/scenetracker invite scene user character` posts a persistent invitation for another member's approved character. Only that invited member can activate it by replying to the exact bot message with `Accept, Yoko.`; `Decline, Yoko.` rejects it. Acceptance grants participant access to the scene.
+- `/scenetracker view scene` publicly shows the scene's status, world date, creator, participants, and characters.
+- `/scenetracker complete scene` marks the scene completed and removes it from active-scene autocomplete.
+- `/scenetracker edit remove-character scene user character` removes one character; a participant with no remaining characters is removed.
+- `/scenetracker edit remove-user scene user` removes the member and all their characters.
+- `/scenetracker delete scene` permanently deletes an active scene.
+- `/scenetracker history` publicly shows every active and completed scene, using public continuation pages when needed.
+
+Scene participants and server administrators can manage a scene. This access is intentionally trust-based. Completed scenes remain in `data/scenes.json` for history; deleted scenes do not.
 
 ## Discord setup
 

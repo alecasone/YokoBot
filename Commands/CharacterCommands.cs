@@ -136,7 +136,8 @@ internal static class CharacterCommands
     public static async Task HandleAsync(
         SocketSlashCommand command,
         CharacterStore store,
-        CharacterSettingsStore settings)
+        CharacterSettingsStore settings,
+        CharacterRoleService characterRoles)
     {
         if (command.GuildId is not { } guildId)
         {
@@ -151,12 +152,27 @@ internal static class CharacterCommands
         switch (subcommand.Name)
         {
             case "approve":
+                await command.DeferAsync(ephemeral: true);
+                var capacity = await characterRoles.GetCapacityAsync(guildId, user.Id);
+                if (capacity.IsFull)
+                {
+                    await UpdateOriginalAsync(command,
+                        $"{user.Mention} already has **{capacity.CharacterCount}** character(s), which reaches the configured " +
+                        $"OC-role capacity of **{capacity.RoleCapacity}**. Add another role with `/charadmin roles add` before approving another character.");
+                    break;
+                }
+
                 var created = await store.AddAsync(guildId, user.Id, characterName, command.User.Id);
                 if (created is null)
                 {
-                    await command.RespondAsync($"{user.Mention} already has a character named **{characterName}**.", ephemeral: true);
+                    await UpdateOriginalAsync(command, $"{user.Mention} already has a character named **{characterName}**.");
                     break;
                 }
+
+                var roleSync = await characterRoles.SyncMemberAsync(guildId, user.Id);
+                var roleNotice = RoleNotice(roleSync);
+                var approvalDelivery = await SendApprovalMessagesAsync(command, settings, user, created.Name);
+                var approvalMessageNotice = ApprovalMessageNotice(approvalDelivery);
 
                 var suppliedFields = new Dictionary<string, string>();
                 foreach (var prefillField in new[] { "age", "gender", "region" })
@@ -178,16 +194,16 @@ internal static class CharacterCommands
 
                 if (remainingFields.Count == 0)
                 {
-                    await command.RespondAsync($"Approved **{created.Name}** for {user.Mention}. No additional default fields are configured.", ephemeral: true);
+                    await UpdateOriginalAsync(command,
+                        $"Approved **{created.Name}** for {user.Mention}.{roleNotice}{approvalMessageNotice} No additional default fields are configured.");
                     break;
                 }
 
                 var session = new FilloutSession(guildId, user.Id, created.Name, remainingFields.ToArray(), command);
                 DeleteSessions.TryRemove((command.Channel.Id, command.User.Id), out _);
                 FilloutSessions[(command.Channel.Id, command.User.Id)] = session;
-                await command.RespondAsync(
-                    $"Approved **{created.Name}** for {user.Mention}.\n\n{PromptFor(session)}",
-                    ephemeral: true);
+                await UpdateOriginalAsync(command,
+                    $"Approved **{created.Name}** for {user.Mention}.{roleNotice}{approvalMessageNotice}\n\n{PromptFor(session)}");
                 break;
             case "edit":
                 var field = (string)Option(subcommand.Options, "field").Value;
@@ -205,9 +221,13 @@ internal static class CharacterCommands
                     : "Character or property not found.", ephemeral: true);
                 break;
             case "view":
+                await store.ReindexOcRolesAsync(guildId, user.Id);
                 var character = await store.GetAsync(guildId, user.Id, characterName);
                 var defaultProperties = await settings.GetDefaultPropertiesAsync(guildId);
-                await command.RespondAsync(character is null ? "Character not found." : Format(character, user, defaultProperties), ephemeral: true);
+                var ocRoleIds = await settings.GetOcRoleIdsAsync(guildId);
+                await command.RespondAsync(character is null
+                    ? "Character not found."
+                    : Format(character, user, defaultProperties, ocRoleIds), ephemeral: true);
                 break;
             case "delete":
                 if (await store.GetAsync(guildId, user.Id, characterName) is null)
@@ -227,13 +247,16 @@ internal static class CharacterCommands
         }
     }
 
-    public static async Task HandleFilloutMessageAsync(SocketMessage message, CharacterStore store)
+    public static async Task HandleFilloutMessageAsync(
+        SocketMessage message,
+        CharacterStore store,
+        CharacterRoleService characterRoles)
     {
         if (message.Author.IsBot) return;
 
         if (DeleteSessions.TryGetValue((message.Channel.Id, message.Author.Id), out var deletion))
         {
-            await HandleDeleteConfirmationAsync(message, store, deletion);
+            await HandleDeleteConfirmationAsync(message, store, characterRoles, deletion);
             return;
         }
 
@@ -289,9 +312,20 @@ internal static class CharacterCommands
         return ulong.TryParse(value?.ToString(), out var id) ? id : null;
     }
 
-    private static string Format(Character character, IUser owner, IReadOnlyList<string> defaultProperties)
+    private static string Format(
+        Character character,
+        IUser owner,
+        IReadOnlyList<string> defaultProperties,
+        IReadOnlyList<ulong> ocRoleIds)
     {
         var text = new StringBuilder($"**{character.Name}** — {owner.Mention}\n");
+        if (character.OcRoleIndex > 0)
+        {
+            var role = character.OcRoleIndex <= ocRoleIds.Count
+                ? $" — <@&{ocRoleIds[character.OcRoleIndex - 1]}>"
+                : " — no configured role at this index";
+            text.AppendLine($"OC role index: **{character.OcRoleIndex}**{role}");
+        }
         foreach (var property in defaultProperties)
             text.AppendLine($"{CharacterSchema.Label(property)}: {CharacterValue(character, property) ?? "—"}");
 
@@ -354,7 +388,11 @@ internal static class CharacterCommands
         }
     }
 
-    private static async Task HandleDeleteConfirmationAsync(SocketMessage message, CharacterStore store, DeleteSession session)
+    private static async Task HandleDeleteConfirmationAsync(
+        SocketMessage message,
+        CharacterStore store,
+        CharacterRoleService characterRoles,
+        DeleteSession session)
     {
         var reply = message.Content.Trim();
         await DeleteReplyAsync(message);
@@ -377,10 +415,87 @@ internal static class CharacterCommands
         }
 
         var deleted = await store.DeleteAsync(session.GuildId, session.OwnerId, session.CharacterName);
+        var roleSync = deleted
+            ? await characterRoles.SyncMemberAsync(session.GuildId, session.OwnerId)
+            : null;
         DeleteSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
         await session.Interaction.ModifyOriginalResponseAsync(properties => properties.Content = deleted
-            ? $"**{session.CharacterName}** and all of its stored data were permanently deleted."
+            ? $"**{session.CharacterName}** and all of its stored data were permanently deleted." +
+              (roleSync!.Success
+                  ? " Remaining characters and OC roles were shifted down sequentially."
+                  : $" Character indexes were compacted, but Discord roles could not be fully synchronized: {roleSync.Error}")
             : "The character no longer exists.");
+    }
+
+    private static Task UpdateOriginalAsync(SocketSlashCommand command, string content) =>
+        command.ModifyOriginalResponseAsync(properties => properties.Content = content);
+
+    private static string RoleNotice(CharacterRoleSyncResult result)
+    {
+        if (!result.Success)
+            return $" Character index **{result.CharacterCount}** was saved, but its Discord approval roles could not be synchronized: {result.Error}";
+        if (result.RoleCapacity == 0) return string.Empty;
+        return result.AssignedRoleId is { } roleId
+            ? $" Assigned OC role **#{result.CharacterCount}**: <@&{roleId}>."
+            : string.Empty;
+    }
+
+    private static async Task<ApprovalMessageDelivery> SendApprovalMessagesAsync(
+        SocketSlashCommand command,
+        CharacterSettingsStore settings,
+        IUser user,
+        string characterName)
+    {
+        if (command.GuildId is not { } guildId || command.Channel is not SocketGuildChannel commandChannel)
+            return new ApprovalMessageDelivery(0, 0);
+
+        var configuredMessages = await settings.GetApprovalMessagesAsync(guildId);
+        var sent = 0;
+        var failed = 0;
+        foreach (var configured in configuredMessages)
+        {
+            var content = configured.Template
+                .Replace("@{user}", user.Mention, StringComparison.OrdinalIgnoreCase)
+                .Replace("{user}", user.Mention, StringComparison.OrdinalIgnoreCase)
+                .Replace("{charactername}", characterName, StringComparison.OrdinalIgnoreCase);
+            try
+            {
+                if (configured.Destination.Equals("dm", StringComparison.OrdinalIgnoreCase))
+                {
+                    var directMessage = await user.CreateDMChannelAsync();
+                    await directMessage.SendMessageAsync(content);
+                }
+                else if (configured.Destination.Equals("here", StringComparison.OrdinalIgnoreCase))
+                {
+                    await command.Channel.SendMessageAsync(content);
+                }
+                else if (configured.ChannelId is { } destinationId &&
+                         commandChannel.Guild.GetChannel(destinationId) is IMessageChannel destination)
+                {
+                    await destination.SendMessageAsync(content);
+                }
+                else
+                {
+                    failed++;
+                    continue;
+                }
+                sent++;
+            }
+            catch (Exception exception)
+            {
+                failed++;
+                Console.WriteLine($"Could not send character approval message for {user}: {exception}");
+            }
+        }
+        return new ApprovalMessageDelivery(sent, failed);
+    }
+
+    private static string ApprovalMessageNotice(ApprovalMessageDelivery delivery)
+    {
+        if (delivery.Sent == 0 && delivery.Failed == 0) return string.Empty;
+        if (delivery.Failed == 0)
+            return $" Sent **{delivery.Sent}** configured approval message(s).";
+        return $" Sent **{delivery.Sent}** approval message(s); **{delivery.Failed}** could not be delivered.";
     }
 
     private sealed record FilloutSession(
@@ -400,4 +515,6 @@ internal static class CharacterCommands
         SocketSlashCommand Interaction);
 
     private sealed record FilloutField(string Field, string Label, IReadOnlyList<string> Suggestions);
+
+    private sealed record ApprovalMessageDelivery(int Sent, int Failed);
 }

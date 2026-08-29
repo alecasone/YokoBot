@@ -12,6 +12,8 @@ internal static class Program
     private static readonly UserStore Users = new(Path.Combine(Environment.CurrentDirectory, "data", "users.json"));
     private static readonly AutoModerationRuleStore AutoModerationRules = new(Path.Combine(Environment.CurrentDirectory, "data", "automod-rules.json"));
     private static readonly VerificationSettingsStore VerificationSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "verification-settings.json"));
+    private static readonly UniverseStore Universes = new(Path.Combine(Environment.CurrentDirectory, "data", "universe.json"));
+    private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"));
     private static readonly string[] Rooms =
     {
         "ATTIC", "BASEMENT", "BEDROOM", "CELLAR", "HALLWAY", "KITCHEN", "LIBRARY", "PANTRY"
@@ -32,6 +34,7 @@ internal static class Program
         AlwaysDownloadUsers = true,
         LogGatewayIntentWarnings = false
     });
+    private static readonly CharacterRoleService CharacterRoles = new(Client, Characters, CharacterSettings);
     private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules);
     private static readonly VerificationService Verification = new(Client, VerificationSettings, AutoModerator);
 
@@ -49,6 +52,7 @@ internal static class Program
 
         Client.Log += LogAsync;
         Client.Ready += RegisterCommandsAsync;
+        Client.Ready += CharacterRoles.StartAsync;
         Client.Ready += AutoModerator.StartAsync;
         Client.UserJoined += AutoModerator.HandleUserJoinedAsync;
         Client.SlashCommandExecuted += HandleSlashCommandAsync;
@@ -81,7 +85,7 @@ internal static class Program
         ApplicationCommandProperties[] commands =
             [pingCommand, shutdownCommand, .. CharacterCommands.Build(), CharacterAdminCommands.Build(),
              AutoModerationCommands.Build(), VerificationCommands.VerifyCommand(), VerificationCommands.AdminCommand(),
-             DebugCommands.Build()];
+             DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build()];
 
         var testGuildIdText = Environment.GetEnvironmentVariable("DISCORD_TEST_GUILD_ID");
         if (ulong.TryParse(testGuildIdText, out var testGuildId))
@@ -109,10 +113,10 @@ internal static class Program
                 await PerformShutdownAsync(command);
                 break;
             case "character":
-                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings);
+                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings, CharacterRoles);
                 break;
             case "charadmin":
-                await CharacterAdminCommands.HandleAsync(command, CharacterSettings);
+                await CharacterAdminCommands.HandleAsync(command, CharacterSettings, CharacterRoles);
                 break;
             case "automod":
                 await AutoModerationCommands.HandleAsync(command, AutoModerationRules);
@@ -125,6 +129,12 @@ internal static class Program
                 break;
             case "debug":
                 await DebugCommands.HandleAsync(command, AutoModerator);
+                break;
+            case "overworld":
+                await OverworldCommands.HandleAsync(command, Universes);
+                break;
+            case "scenetracker":
+                await SceneTrackerCommands.HandleTrackerAsync(command, Universes, Scenes, Characters);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -188,6 +198,7 @@ internal static class Program
             "charadmin" => CharacterAdminCommands.HandleAutocompleteAsync(interaction, CharacterSettings),
             "automod" => AutoModerationCommands.HandleAutocompleteAsync(interaction, AutoModerationRules),
             "verify" or "verifyadmin" => VerificationCommands.HandleAutocompleteAsync(interaction, VerificationSettings),
+            "scenetracker" => SceneTrackerCommands.HandleAutocompleteAsync(interaction, Scenes, Characters),
             _ => interaction.RespondAsync([])
         };
 
@@ -195,8 +206,10 @@ internal static class Program
     {
         await AutoModerator.RecordMessageAsync(message);
         if (await AutoModerator.HandleApprovalMessageAsync(message)) return;
+        if (await SceneTrackerCommands.HandleInviteReplyAsync(message, Scenes, Characters)) return;
         if (await AutoModerationCommands.HandleWizardMessageAsync(message, AutoModerationRules)) return;
         if (await VerificationCommands.HandleWizardMessageAsync(message, VerificationSettings)) return;
-        await CharacterCommands.HandleFilloutMessageAsync(message, Characters);
+        if (await CharacterAdminCommands.HandleWizardMessageAsync(message, CharacterSettings, CharacterRoles)) return;
+        await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles);
     }
 }

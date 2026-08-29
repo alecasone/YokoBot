@@ -27,7 +27,12 @@ internal sealed class CharacterStore
                 server[userId.ToString()] = user = new UserCharacters();
             if (Find(user, name) is not null) return null;
 
-            var character = new Character { Name = name.Trim(), ApprovedBy = approvedBy };
+            var character = new Character
+            {
+                Name = name.Trim(),
+                ApprovedBy = approvedBy,
+                OcRoleIndex = user.Characters.Count + 1
+            };
             user.Characters.Add(character);
             await SaveUnsafeAsync(data);
             return character;
@@ -55,6 +60,50 @@ internal sealed class CharacterStore
             return TryGetUser(data, guildId, userId, out var user)
                 ? user!.Characters.Select(character => character.Name).OrderBy(name => name).ToArray()
                 : [];
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<int> GetCharacterCountAsync(ulong guildId, ulong userId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync(guildId);
+            return TryGetUser(data, guildId, userId, out var user) ? user!.Characters.Count : 0;
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<IReadOnlyDictionary<ulong, int>> ReindexOcRolesAsync(ulong guildId, ulong? userId = null)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync(guildId);
+            if (!data.TryGetValue(guildId.ToString(), out var server))
+                return new Dictionary<ulong, int>();
+
+            var counts = new Dictionary<ulong, int>();
+            var changed = false;
+            foreach (var (storedUserId, user) in server)
+            {
+                if (!ulong.TryParse(storedUserId, out var ownerId) ||
+                    userId is not null && ownerId != userId.Value)
+                    continue;
+
+                for (var index = 0; index < user.Characters.Count; index++)
+                {
+                    var expected = index + 1;
+                    if (user.Characters[index].OcRoleIndex == expected) continue;
+                    user.Characters[index].OcRoleIndex = expected;
+                    changed = true;
+                }
+                counts[ownerId] = user.Characters.Count;
+            }
+
+            if (changed) await SaveUnsafeAsync(data);
+            return counts;
         }
         finally { _gate.Release(); }
     }
@@ -87,6 +136,7 @@ internal sealed class CharacterStore
                 case "reference": character.CharacterReference.Value = value; break;
                 case "referencekind": character.CharacterReference.Kind = value; break;
                 case "referenceformat": character.CharacterReference.Format = value; break;
+                case "ocroleindex": return false;
                 default: character.AdditionalProperties[field.Trim()] = JsonSerializer.SerializeToElement(value); break;
             }
 
@@ -132,6 +182,8 @@ internal sealed class CharacterStore
                 return false;
 
             user!.Characters.Remove(character);
+            for (var index = 0; index < user.Characters.Count; index++)
+                user.Characters[index].OcRoleIndex = index + 1;
             var server = data[guildId.ToString()];
             if (user.Characters.Count == 0) server.Remove(userId.ToString());
             if (server.Count == 0) data.Remove(guildId.ToString());
