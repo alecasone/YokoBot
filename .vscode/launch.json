@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Yoko Bot",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/bin/Debug/net8.0/Yoko.Bot.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "DISCORD_BOT_TOKEN": "${input:discordBotToken}",
+        "DISCORD_TEST_GUILD_ID": "${input:discordTestGuildId}"
+      }
+    }
+  ],
+  "inputs": [
+    { "id": "discordBotToken", "type": "promptString", "description": "Discord bot token", "password": true },
+    { "id": "discordTestGuildId", "type": "promptString", "description": "Test server ID (recommended for instant command updates)" }
+  ]
+}

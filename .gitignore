@@ -1,0 +1,10 @@
+bin/
+obj/
+.build-validation/
+.dotnet-cli/
+.vs/
+.vscode/*.user.json
+.env
+*.user
+data/*.json
+data/*.tmp
