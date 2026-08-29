@@ -12,14 +12,20 @@ internal sealed class AutoModerationService
     private readonly DiscordSocketClient _client;
     private readonly UserStore _users;
     private readonly AutoModerationRuleStore _rules;
+    private readonly PermissionService _permissions;
     private readonly CancellationTokenSource _stopping = new();
     private int _started;
 
-    public AutoModerationService(DiscordSocketClient client, UserStore users, AutoModerationRuleStore rules)
+    public AutoModerationService(
+        DiscordSocketClient client,
+        UserStore users,
+        AutoModerationRuleStore rules,
+        PermissionService permissions)
     {
         _client = client;
         _users = users;
         _rules = rules;
+        _permissions = permissions;
     }
 
     public async Task StartAsync()
@@ -134,9 +140,10 @@ internal sealed class AutoModerationService
                      normalized.Equals("Reject, Yoko", StringComparison.OrdinalIgnoreCase);
         if (!confirm && !cancel) return false;
 
-        if (message.Author is not SocketGuildUser admin || !admin.GuildPermissions.Administrator)
+        if (message.Author is not SocketGuildUser admin ||
+            !await _permissions.HasAsync(channel.Guild.Id, admin, "automod.approve"))
         {
-            await message.Channel.SendMessageAsync("Only an administrator can approve this moderation action.");
+            await message.Channel.SendMessageAsync("You need `automod.approve` to approve this moderation action.");
             return true;
         }
 

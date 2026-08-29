@@ -47,7 +47,6 @@ internal static class CharacterAdminCommands
         return new SlashCommandBuilder()
             .WithName("charadmin")
             .WithDescription("Configures character management for this server.")
-            .WithDefaultMemberPermissions(GuildPermission.Administrator)
             .AddOption(properties)
             .AddOption(autofill)
             .AddOption(roles)

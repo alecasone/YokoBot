@@ -123,7 +123,8 @@ internal static class SceneTrackerCommands
         SocketSlashCommand command,
         UniverseStore universes,
         SceneStore scenes,
-        CharacterStore characters)
+        CharacterStore characters,
+        PermissionService permissions)
     {
         if (command.GuildId is not { } guildId)
         {
@@ -167,9 +168,11 @@ internal static class SceneTrackerCommands
             return;
         }
 
-        if (!CanManage(command.User, scene))
+        if (!await CanManageAsync(guildId, command.User, scene, permissions))
         {
-            await command.RespondAsync("Only a scene participant or server administrator can manage that scene.", ephemeral: true);
+            await command.RespondAsync(
+                "You need `scenetracker.manage.any`, or you must be a participant with `scenetracker.manage.own`.",
+                ephemeral: true);
             return;
         }
 
@@ -431,9 +434,14 @@ internal static class SceneTrackerCommands
                $"**Participants and characters**\n{participants}";
     }
 
-    private static bool CanManage(IUser user, SceneRecord scene) =>
-        user is SocketGuildUser { GuildPermissions.Administrator: true } ||
-        scene.Participants.Any(participant => participant.UserId == user.Id);
+    private static async Task<bool> CanManageAsync(
+        ulong guildId,
+        IUser user,
+        SceneRecord scene,
+        PermissionService permissions) =>
+        await permissions.HasAsync(guildId, user, "scenetracker.manage.any") ||
+        (scene.Participants.Any(participant => participant.UserId == user.Id) &&
+         await permissions.HasAsync(guildId, user, "scenetracker.manage.own"));
 
     private static async Task UpdateInvitationAsync(
         SocketGuild guild,

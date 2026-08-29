@@ -1,18 +1,68 @@
 # Yoko Discord Bot
 
-A minimal .NET 8 Discord bot using Discord.Net. It provides `/ping` and an administrator-only `/shutdown` Ouija-board sequence.
+A .NET 8 Discord bot using Discord.Net for character management, verification, roleplay scenes, auto moderation, and an ominous `/shutdown` Ouija-board sequence.
+
+## Command permissions
+
+Yoko uses an internal, per-server PEX-style permission system stored in `data/permissions.json`. Discord server Administrators always bypass the file. Other members receive permissions through stable Discord role IDs or optional direct user grants. Exact names such as `character.approve`, section wildcards such as `character.*`, and the global `*` wildcard are supported.
+
+The first time a server checks permissions, Yoko seeds these role assignments:
+
+- **Admin** (`1541979162242195466`) receives `*`.
+- **Moderator** (`1541979611754135643`) receives character approval/edit/view/delete access, verification, auto-moderation viewing and approvals, the verification recheck, every scene-tracker permission, and permission viewing.
+- **Verified** (`1542018931894521887`) receives `/ping`, self-scoped character edit/view/delete, scene creation/view/history, and management of scenes in which they participate.
+
+Use `/permissions list` to see every recognized permission together with the roles and direct users that currently receive it, including inherited wildcard grants. `/permissions view permission` focuses on one permission, and `/permissions role role` inspects a role. Members with `permissions.manage` can use `/permissions grant`, `/permissions revoke`, `/permissions grant-user`, and `/permissions revoke-user`. Removing a seeded grant is persistent; restarting Yoko does not add it back. Keep at least one Discord Administrator available because that bypass cannot be removed from the JSON file.
+
+Discord only controls visibility at the top-level slash-command name, not separately for `/character approve` and `/character view`. Yoko therefore leaves command roots visible and privately rejects an unauthorized subcommand. Handlers and autocomplete both recheck internal permissions. Character permissions distinguish `.self` from `.any`, while scene management distinguishes participant-scoped `.own` from moderator-style `.any`.
+
+### Permission reference
+
+| Permission | Affected command or action |
+| --- | --- |
+| `ping` | `/ping` |
+| `bot.shutdown` | `/shutdown` |
+| `character.approve` | `/character approve` for any member |
+| `character.edit.self` | `/character edit` and `/character remove-field` when the selected user is yourself |
+| `character.edit.any` | `/character edit` and `/character remove-field` for any member; also satisfies the self check |
+| `character.view.self` | `/character view` when the selected user is yourself |
+| `character.view.any` | `/character view` for any member; also satisfies the self check |
+| `character.delete.self` | `/character delete` when the selected user is yourself |
+| `character.delete.any` | `/character delete` for any member; also satisfies the self check |
+| `character.configure.properties` | `/charadmin properties view`, `/charadmin properties add`, and `/charadmin properties remove` |
+| `character.configure.autofill` | `/charadmin autofill add` and `/charadmin autofill remove` |
+| `character.configure.roles` | `/charadmin roles add` and `/charadmin roles remove` |
+| `character.configure.approval-messages` | `/charadmin approvemessage add` and `/charadmin approvemessage delete` |
+| `verification.verify` | `/verify` |
+| `verification.configure.roles` | `/verifyadmin role add`, `/verifyadmin role edit`, and `/verifyadmin role delete` |
+| `verification.configure.success-message` | `/verifyadmin successmessage` |
+| `automod.add` | `/automod add` |
+| `automod.delete` | `/automod delete` |
+| `automod.view` | `/automod view` |
+| `automod.approve` | Replying `Confirm, Yoko.` or `Cancel, Yoko.` to a queued moderation approval message |
+| `debug.recheck-verified` | `/debug recheck-verified` |
+| `overworld.worlddate` | `/overworld worlddate` |
+| `scenetracker.create` | `/scenetracker create` |
+| `scenetracker.view` | `/scenetracker view` |
+| `scenetracker.history` | `/scenetracker history` |
+| `scenetracker.manage.own` | `/scenetracker invite`, `/scenetracker complete`, `/scenetracker delete`, and both `/scenetracker edit` actions, but only for scenes in which the command user participates |
+| `scenetracker.manage.any` | The same scene-management commands for any scene, without needing to participate |
+| `permissions.view` | `/permissions list`, `/permissions view`, and `/permissions role` |
+| `permissions.manage` | `/permissions grant`, `/permissions revoke`, `/permissions grant-user`, and `/permissions revoke-user`; also permits all permission-viewing commands |
+
+Wildcard grants affect every matching permission in this table. For example, `character.*` grants every character and charadmin permission, while `character.configure.*` grants only the four charadmin configuration sections. The global `*` grants every current and future permission.
 
 ## Character workflow
 
 Character data is stored locally in `data/characters.json`, keyed first by Discord server ID and then by the owner's Discord user ID. Characters with the same owner are therefore isolated between servers. The file is excluded from Git because it contains live server data. Back it up separately before deploying or moving the bot.
 
-Administrator commands:
+Character commands (subject to the permission nodes above):
 
 - `/character approve user character-name [age] [gender] [region]` creates the character. Age, gender, and region can be supplied immediately; a private prompt asks only for remaining baseline fields. Reply `skip` to leave a value empty, or `stop`/`end` to save and exit early. The bot immediately deletes each channel reply and updates the ephemeral prompt. Discord does not permit truly empty messages.
 - `/character edit user character-name field value` changes a field. Baseline names are `name`, `age`, `gender`, `region`, `occupation`, `reference`, `reference-kind`, and `reference-format`. Any other name creates a flexible custom property.
 - `/character remove-field user character-name field` clears a baseline value or deletes a custom property.
 - `/character view user character-name` previews the current record privately.
-- `/character delete user character-name` starts permanent deletion. The admin must then type `confirm CharacterName`; the bot deletes that reply and removes the entire character record. `cancel` stops deletion.
+- `/character delete user character-name` starts permanent deletion. The command user must then type `confirm CharacterName`; the bot deletes that reply and removes the entire character record. `cancel` stops deletion.
 
 The server-wide default character structure is managed with `/charadmin properties view`, `/charadmin properties add`, and `/charadmin properties remove`. Adding a property makes it appear in approval fillouts and character views for everyone. Removing a default does not destroy character-specific values already stored under that property.
 
@@ -32,7 +82,7 @@ Every new character reference defaults to `link/sheet`; set its URL with the `re
 
 ## Overworld and scene tracking
 
-Administrators set the server's current fictional date with `/overworld worlddate date`. Accepted inputs are `dd-mm-yyyy`, `ddmmyyyy`, and `dd/mm/yyyy`; Yoko validates and normalizes them to `dd-mm-yyyy`. Per-server world state is represented by `UniverseData` and stored in `data/universe.json` so more universe properties can be added later.
+Members with `overworld.worlddate` set the server's current fictional date with `/overworld worlddate date`. Accepted inputs are `dd-mm-yyyy`, `ddmmyyyy`, and `dd/mm/yyyy`; Yoko validates and normalizes them to `dd-mm-yyyy`. Per-server world state is represented by `UniverseData` and stored in `data/universe.json` so more universe properties can be added later.
 
 Members create scenes with `/scenetracker create character day [title]`. The character is autocompleted from the caller's approved characters. The chosen day must exist within the month and year of the current world date. Each scene stores a snapshot of that resulting world date; when no title is supplied, the formatted scene date becomes its title.
 
@@ -46,7 +96,7 @@ Active scenes are managed with:
 - `/scenetracker delete scene` permanently deletes an active scene.
 - `/scenetracker history` publicly shows every active and completed scene, using public continuation pages when needed.
 
-Scene participants and server administrators can manage a scene. This access is intentionally trust-based. Completed scenes remain in `data/scenes.json` for history; deleted scenes do not.
+Members with `scenetracker.manage.own` can manage scenes in which they participate. `scenetracker.manage.any` permits management without participating, and Discord Administrators always bypass both checks. This access remains intentionally trust-based. Completed scenes remain in `data/scenes.json` for history; deleted scenes do not.
 
 ## Discord setup
 
@@ -64,7 +114,7 @@ Grant the bot **Manage Messages** in the forms channel so it can remove admin fi
 
 New non-bot members are recorded in `data/users.json` and assigned the server role named **Unverified**. If that role does not exist, the bot attempts to create it. The bot needs **Manage Roles**, and its own role must sit above every role it manages.
 
-At startup and once every 24 hours, Yoko reconciles JSON status against the explicit Discord roles **Verified** and **Unverified**. Members with only Verified are promoted; members with only Unverified are demoted and receive a fresh unverified grace window. Members with both roles are reported as conflicts and left unchanged; members with neither role retain their stored state. Administrators can run the same reconciliation immediately with `/debug recheck-verified`.
+At startup and once every 24 hours, Yoko reconciles JSON status against the explicit Discord roles **Verified** and **Unverified**. Members with only Verified are promoted; members with only Unverified are demoted and receive a fresh unverified grace window. Members with both roles are reported as conflicts and left unchanged; members with neither role retain their stored state. Members with `debug.recheck-verified` can run the same reconciliation immediately with `/debug recheck-verified`.
 
 Every two hours the bot evaluates server-specific rules stored in `data/automod-rules.json`. New servers start with editable equivalents of the earlier behavior: `unverified-2day-warn`, `unverified-3day-kick`, and `inactive-30day-warn`.
 
@@ -76,7 +126,7 @@ The first supported rule type is `time-warn`. Its clock can be `unverified` or `
 
 The bot requires **Kick Members** for kicks, **Ban Members** for bans, and **Moderate Members** for mute/timeouts, in addition to the existing message and role permissions.
 
-Actions can execute immediately or require approval. An approval rule posts its saved template in the chosen channel and persists the pending request. An administrator approves or rejects it by using Discord's **Reply** on that exact bot message and writing `Confirm, Yoko.` or `Cancel, Yoko.`. Available message placeholders are `{user}`, `{automod}`, `{title}`, `{message}`, and `{action}`.
+Actions can execute immediately or require approval. An approval rule posts its saved template in the chosen channel and persists the pending request. A member with `automod.approve` approves or rejects it by using Discord's **Reply** on that exact bot message and writing `Confirm, Yoko.` or `Cancel, Yoko.`. Available message placeholders are `{user}`, `{automod}`, `{title}`, `{message}`, and `{action}`.
 
 ## Verification profiles
 

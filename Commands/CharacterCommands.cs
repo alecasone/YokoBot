@@ -59,7 +59,6 @@ internal static class CharacterCommands
             new SlashCommandBuilder()
                 .WithName("character")
                 .WithDescription("Manages roleplay characters.")
-                .WithDefaultMemberPermissions(GuildPermission.Administrator)
                 .AddOption(approve)
                 .AddOption(edit)
                 .AddOption(view)

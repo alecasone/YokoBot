@@ -14,6 +14,8 @@ internal static class Program
     private static readonly VerificationSettingsStore VerificationSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "verification-settings.json"));
     private static readonly UniverseStore Universes = new(Path.Combine(Environment.CurrentDirectory, "data", "universe.json"));
     private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"));
+    private static readonly PermissionStore PermissionSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "permissions.json"));
+    private static readonly PermissionService Permissions = new(PermissionSettings);
     private static readonly string[] Rooms =
     {
         "ATTIC", "BASEMENT", "BEDROOM", "CELLAR", "HALLWAY", "KITCHEN", "LIBRARY", "PANTRY"
@@ -35,7 +37,7 @@ internal static class Program
         LogGatewayIntentWarnings = false
     });
     private static readonly CharacterRoleService CharacterRoles = new(Client, Characters, CharacterSettings);
-    private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules);
+    private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules, Permissions);
     private static readonly VerificationService Verification = new(Client, VerificationSettings, AutoModerator);
 
     private static bool _commandsRegistered;
@@ -79,13 +81,12 @@ internal static class Program
         var shutdownCommand = new SlashCommandBuilder()
             .WithName("shutdown")
             .WithDescription("Consults the Ouija board, then shuts Yoko down.")
-            .WithDefaultMemberPermissions(GuildPermission.Administrator)
             .Build();
 
         ApplicationCommandProperties[] commands =
             [pingCommand, shutdownCommand, .. CharacterCommands.Build(), CharacterAdminCommands.Build(),
              AutoModerationCommands.Build(), VerificationCommands.VerifyCommand(), VerificationCommands.AdminCommand(),
-             DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build()];
+             DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build(), PermissionCommands.Build()];
 
         var testGuildIdText = Environment.GetEnvironmentVariable("DISCORD_TEST_GUILD_ID");
         if (ulong.TryParse(testGuildIdText, out var testGuildId))
@@ -104,6 +105,8 @@ internal static class Program
 
     private static async Task HandleSlashCommandAsync(SocketSlashCommand command)
     {
+        if (!await AuthorizeCommandAsync(command)) return;
+
         switch (command.Data.Name)
         {
             case "ping":
@@ -134,7 +137,10 @@ internal static class Program
                 await OverworldCommands.HandleAsync(command, Universes);
                 break;
             case "scenetracker":
-                await SceneTrackerCommands.HandleTrackerAsync(command, Universes, Scenes, Characters);
+                await SceneTrackerCommands.HandleTrackerAsync(command, Universes, Scenes, Characters, Permissions);
+                break;
+            case "permissions":
+                await PermissionCommands.HandleAsync(command, PermissionSettings);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -191,16 +197,50 @@ internal static class Program
         return Task.CompletedTask;
     }
 
-    private static Task HandleAutocompleteAsync(SocketAutocompleteInteraction interaction) =>
-        interaction.Data.CommandName switch
+    private static async Task HandleAutocompleteAsync(SocketAutocompleteInteraction interaction)
+    {
+        if (interaction.GuildId is not { } guildId)
+        {
+            await interaction.RespondAsync([]);
+            return;
+        }
+
+        var required = CommandPermissionResolver.ResolveAutocomplete(interaction);
+        if (required.Count == 0 || !await Permissions.HasAnyAsync(guildId, interaction.User, required))
+        {
+            await interaction.RespondAsync([]);
+            return;
+        }
+
+        await (interaction.Data.CommandName switch
         {
             "character" => CharacterCommands.HandleAutocompleteAsync(interaction, Characters, CharacterSettings),
             "charadmin" => CharacterAdminCommands.HandleAutocompleteAsync(interaction, CharacterSettings),
             "automod" => AutoModerationCommands.HandleAutocompleteAsync(interaction, AutoModerationRules),
             "verify" or "verifyadmin" => VerificationCommands.HandleAutocompleteAsync(interaction, VerificationSettings),
             "scenetracker" => SceneTrackerCommands.HandleAutocompleteAsync(interaction, Scenes, Characters),
+            "permissions" => PermissionCommands.HandleAutocompleteAsync(interaction),
             _ => interaction.RespondAsync([])
-        };
+        });
+    }
+
+    private static async Task<bool> AuthorizeCommandAsync(SocketSlashCommand command)
+    {
+        if (command.GuildId is not { } guildId)
+        {
+            await command.RespondAsync("Yoko's commands can only be used in a server.", ephemeral: true);
+            return false;
+        }
+
+        var required = CommandPermissionResolver.Resolve(command);
+        if (required.Count > 0 && await Permissions.HasAnyAsync(guildId, command.User, required)) return true;
+
+        var requirement = required.Count == 0
+            ? "No permission is configured for this command path."
+            : $"Required: {string.Join(" or ", required.Select(permission => $"`{permission}`"))}.";
+        await command.RespondAsync($"You do not have permission to use this command. {requirement}", ephemeral: true);
+        return false;
+    }
 
     private static async Task HandleMessageReceivedAsync(SocketMessage message)
     {

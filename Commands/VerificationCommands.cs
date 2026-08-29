@@ -15,7 +15,6 @@ internal static class VerificationCommands
         new SlashCommandBuilder()
             .WithName("verify")
             .WithDescription("Verifies a member with a configured role profile.")
-            .WithDefaultMemberPermissions(GuildPermission.Administrator)
             .AddOption("user", ApplicationCommandOptionType.User, "Member to verify", isRequired: true)
             .AddOption(TypeOption("type", "Verification type", autocomplete: true))
             .Build();
@@ -39,7 +38,6 @@ internal static class VerificationCommands
         return new SlashCommandBuilder()
             .WithName("verifyadmin")
             .WithDescription("Configures verification role profiles.")
-            .WithDefaultMemberPermissions(GuildPermission.Administrator)
             .AddOption(roles)
             .AddOption(successMessage)
             .Build();

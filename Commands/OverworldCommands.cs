@@ -10,7 +10,6 @@ internal static class OverworldCommands
         new SlashCommandBuilder()
             .WithName("overworld")
             .WithDescription("Configures the roleplay world's universe data.")
-            .WithDefaultMemberPermissions(GuildPermission.Administrator)
             .AddOption(new SlashCommandOptionBuilder()
                 .WithName("worlddate")
                 .WithDescription("Sets the current date in the roleplay world.")

@@ -10,7 +10,6 @@ internal static class DebugCommands
         new SlashCommandBuilder()
             .WithName("debug")
             .WithDescription("Runs administrator diagnostics and reconciliation tools.")
-            .WithDefaultMemberPermissions(GuildPermission.Administrator)
             .AddOption(new SlashCommandOptionBuilder()
                 .WithName("recheck-verified")
                 .WithDescription("Reconciles stored verification state with Discord verification roles.")

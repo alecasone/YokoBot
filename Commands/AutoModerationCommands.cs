@@ -32,7 +32,6 @@ internal static partial class AutoModerationCommands
         return new SlashCommandBuilder()
             .WithName("automod")
             .WithDescription("Creates and manages automatic moderation rules.")
-            .WithDefaultMemberPermissions(GuildPermission.Administrator)
             .AddOption(add)
             .AddOption(delete)
             .AddOption(view)
