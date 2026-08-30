@@ -5,7 +5,9 @@ namespace Yoko.Bot.Models;
 
 internal sealed class Character
 {
+    public Guid PublicId { get; set; }
     public required string Name { get; set; }
+    public List<string> Aliases { get; set; } = [];
     public string? Age { get; set; }
     public string? Gender { get; set; }
     public string? Region { get; set; }

@@ -6,7 +6,7 @@ internal static class CharacterSchema
         ["age", "gender", "region", "occupation", "reference"];
 
     public static readonly string[] ReservedProperties =
-        ["name", "approved-at", "approved-by", "oc-role-index", "reference-kind", "reference-format"];
+        ["name", "public-id", "approved-at", "approved-by", "oc-role-index", "reference-kind", "reference-format"];
 
     public static string Label(string property) =>
         string.Join(' ', property.Split(['-', '_'], StringSplitOptions.RemoveEmptyEntries)

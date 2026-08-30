@@ -52,6 +52,12 @@ Discord only controls visibility at the top-level slash-command name, not separa
 
 Wildcard grants affect every matching permission in this table. For example, `character.*` grants every character and charadmin permission, while `character.configure.*` grants only the four charadmin configuration sections. The global `*` grants every current and future permission.
 
+## Public character archive
+
+The GitHub Pages scaffold in `docs/` is a searchable master directory built from sanitized character-only JSON. It intentionally excludes Discord usernames and IDs, verification state, roles, moderation data, and private administrative metadata. Follow `GITHUB_PAGES_SETUP.md` to preview it locally and publish it from this repository's `main` branch and `/docs` folder.
+
+Characters have stable random `publicId` values, so renames do not break public links. Renaming a character automatically preserves the previous name as an alias; `/character edit` can also set the `aliases` field from a comma-separated list, and `/character remove-field` can clear it. Discord users receive separate stable random IDs in the ignored local file `data/public-identities.json`; the private Discord-ID mapping is not exported to Pages. The current directory uses fabricated sample records until the sanitized publisher is connected.
+
 ## Character workflow
 
 Character data is stored locally in `data/characters.json`, keyed first by Discord server ID and then by the owner's Discord user ID. Characters with the same owner are therefore isolated between servers. The file is excluded from Git because it contains live server data. Back it up separately before deploying or moving the bot.

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11100f">
+  <meta name="description" content="A public directory of approved roleplay characters maintained by Yoko.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Yoko Character Archive">
+  <meta property="og:description" content="Public records of approved roleplay characters.">
+  <meta property="og:url" content="https://alecasone.github.io/YokoBot/">
+  <meta property="og:image" content="https://alecasone.github.io/YokoBot/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Yoko Character Archive">
+  <meta name="twitter:description" content="Public records of approved roleplay characters.">
+  <meta name="twitter:image" content="https://alecasone.github.io/YokoBot/og.png">
+  <title>Yoko Character Archive</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead__eyebrow">Yoko / Public Records</div>
+    <div class="masthead__content">
+      <div>
+        <h1>Character Archive</h1>
+        <p>An index of approved lives, legends, and questionable alibis.</p>
+      </div>
+      <div class="archive-mark" aria-hidden="true">
+        <span>Y</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="directory-heading" aria-labelledby="directory-title">
+      <div>
+        <p class="section-label">Master directory</p>
+        <h2 id="directory-title">Known characters</h2>
+      </div>
+      <dl class="archive-stats" aria-label="Directory statistics">
+        <div><dt>Records</dt><dd id="character-count">—</dd></div>
+        <div><dt>Regions</dt><dd id="region-count">—</dd></div>
+        <div><dt>Updated</dt><dd id="last-updated">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="directory-tools" aria-label="Directory filters">
+      <label class="search-field">
+        <span>Search the archive</span>
+        <input id="search" type="search" autocomplete="off" placeholder="Name, alias, region, occupation…">
+      </label>
+      <label>
+        <span>Region</span>
+        <select id="region-filter">
+          <option value="">All regions</option>
+        </select>
+      </label>
+      <label>
+        <span>Order</span>
+        <select id="sort-order">
+          <option value="name">Name, A–Z</option>
+          <option value="region">Region</option>
+          <option value="newest">Newest approval</option>
+        </select>
+      </label>
+    </section>
+
+    <p id="status" class="status" role="status">Opening the archive…</p>
+    <section id="character-grid" class="character-grid" aria-live="polite"></section>
+  </main>
+
+  <dialog id="character-dialog" class="record-dialog" aria-labelledby="dialog-title">
+    <button id="dialog-close" class="dialog-close" type="button" aria-label="Close character record">×</button>
+    <p class="section-label">Character record</p>
+    <h2 id="dialog-title"></h2>
+    <p id="dialog-aliases" class="dialog-aliases"></p>
+    <div id="dialog-details" class="record-details"></div>
+    <div id="dialog-properties" class="record-properties"></div>
+    <a id="dialog-reference" class="reference-link" target="_blank" rel="noreferrer noopener">Open character reference</a>
+  </dialog>
+
+  <footer>
+    <span>Generated from sanitized Yoko character records.</span>
+    <span>No Discord account information is published.</span>
+  </footer>
+
+  <noscript>This directory requires JavaScript to load its character records.</noscript>
+  <script src="./app.js" defer></script>
+</body>
+</html>

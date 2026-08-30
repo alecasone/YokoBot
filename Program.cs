@@ -16,6 +16,7 @@ internal static class Program
     private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"));
     private static readonly PermissionStore PermissionSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "permissions.json"));
     private static readonly PermissionService Permissions = new(PermissionSettings);
+    private static readonly PublicIdentityStore PublicIdentities = new(Path.Combine(Environment.CurrentDirectory, "data", "public-identities.json"));
     private static readonly string[] Rooms =
     {
         "ATTIC", "BASEMENT", "BEDROOM", "CELLAR", "HALLWAY", "KITCHEN", "LIBRARY", "PANTRY"
@@ -37,7 +38,7 @@ internal static class Program
         LogGatewayIntentWarnings = false
     });
     private static readonly CharacterRoleService CharacterRoles = new(Client, Characters, CharacterSettings);
-    private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules, Permissions);
+    private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules, Permissions, PublicIdentities);
     private static readonly VerificationService Verification = new(Client, VerificationSettings, AutoModerator);
 
     private static bool _commandsRegistered;

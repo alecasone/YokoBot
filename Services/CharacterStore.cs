@@ -29,6 +29,7 @@ internal sealed class CharacterStore
 
             var character = new Character
             {
+                PublicId = Guid.NewGuid(),
                 Name = name.Trim(),
                 ApprovedBy = approvedBy,
                 OcRoleIndex = user.Characters.Count + 1
@@ -110,7 +111,7 @@ internal sealed class CharacterStore
 
     public async Task<IReadOnlyList<string>> GetFieldNamesAsync(ulong guildId, ulong userId, string name)
     {
-        string[] baseline = ["name", "age", "gender", "region", "occupation", "reference", "reference-kind", "reference-format"];
+        string[] baseline = ["name", "aliases", "age", "gender", "region", "occupation", "reference", "reference-kind", "reference-format"];
         var character = await GetAsync(guildId, userId, name);
         return character is null
             ? baseline
@@ -128,7 +129,21 @@ internal sealed class CharacterStore
 
             switch (Normalize(field))
             {
-                case "name": character.Name = value.Trim(); break;
+                case "name":
+                    var updatedName = value.Trim();
+                    if (!character.Name.Equals(updatedName, StringComparison.OrdinalIgnoreCase) &&
+                        !character.Aliases.Contains(character.Name, StringComparer.OrdinalIgnoreCase))
+                        character.Aliases.Add(character.Name);
+                    character.Name = updatedName;
+                    break;
+                case "alias":
+                case "aliases":
+                    character.Aliases = value
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Where(alias => !alias.Equals(character.Name, StringComparison.OrdinalIgnoreCase))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                    break;
                 case "age": character.Age = value; break;
                 case "gender": character.Gender = value; break;
                 case "region": character.Region = value; break;
@@ -136,7 +151,8 @@ internal sealed class CharacterStore
                 case "reference": character.CharacterReference.Value = value; break;
                 case "referencekind": character.CharacterReference.Kind = value; break;
                 case "referenceformat": character.CharacterReference.Format = value; break;
-                case "ocroleindex": return false;
+                case "ocroleindex":
+                case "publicid": return false;
                 default: character.AdditionalProperties[field.Trim()] = JsonSerializer.SerializeToElement(value); break;
             }
 
@@ -158,11 +174,14 @@ internal sealed class CharacterStore
             var removed = true;
             switch (Normalize(field))
             {
+                case "aliases":
+                case "alias": character.Aliases.Clear(); break;
                 case "age": character.Age = null; break;
                 case "gender": character.Gender = null; break;
                 case "region": character.Region = null; break;
                 case "occupation": character.Occupation = null; break;
                 case "reference": character.CharacterReference.Value = null; break;
+                case "publicid": return false;
                 default: removed = character.AdditionalProperties.Remove(field.Trim()); break;
             }
 
@@ -202,19 +221,31 @@ internal sealed class CharacterStore
 
         using var document = JsonDocument.Parse(json);
         var firstRecord = document.RootElement.EnumerateObject().FirstOrDefault();
+        Dictionary<string, Dictionary<string, UserCharacters>> data;
+        var changed = false;
         if (firstRecord.Value.ValueKind == JsonValueKind.Object && firstRecord.Value.TryGetProperty("characters", out _))
         {
             var legacy = JsonSerializer.Deserialize<Dictionary<string, UserCharacters>>(json, JsonOptions) ?? [];
-            var migrated = new Dictionary<string, Dictionary<string, UserCharacters>>
+            data = new Dictionary<string, Dictionary<string, UserCharacters>>
             {
                 [migrationGuildId.ToString()] = legacy
             };
-            await SaveUnsafeAsync(migrated);
+            changed = true;
             Console.WriteLine($"Migrated legacy character data into server {migrationGuildId}.");
-            return migrated;
+        }
+        else
+        {
+            data = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, UserCharacters>>>(json, JsonOptions) ?? [];
         }
 
-        return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, UserCharacters>>>(json, JsonOptions) ?? [];
+        foreach (var character in data.Values.SelectMany(server => server.Values).SelectMany(user => user.Characters))
+        {
+            if (character.PublicId != Guid.Empty) continue;
+            character.PublicId = Guid.NewGuid();
+            changed = true;
+        }
+        if (changed) await SaveUnsafeAsync(data);
+        return data;
     }
 
     private async Task SaveUnsafeAsync(Dictionary<string, Dictionary<string, UserCharacters>> data)

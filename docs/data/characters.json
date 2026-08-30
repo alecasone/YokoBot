@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-29T22:00:00Z",
+  "characters": [
+    {
+      "publicId": "7577d63f-3c20-45e1-b4dc-aaea86c0f50e",
+      "name": "Alice Marrow",
+      "aliases": ["The Bellkeeper"],
+      "age": "24",
+      "gender": "Woman",
+      "region": "North Valley",
+      "occupation": "Mortician",
+      "approvedAt": "2026-08-27T20:14:00Z",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": null
+      },
+      "properties": {
+        "eye-color": "Grey",
+        "disposition": "Patient, until the bells begin"
+      }
+    },
+    {
+      "publicId": "115166a2-5131-4947-bf76-7f012b139bd3",
+      "name": "Silas Vane",
+      "aliases": ["Ash", "The Cartographer"],
+      "age": "31",
+      "gender": "Man",
+      "region": "Old Quarter",
+      "occupation": "Surveyor",
+      "approvedAt": "2026-08-25T18:42:00Z",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": null
+      },
+      "properties": {
+        "known-for": "Maps of roads that no longer exist",
+        "keepsake": "A brass compass with no north"
+      }
+    },
+    {
+      "publicId": "ea0d261a-7940-4e1a-90d1-d69f4f89333f",
+      "name": "Mara Lorne",
+      "aliases": [],
+      "age": "Unknown",
+      "gender": "Woman",
+      "region": "North Valley",
+      "occupation": "Archivist",
+      "approvedAt": "2026-08-20T23:08:00Z",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": null
+      },
+      "properties": {
+        "specialty": "Unclaimed correspondence",
+        "office-hours": "After dusk"
+      }
+    }
+  ]
+}
+

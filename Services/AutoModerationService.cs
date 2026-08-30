@@ -13,6 +13,7 @@ internal sealed class AutoModerationService
     private readonly UserStore _users;
     private readonly AutoModerationRuleStore _rules;
     private readonly PermissionService _permissions;
+    private readonly PublicIdentityStore _publicIdentities;
     private readonly CancellationTokenSource _stopping = new();
     private int _started;
 
@@ -20,12 +21,14 @@ internal sealed class AutoModerationService
         DiscordSocketClient client,
         UserStore users,
         AutoModerationRuleStore rules,
-        PermissionService permissions)
+        PermissionService permissions,
+        PublicIdentityStore publicIdentities)
     {
         _client = client;
         _users = users;
         _rules = rules;
         _permissions = permissions;
+        _publicIdentities = publicIdentities;
     }
 
     public async Task StartAsync()
@@ -43,6 +46,7 @@ internal sealed class AutoModerationService
     public async Task HandleUserJoinedAsync(SocketGuildUser user)
     {
         if (user.IsBot) return;
+        await _publicIdentities.GetOrCreateAsync(user.Guild.Id, user.Id);
         await _users.RegisterJoinAsync(user.Guild.Id, user.Id, user.JoinedAt ?? DateTimeOffset.UtcNow);
         try
         {
@@ -348,8 +352,9 @@ internal sealed class AutoModerationService
         var members = guild.Users.Where(member => !member.IsBot).Select(member => (
             member.Id,
             member.JoinedAt ?? DateTimeOffset.UtcNow,
-            unverifiedRole is null || !member.Roles.Contains(unverifiedRole)));
+            unverifiedRole is null || !member.Roles.Contains(unverifiedRole))).ToArray();
         await _users.EnsureUsersAsync(guild.Id, members);
+        await _publicIdentities.EnsureUsersAsync(guild.Id, members.Select(member => member.Id));
     }
 
     private static string Render(string template, SocketGuildUser user, AutoModerationRule rule, string message) =>

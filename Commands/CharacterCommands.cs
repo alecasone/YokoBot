@@ -343,6 +343,7 @@ internal static class CharacterCommands
             "gender" => character.Gender,
             "region" => character.Region,
             "occupation" => character.Occupation,
+            "aliases" or "alias" => character.Aliases.Count == 0 ? null : string.Join(", ", character.Aliases),
             "reference" => character.CharacterReference.Value,
             "reference-kind" => character.CharacterReference.Kind,
             "reference-format" => character.CharacterReference.Format,
@@ -361,6 +362,7 @@ internal static class CharacterCommands
         if (character.Gender is not null) yield return new("gender", character.Gender);
         if (character.Region is not null) yield return new("region", character.Region);
         if (character.Occupation is not null) yield return new("occupation", character.Occupation);
+        if (character.Aliases.Count > 0) yield return new("aliases", string.Join(", ", character.Aliases));
         if (character.CharacterReference.Value is not null) yield return new("reference", character.CharacterReference.Value);
         foreach (var item in character.AdditionalProperties) yield return new(item.Key, item.Value.ToString());
     }
