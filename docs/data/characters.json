@@ -1,7 +1,37 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-30T20:44:05.7623723+00:00",
+  "generatedAt": "2026-08-30T22:40:15.5287003+00:00",
   "characters": [
+    {
+      "publicId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "name": "Cassian Vale",
+      "aliases": [],
+      "age": "22",
+      "gender": "Man",
+      "region": "Obelia",
+      "occupation": "Watch recruit",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Brown",
+        "hair-colour": "Brown"
+      }
+    },
+    {
+      "publicId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "name": "Elara Vale",
+      "aliases": [],
+      "age": "68",
+      "gender": "Woman",
+      "region": "Obelia",
+      "occupation": "Retired magistrate",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Hazel",
+        "hair-colour": "Silver"
+      }
+    },
     {
       "publicId": "569dfcba-16fa-4267-8005-bd94fa999767",
       "name": "emm",
@@ -46,6 +76,81 @@
       "properties": {}
     },
     {
+      "publicId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "name": "Liora Vale",
+      "aliases": [],
+      "age": "24",
+      "gender": "Woman",
+      "region": "Obelia",
+      "occupation": "Courier",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Grey",
+        "hair-colour": "Black"
+      }
+    },
+    {
+      "publicId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "name": "Lyra Vale",
+      "aliases": [],
+      "age": "24",
+      "gender": "Woman",
+      "region": "Obelia",
+      "occupation": "Archivist",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Grey",
+        "hair-colour": "Black"
+      }
+    },
+    {
+      "publicId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "name": "Mira Vale",
+      "aliases": [],
+      "age": "45",
+      "gender": "Woman",
+      "region": "Obelia",
+      "occupation": "Apothecary",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Green",
+        "hair-colour": "Auburn"
+      }
+    },
+    {
+      "publicId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "name": "Nia Vale",
+      "aliases": [],
+      "age": "4",
+      "gender": "Girl",
+      "region": "Obelia",
+      "occupation": "Child",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Grey",
+        "hair-colour": "Black"
+      }
+    },
+    {
+      "publicId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "name": "Rowan Vale",
+      "aliases": [],
+      "age": "43",
+      "gender": "Man",
+      "region": "Obelia",
+      "occupation": "Carpenter",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Hazel",
+        "hair-colour": "Brown"
+      }
+    },
+    {
       "publicId": "88caf68c-3499-4e4d-a23a-ca6fed5a5a03",
       "name": "Stonks",
       "aliases": [],
@@ -56,6 +161,21 @@
       "approvedAt": "2026-08-29T19:48:38.8560922+00:00",
       "reference": null,
       "properties": {}
+    },
+    {
+      "publicId": "28d7305d-016b-47b9-af20-e67faa5ed34a",
+      "name": "Tarin Vale",
+      "aliases": [],
+      "age": "20",
+      "gender": "Man",
+      "region": "Obelia",
+      "occupation": "Fisher",
+      "approvedAt": "2026-08-30T12:00:00+00:00",
+      "reference": null,
+      "properties": {
+        "eyecolor": "Blue",
+        "hair-colour": "Blond"
+      }
     }
   ]
 }
