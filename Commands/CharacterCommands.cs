@@ -137,6 +137,7 @@ internal static class CharacterCommands
         CharacterStore store,
         CharacterSettingsStore settings,
         CharacterRoleService characterRoles,
+        RelationshipStore relationships,
         SitePublicationService sitePublisher)
     {
         if (command.GuildId is not { } guildId)
@@ -254,13 +255,14 @@ internal static class CharacterCommands
         SocketMessage message,
         CharacterStore store,
         CharacterRoleService characterRoles,
+        RelationshipStore relationships,
         SitePublicationService sitePublisher)
     {
         if (message.Author.IsBot) return;
 
         if (DeleteSessions.TryGetValue((message.Channel.Id, message.Author.Id), out var deletion))
         {
-            await HandleDeleteConfirmationAsync(message, store, characterRoles, sitePublisher, deletion);
+            await HandleDeleteConfirmationAsync(message, store, characterRoles, relationships, sitePublisher, deletion);
             return;
         }
 
@@ -326,6 +328,7 @@ internal static class CharacterCommands
         IReadOnlyList<ulong> ocRoleIds)
     {
         var text = new StringBuilder($"**{character.Name}** — {owner.Mention}\n");
+        if (character.IsTestFixture) text.AppendLine("Test fixture: **yes** — excluded from OC roles and the public site");
         if (character.OcRoleIndex > 0)
         {
             var role = character.OcRoleIndex <= ocRoleIds.Count
@@ -401,6 +404,7 @@ internal static class CharacterCommands
         SocketMessage message,
         CharacterStore store,
         CharacterRoleService characterRoles,
+        RelationshipStore relationships,
         SitePublicationService sitePublisher,
         DeleteSession session)
     {
@@ -424,7 +428,11 @@ internal static class CharacterCommands
             return;
         }
 
+        var deletingCharacter = await store.GetAsync(session.GuildId, session.OwnerId, session.CharacterName);
         var deleted = await store.DeleteAsync(session.GuildId, session.OwnerId, session.CharacterName);
+        var removedRelationships = deleted && deletingCharacter is not null
+            ? await relationships.RemoveForCharacterAsync(session.GuildId, deletingCharacter.PublicId)
+            : 0;
         var roleSync = deleted
             ? await characterRoles.SyncMemberAsync(session.GuildId, session.OwnerId)
             : null;
@@ -432,6 +440,9 @@ internal static class CharacterCommands
         DeleteSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
         await session.Interaction.ModifyOriginalResponseAsync(properties => properties.Content = deleted
             ? $"**{session.CharacterName}** and all of its stored data were permanently deleted." +
+              (removedRelationships > 0
+                  ? $" Removed **{removedRelationships}** direct or pending relationship record(s); inferred relations were recalculated."
+                  : string.Empty) +
               (roleSync!.Success
                   ? " Remaining characters and OC roles were shifted down sequentially."
                   : $" Character indexes were compacted, but Discord roles could not be fully synchronized: {roleSync.Error}")

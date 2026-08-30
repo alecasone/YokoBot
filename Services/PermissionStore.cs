@@ -5,7 +5,7 @@ namespace Yoko.Bot.Services;
 
 internal sealed class PermissionStore
 {
-    private const int CurrentSeedVersion = 1;
+    private const int CurrentSeedVersion = 2;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -86,12 +86,28 @@ internal sealed class PermissionStore
         settings.Grants = new Dictionary<string, PermissionGrant>(settings.Grants, StringComparer.OrdinalIgnoreCase);
         if (settings.SeedVersion >= CurrentSeedVersion) return (data, settings, false);
 
-        foreach (var (permission, seedGrant) in PermissionCatalog.CreateSeedGrants())
+        if (settings.SeedVersion < 1)
         {
-            if (!settings.Grants.TryGetValue(permission, out var grant))
-                settings.Grants[permission] = grant = new PermissionGrant();
-            foreach (var roleId in seedGrant.RoleIds) AddUnique(grant.RoleIds, roleId);
-            foreach (var userId in seedGrant.UserIds) AddUnique(grant.UserIds, userId);
+            foreach (var (permission, seedGrant) in PermissionCatalog.CreateSeedGrants())
+            {
+                if (!settings.Grants.TryGetValue(permission, out var grant))
+                    settings.Grants[permission] = grant = new PermissionGrant();
+                foreach (var roleId in seedGrant.RoleIds) AddUnique(grant.RoleIds, roleId);
+                foreach (var userId in seedGrant.UserIds) AddUnique(grant.UserIds, userId);
+            }
+        }
+        if (settings.SeedVersion < 2)
+        {
+            foreach (var permission in new[]
+                     {
+                         "relationship.request", "relationship.respond", "relationship.remove", "relationship.view"
+                     })
+            {
+                if (!settings.Grants.TryGetValue(permission, out var grant))
+                    settings.Grants[permission] = grant = new PermissionGrant();
+                AddUnique(grant.RoleIds, PermissionCatalog.VerifiedRoleId);
+                AddUnique(grant.RoleIds, PermissionCatalog.ModeratorRoleId);
+            }
         }
         settings.SeedVersion = CurrentSeedVersion;
         return (data, settings, true);
@@ -127,4 +143,3 @@ internal sealed class PermissionStore
         return true;
     }
 }
-

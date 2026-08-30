@@ -14,6 +14,8 @@ internal static class Program
     private static readonly VerificationSettingsStore VerificationSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "verification-settings.json"));
     private static readonly UniverseStore Universes = new(Path.Combine(Environment.CurrentDirectory, "data", "universe.json"));
     private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"));
+    private static readonly RelationshipStore Relationships = new(Path.Combine(Environment.CurrentDirectory, "data", "relationships.json"));
+    private static readonly RelationshipInferenceEngine RelationshipInference = new();
     private static readonly PermissionStore PermissionSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "permissions.json"));
     private static readonly PermissionService Permissions = new(PermissionSettings);
     private static readonly PublicIdentityStore PublicIdentities = new(Path.Combine(Environment.CurrentDirectory, "data", "public-identities.json"));
@@ -94,7 +96,7 @@ internal static class Program
             [pingCommand, shutdownCommand, .. CharacterCommands.Build(), CharacterAdminCommands.Build(),
              AutoModerationCommands.Build(), VerificationCommands.VerifyCommand(), VerificationCommands.AdminCommand(),
              DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build(), PermissionCommands.Build(),
-             SiteAdminCommands.Build()];
+             SiteAdminCommands.Build(), RelationshipCommands.Build()];
 
         var testGuildIdText = Environment.GetEnvironmentVariable("DISCORD_TEST_GUILD_ID");
         if (ulong.TryParse(testGuildIdText, out var testGuildId))
@@ -124,7 +126,7 @@ internal static class Program
                 await PerformShutdownAsync(command);
                 break;
             case "character":
-                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings, CharacterRoles, SitePublisher);
+                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings, CharacterRoles, Relationships, SitePublisher);
                 break;
             case "charadmin":
                 await CharacterAdminCommands.HandleAsync(command, CharacterSettings, CharacterRoles);
@@ -152,6 +154,9 @@ internal static class Program
                 break;
             case "siteadmin":
                 await SiteAdminCommands.HandleAsync(command, SiteSettings, SitePublisher);
+                break;
+            case "relationship":
+                await RelationshipCommands.HandleAsync(command, Characters, Relationships, RelationshipInference);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -231,6 +236,7 @@ internal static class Program
             "verify" or "verifyadmin" => VerificationCommands.HandleAutocompleteAsync(interaction, VerificationSettings),
             "scenetracker" => SceneTrackerCommands.HandleAutocompleteAsync(interaction, Scenes, Characters),
             "permissions" => PermissionCommands.HandleAutocompleteAsync(interaction),
+            "relationship" => RelationshipCommands.HandleAutocompleteAsync(interaction, Characters, Relationships, RelationshipInference),
             _ => interaction.RespondAsync([])
         });
     }
@@ -257,10 +263,11 @@ internal static class Program
     {
         await AutoModerator.RecordMessageAsync(message);
         if (await AutoModerator.HandleApprovalMessageAsync(message)) return;
+        if (await RelationshipCommands.HandleReplyAsync(message, Characters, Relationships, Permissions)) return;
         if (await SceneTrackerCommands.HandleInviteReplyAsync(message, Scenes, Characters)) return;
         if (await AutoModerationCommands.HandleWizardMessageAsync(message, AutoModerationRules)) return;
         if (await VerificationCommands.HandleWizardMessageAsync(message, VerificationSettings)) return;
         if (await CharacterAdminCommands.HandleWizardMessageAsync(message, CharacterSettings, CharacterRoles)) return;
-        await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles, SitePublisher);
+        await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles, Relationships, SitePublisher);
     }
 }

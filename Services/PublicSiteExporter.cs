@@ -28,6 +28,7 @@ internal sealed class PublicSiteExporter
         {
             GeneratedAt = DateTimeOffset.UtcNow,
             Characters = characters
+                .Where(character => !character.IsTestFixture)
                 .OrderBy(character => character.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(ToPublicRecord)
                 .ToList()

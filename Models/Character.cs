@@ -16,6 +16,7 @@ internal sealed class Character
     public DateTimeOffset ApprovedAt { get; set; } = DateTimeOffset.UtcNow;
     public ulong ApprovedBy { get; set; }
     public int OcRoleIndex { get; set; }
+    public bool IsTestFixture { get; set; }
 
     // Unknown JSON properties survive load/save cycles and can be managed by admin commands.
     [JsonExtensionData]

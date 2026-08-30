@@ -42,6 +42,10 @@ internal static class PermissionCatalog
         new("site.view", "View GitHub Pages publishing status."),
         new("site.publish", "Publish the sanitized character directory."),
         new("site.configure", "Configure GitHub Pages publishing."),
+        new("relationship.request", "Request relationships between owned characters."),
+        new("relationship.respond", "List, approve, and decline incoming relationship requests."),
+        new("relationship.remove", "Remove direct relationships involving an owned character."),
+        new("relationship.view", "View direct and inferred character relationships."),
     ];
 
     public static IReadOnlyList<string> AssignableNames { get; } = BuildAssignableNames();
@@ -91,6 +95,10 @@ internal static class PermissionCatalog
                      "automod.approve",
                      "debug.recheck-verified",
                      "scenetracker.*",
+                     "relationship.request",
+                     "relationship.respond",
+                     "relationship.remove",
+                     "relationship.view",
                      "permissions.view"
                  })
             AddRole(grants, permission, ModeratorRoleId);
@@ -104,7 +112,11 @@ internal static class PermissionCatalog
                      "scenetracker.create",
                      "scenetracker.view",
                      "scenetracker.history",
-                     "scenetracker.manage.own"
+                     "scenetracker.manage.own",
+                     "relationship.request",
+                     "relationship.respond",
+                     "relationship.remove",
+                     "relationship.view"
                  })
             AddRole(grants, permission, VerifiedRoleId);
 

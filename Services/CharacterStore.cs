@@ -32,7 +32,7 @@ internal sealed class CharacterStore
                 PublicId = Guid.NewGuid(),
                 Name = name.Trim(),
                 ApprovedBy = approvedBy,
-                OcRoleIndex = user.Characters.Count + 1
+                OcRoleIndex = user.Characters.Count(item => !item.IsTestFixture) + 1
             };
             user.Characters.Add(character);
             await SaveUnsafeAsync(data);
@@ -71,7 +71,9 @@ internal sealed class CharacterStore
         try
         {
             var data = await LoadUnsafeAsync(guildId);
-            return TryGetUser(data, guildId, userId, out var user) ? user!.Characters.Count : 0;
+            return TryGetUser(data, guildId, userId, out var user)
+                ? user!.Characters.Count(character => !character.IsTestFixture)
+                : 0;
         }
         finally { _gate.Release(); }
     }
@@ -87,6 +89,28 @@ internal sealed class CharacterStore
                 : [];
         }
         finally { _gate.Release(); }
+    }
+
+    public async Task<IReadOnlyList<OwnedCharacter>> GetAllOwnedAsync(ulong guildId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync(guildId);
+            if (!data.TryGetValue(guildId.ToString(), out var server)) return [];
+            return server
+                .Where(pair => ulong.TryParse(pair.Key, out _))
+                .SelectMany(pair => pair.Value.Characters.Select(character =>
+                    new OwnedCharacter(ulong.Parse(pair.Key), character)))
+                .ToArray();
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<OwnedCharacter?> GetByPublicIdAsync(ulong guildId, Guid publicId)
+    {
+        var characters = await GetAllOwnedAsync(guildId);
+        return characters.FirstOrDefault(item => item.Character.PublicId == publicId);
     }
 
     public async Task<IReadOnlyDictionary<ulong, int>> ReindexOcRolesAsync(ulong guildId, ulong? userId = null)
@@ -106,14 +130,15 @@ internal sealed class CharacterStore
                     userId is not null && ownerId != userId.Value)
                     continue;
 
-                for (var index = 0; index < user.Characters.Count; index++)
+                var liveIndex = 0;
+                foreach (var character in user.Characters)
                 {
-                    var expected = index + 1;
-                    if (user.Characters[index].OcRoleIndex == expected) continue;
-                    user.Characters[index].OcRoleIndex = expected;
+                    var expected = character.IsTestFixture ? 0 : ++liveIndex;
+                    if (character.OcRoleIndex == expected) continue;
+                    character.OcRoleIndex = expected;
                     changed = true;
                 }
-                counts[ownerId] = user.Characters.Count;
+                counts[ownerId] = liveIndex;
             }
 
             if (changed) await SaveUnsafeAsync(data);
@@ -214,8 +239,9 @@ internal sealed class CharacterStore
                 return false;
 
             user!.Characters.Remove(character);
-            for (var index = 0; index < user.Characters.Count; index++)
-                user.Characters[index].OcRoleIndex = index + 1;
+            var liveIndex = 0;
+            foreach (var remaining in user.Characters)
+                remaining.OcRoleIndex = remaining.IsTestFixture ? 0 : ++liveIndex;
             var server = data[guildId.ToString()];
             if (user.Characters.Count == 0) server.Remove(userId.ToString());
             if (server.Count == 0) data.Remove(guildId.ToString());

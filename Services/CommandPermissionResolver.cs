@@ -22,6 +22,7 @@ internal static class CommandPermissionResolver
             "scenetracker" => ResolveSceneTracker(root),
             "permissions" => ResolvePermissionAdmin(root),
             "siteadmin" => ResolveSiteAdmin(root),
+            "relationship" => ResolveRelationship(root),
             _ => []
         };
     }
@@ -43,6 +44,7 @@ internal static class CommandPermissionResolver
             "scenetracker" =>
                 ["scenetracker.create", "scenetracker.view", "scenetracker.history", "scenetracker.manage.own", "scenetracker.manage.any"],
             "permissions" => ["permissions.view", "permissions.manage"],
+            "relationship" => ["relationship.request", "relationship.respond", "relationship.remove", "relationship.view"],
             _ => []
         };
     }
@@ -108,6 +110,16 @@ internal static class CommandPermissionResolver
             "status" => ["site.view", "site.publish", "site.configure"],
             "publish" => ["site.publish", "site.configure"],
             "setup" or "autopublish" => ["site.configure"],
+            _ => []
+        };
+
+    private static IReadOnlyList<string> ResolveRelationship(SocketSlashCommandDataOption? subcommand) =>
+        subcommand?.Name switch
+        {
+            "request" => ["relationship.request"],
+            "requests" or "approve" or "decline" => ["relationship.respond"],
+            "remove" => ["relationship.remove"],
+            "view" => ["relationship.view"],
             _ => []
         };
 

@@ -9,8 +9,8 @@ Yoko uses an internal, per-server PEX-style permission system stored in `data/pe
 The first time a server checks permissions, Yoko seeds these role assignments:
 
 - **Admin** (`1541979162242195466`) receives `*`.
-- **Moderator** (`1541979611754135643`) receives character approval/edit/view/delete access, verification, auto-moderation viewing and approvals, the verification recheck, every scene-tracker permission, and permission viewing.
-- **Verified** (`1542018931894521887`) receives `/ping`, self-scoped character edit/view/delete, scene creation/view/history, and management of scenes in which they participate.
+- **Moderator** (`1541979611754135643`) receives character approval/edit/view/delete access, verification, auto-moderation viewing and approvals, the verification recheck, every scene-tracker permission, biological relationship access, and permission viewing.
+- **Verified** (`1542018931894521887`) receives `/ping`, self-scoped character edit/view/delete, scene creation/view/history, management of scenes in which they participate, and biological relationship access.
 
 Use `/permissions list` to see every recognized permission together with the roles and direct users that currently receive it, including inherited wildcard grants. `/permissions view permission` focuses on one permission, and `/permissions role role` inspects a role. Members with `permissions.manage` can use `/permissions grant`, `/permissions revoke`, `/permissions grant-user`, and `/permissions revoke-user`. Removing a seeded grant is persistent; restarting Yoko does not add it back. Keep at least one Discord Administrator available because that bypass cannot be removed from the JSON file.
 
@@ -52,6 +52,10 @@ Discord only controls visibility at the top-level slash-command name, not separa
 | `site.view` | `/siteadmin status` |
 | `site.publish` | `/siteadmin publish`; also permits `/siteadmin status` |
 | `site.configure` | `/siteadmin setup` and `/siteadmin autopublish`; also permits publishing and status |
+| `relationship.request` | `/relationship request` for one of your characters |
+| `relationship.respond` | `/relationship requests`, `/relationship approve`, `/relationship decline`, and replying `Accept` or `Decline` to your incoming request |
+| `relationship.remove` | `/relationship remove` for a direct relationship involving one of your characters |
+| `relationship.view` | `/relationship view` for direct and inferred biological relationships |
 
 Wildcard grants affect every matching permission in this table. For example, `character.*` grants every character and charadmin permission, while `character.configure.*` grants only the four charadmin configuration sections. The global `*` grants every current and future permission.
 
@@ -90,6 +94,31 @@ Each add-wizard run appends messages to the existing list. `/charadmin approveme
 After selecting a user, Discord autocompletes that user's available character names. Edit/remove commands also autocomplete the baseline fields and any custom fields already stored on the selected character.
 
 Every new character reference defaults to `link/sheet`; set its URL with the `reference` field. Region currently accepts text, with a dedicated validation point ready for the future region catalog.
+
+## Biological relationships
+
+Approved relationships are stored per server in the ignored local file `data/relationships.json`. Records use stable character `publicId` values, so character renames do not break them. A direct record stores one perspective and Yoko automatically supplies the inverse perspective—for example, biological parent ↔ biological child. Pending requests and Discord owner IDs remain local and are not exported to the public site.
+
+The initial biological catalog contains:
+
+- biological parent ↔ child;
+- biological sibling, full sibling, half sibling, and twin;
+- biological grandparent ↔ grandchild and great-grandparent ↔ great-grandchild;
+- biological aunt/uncle/pibling ↔ niece/nephew/nibling;
+- biological cousin; and
+- inferred biological ancestor ↔ descendant.
+
+Autocomplete recognizes neutral labels and aliases such as mother, father, son, daughter, brother, sister, aunt, uncle, niece, and nephew. When the selected pair already has a relationship implied by the family graph, that relationship is ranked first and marked **inferred from family graph**.
+
+- `/relationship request my-character user their-character relation` posts a request in the current channel. The receiving owner replies directly to that bot message with `Accept` or `Decline`.
+- `/relationship requests` privately lists incoming and outgoing requests.
+- `/relationship approve request` and `/relationship decline request` are command alternatives to replying.
+- `/relationship remove character relationship` removes an approved direct fact involving one of your characters.
+- `/relationship view user character` publicly shows direct relationships and background inferences, including the rule that produced each inference.
+
+Inference is recalculated from the complete approved graph rather than permanently stored. Current rules derive siblinghood from a shared parent, grandparent and great-grandparent chains, aunt/uncle and nibling relationships, cousins through sibling parents, and multi-generation ancestors/descendants. Removing a direct fact or deleting a character therefore cascades safely: every unsupported derived relationship disappears, while unrelated direct facts remain. Definitions and path rules are isolated in `Services/RelationshipCatalog.cs`, allowing later categories such as adopted, political, feudal, or succession relationships to use the same storage and graph engine.
+
+The local test server includes an eight-character **Vale family test graph** split between the two requested test accounts. Only eight direct facts are seeded, while sibling, grandparent, great-grandparent, pibling/nibling, cousin, ancestor, and descendant results must be inferred. These records are marked `isTestFixture`, remain available to relationship autocomplete, do not consume OC-role slots, and are excluded from GitHub Pages exports. Account mappings remain only in ignored local JSON and are not documented in the public repository.
 
 ## Overworld and scene tracking
 
