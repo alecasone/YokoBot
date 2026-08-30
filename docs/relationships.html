@@ -44,6 +44,13 @@
         <input id="focus-search" type="search" autocomplete="off" placeholder="Name or alias…" aria-controls="focus-results" aria-expanded="false">
         <div id="focus-results" class="focus-results" role="listbox" hidden></div>
       </div>
+      <fieldset class="layout-switcher">
+        <legend>Layout</legend>
+        <div>
+          <button type="button" data-layout="network" aria-pressed="true">Map</button>
+          <button type="button" data-layout="tree" aria-pressed="false">Family tree</button>
+        </div>
+      </fieldset>
       <label>
         <span>Relationship family</span>
         <select id="category-filter">
@@ -67,6 +74,7 @@
       <div id="map-stage" class="map-stage">
         <svg id="relationship-map" role="img" aria-label="Interactive character relationship map" tabindex="0">
           <g id="map-viewport">
+            <g id="map-guides"></g>
             <g id="map-edges"></g>
             <g id="map-edge-labels"></g>
             <g id="map-nodes"></g>
@@ -78,8 +86,8 @@
           <p>Characters will appear here as soon as approved relationships are published.</p>
         </div>
         <div class="map-legend" aria-label="Relationship map legend">
-          <span><i class="legend-line legend-line--direct"></i>Direct</span>
-          <span><i class="legend-line legend-line--inferred"></i>Inferred</span>
+          <span><i class="legend-line legend-line--direct"></i><b id="legend-direct">Direct</b></span>
+          <span><i class="legend-line legend-line--inferred"></i><b id="legend-inferred">Inferred</b></span>
         </div>
         <p class="map-hint">Drag to pan · Scroll to zoom · Right-click a character for actions</p>
       </div>

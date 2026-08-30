@@ -288,7 +288,7 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
   position: relative;
   z-index: 8;
   display: grid;
-  grid-template-columns: minmax(15rem, 1fr) minmax(13rem, 0.42fr) auto auto;
+  grid-template-columns: minmax(15rem, 1fr) auto minmax(12rem, 0.42fr) auto auto;
   align-items: end;
   gap: 0.85rem;
   padding: 0.85rem;
@@ -306,6 +306,42 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+.layout-switcher {
+  min-width: 12.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.layout-switcher legend {
+  margin-bottom: 0.45rem;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.layout-switcher div { display: flex; min-height: 2.8rem; }
+
+.layout-switcher button {
+  flex: 1;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: #11100f;
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.layout-switcher button + button { border-left: 0; }
+.layout-switcher button:hover { color: var(--ink); }
+.layout-switcher button[aria-pressed="true"] { border-color: var(--accent); color: #11100f; background: var(--accent); }
+.atlas-toolbar select:disabled { color: var(--accent); cursor: not-allowed; opacity: 0.72; }
 
 .focus-results {
   position: absolute;
@@ -408,6 +444,8 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
 
 .map-edge--direct { stroke: #b9c1bd; }
 .map-edge--inferred { stroke: var(--accent); stroke-dasharray: 5 6; }
+.map-edge--tree-parent { stroke: #d3dad6; stroke-width: 1.8; }
+.map-edge--tree-peer { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 7 6; }
 .map-edge.is-focused { opacity: 0.58; stroke-width: 1.7; }
 .map-edge.is-selected { opacity: 0.98; stroke-width: 2.3; }
 
@@ -421,6 +459,9 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
   letter-spacing: 0.02em;
   pointer-events: none;
 }
+
+.generation-guide { vector-effect: non-scaling-stroke; stroke: rgba(200, 169, 106, 0.16); stroke-dasharray: 2 7; }
+.generation-label { fill: rgba(200, 169, 106, 0.7); font-family: ui-monospace, "Cascadia Mono", monospace; font-size: 10px; letter-spacing: 0.12em; }
 
 .map-node { outline: none; cursor: pointer; }
 .map-node circle {
@@ -455,8 +496,11 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
 }
 
 .map-legend span { display: flex; align-items: center; gap: 0.4rem; }
+.map-legend b { font-weight: 400; }
 .legend-line { display: block; width: 1.8rem; border-top: 2px solid #b9c1bd; }
 .legend-line--inferred { border-color: var(--accent); border-top-style: dashed; }
+.map-stage.is-tree .legend-line--direct { border-color: #d3dad6; }
+.map-stage.is-tree .legend-line--inferred { border-color: var(--accent); border-top-style: dashed; }
 .map-hint { position: absolute; right: 0.8rem; bottom: 0.65rem; margin: 0; color: rgba(167,160,148,0.76); font-family: ui-monospace, monospace; font-size: 0.65rem; }
 
 .map-empty {
