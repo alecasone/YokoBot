@@ -18,6 +18,7 @@ const elements = {
   dialogDetails: document.querySelector("#dialog-details"),
   dialogProperties: document.querySelector("#dialog-properties"),
   dialogReference: document.querySelector("#dialog-reference"),
+  dialogRelationships: document.querySelector("#dialog-relationships"),
   dialogClose: document.querySelector("#dialog-close")
 };
 
@@ -127,6 +128,7 @@ function openCharacter(character, updateHistory) {
   elements.dialogReference.hidden = !reference;
   if (reference) elements.dialogReference.href = reference;
   else elements.dialogReference.removeAttribute("href");
+  elements.dialogRelationships.href = `./relationships.html?focus=${encodeURIComponent(character.publicId)}`;
 
   if (updateHistory) {
     const url = new URL(window.location.href);
@@ -231,4 +233,3 @@ function formatDate(value) {
     ? "Unknown"
     : new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" }).format(date);
 }
-
