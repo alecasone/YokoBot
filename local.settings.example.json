@@ -1,0 +1,6 @@
+{
+  "discordBotToken": "paste-discord-bot-token-here",
+  "discordTestGuildId": "paste-server-id-here",
+  "discordDefaultChannelId": "paste-channel-id-here",
+  "githubPagesToken": "paste-fine-grained-github-token-here"
+}

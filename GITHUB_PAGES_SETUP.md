@@ -50,7 +50,7 @@ Create a fine-grained personal access token in GitHub:
 5. Under **Repository permissions**, grant **Contents: Read and write**. No other repository permission is required.
 6. Choose an expiration, generate the token, and copy it immediately.
 
-The VS Code launch configuration now asks for this value as a password prompt. It passes the token to the process as `GITHUB_PAGES_TOKEN` without writing it into the repository. An empty response is safe while publishing is not in use.
+Paste this value into `githubPagesToken` in the ignored `local.settings.json` file. Yoko loads it into the process without committing it to the repository. The optional **Run Yoko Bot (prompt for secrets)** VS Code configuration can still pass it as `GITHUB_PAGES_TOKEN` instead.
 
 ## Connect Yoko
 

@@ -51,10 +51,22 @@ internal static class Program
 
     public static async Task Main()
     {
+        try
+        {
+            LocalSettings.LoadAndApply(Path.Combine(Environment.CurrentDirectory, "local.settings.json"));
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Local settings error: {exception.Message}");
+            Environment.ExitCode = 1;
+            return;
+        }
+
         var token = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN");
         if (string.IsNullOrWhiteSpace(token))
         {
-            Console.Error.WriteLine("DISCORD_BOT_TOKEN is not set. See README.md for setup instructions.");
+            Console.Error.WriteLine(
+                "Discord bot token is missing. Add discordBotToken to local.settings.json or set DISCORD_BOT_TOKEN.");
             Environment.ExitCode = 1;
             return;
         }

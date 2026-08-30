@@ -5,6 +5,7 @@ obj/
 .vs/
 .vscode/*.user.json
 .env
+local.settings.json
 *.user
 data/*.json
 data/*.tmp

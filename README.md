@@ -185,11 +185,25 @@ Use `/verifyadmin successmessage channel:#general` to start a private setup prom
 ## Run in VS Code
 
 1. Install the recommended **C# Dev Kit** extension when prompted.
-2. Press `F5` and select **Run Yoko Bot**.
-3. Paste the bot token, test server ID, and optional fine-grained GitHub Pages token into the prompts.
-4. Once the console says the command was registered, use `/ping` in the test server.
+2. Open the ignored `local.settings.json` file in the repository root.
+3. Paste the Discord bot token and GitHub token. The current test server ID is already filled in; add a default channel ID when one is needed.
+4. Press `F5` and select **Run Yoko Bot**. This launch option reads the file without prompting.
+5. Once the console says the command was registered, use `/ping` in the test server.
 
-The token is passed only to the launched process; it is not written into the repository.
+The file has this shape:
+
+```json
+{
+  "discordBotToken": "paste-discord-bot-token-here",
+  "discordTestGuildId": "paste-server-id-here",
+  "discordDefaultChannelId": "paste-channel-id-here",
+  "githubPagesToken": "paste-fine-grained-github-token-here"
+}
+```
+
+`discordTestGuildId` must be the **server ID**, not a channel ID; it controls instant slash-command registration. `discordDefaultChannelId` is stored separately for upcoming channel-default behavior and is not used by a command yet. `local.settings.json` is excluded by `.gitignore`. A safe tracked template is available in `local.settings.example.json`.
+
+Environment variables override local-file values. Select **Run Yoko Bot (prompt for secrets)** if you prefer the original password prompts.
 
 ## Run from PowerShell
 
