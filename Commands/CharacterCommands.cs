@@ -328,7 +328,6 @@ internal static class CharacterCommands
         IReadOnlyList<ulong> ocRoleIds)
     {
         var text = new StringBuilder($"**{character.Name}** — {owner.Mention}\n");
-        if (character.IsTestFixture) text.AppendLine("Test fixture: **yes** — excluded from OC roles and the public site");
         if (character.OcRoleIndex > 0)
         {
             var role = character.OcRoleIndex <= ocRoleIds.Count
