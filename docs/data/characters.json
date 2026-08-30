@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-08-30T22:40:15.5287003+00:00",
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-30T23:21:07.8666723+00:00",
   "characters": [
     {
       "publicId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
@@ -176,6 +176,566 @@
         "eyecolor": "Blue",
         "hair-colour": "Blond"
       }
+    }
+  ],
+  "relationshipTypes": [
+    {
+      "id": "biological-ancestor",
+      "displayName": "Biological ancestor",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-descendant",
+      "displayName": "Biological descendant",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-grandchild",
+      "displayName": "Biological grandchild",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-grandparent",
+      "displayName": "Biological grandparent",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-great-grandchild",
+      "displayName": "Biological great-grandchild",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-great-grandparent",
+      "displayName": "Biological great-grandparent",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-twin",
+      "displayName": "Biological twin",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-half-sibling",
+      "displayName": "Half biological sibling",
+      "category": "Biological"
+    }
+  ],
+  "relationships": [
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-ancestor",
+      "displayName": "Biological ancestor",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-grandparent",
+      "displayName": "Biological grandparent",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-ancestor",
+      "displayName": "Biological ancestor",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-grandparent",
+      "displayName": "Biological grandparent",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-ancestor",
+      "displayName": "Biological ancestor",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-grandparent",
+      "displayName": "Biological grandparent",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "typeId": "biological-ancestor",
+      "displayName": "Biological ancestor",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological great-grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "targetCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "typeId": "biological-great-grandparent",
+      "displayName": "Biological great-grandparent",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "three biological parent generations"
+    },
+    {
+      "sourceCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "targetCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "both characters share a biological parent"
+    },
+    {
+      "sourceCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "targetCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "both characters share a biological parent"
+    },
+    {
+      "sourceCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "targetCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "typeId": "biological-ancestor",
+      "displayName": "Biological ancestor",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "targetCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "typeId": "biological-grandparent",
+      "displayName": "Biological grandparent",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "28d7305d-016b-47b9-af20-e67faa5ed34a",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-half-sibling",
+      "displayName": "Half biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "28d7305d-016b-47b9-af20-e67faa5ed34a",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "half siblings are biological siblings"
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-descendant",
+      "displayName": "Biological descendant",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-grandchild",
+      "displayName": "Biological grandchild",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "typeId": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-twin",
+      "displayName": "Biological twin",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "twins are biological siblings"
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "their biological parents are siblings"
+    },
+    {
+      "sourceCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "targetCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-descendant",
+      "displayName": "Biological descendant",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-grandchild",
+      "displayName": "Biological grandchild",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "typeId": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-twin",
+      "displayName": "Biological twin",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "twins are biological siblings"
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "typeId": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "their biological parents are siblings"
+    },
+    {
+      "sourceCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "targetCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "typeId": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-descendant",
+      "displayName": "Biological descendant",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-grandchild",
+      "displayName": "Biological grandchild",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "typeId": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "28d7305d-016b-47b9-af20-e67faa5ed34a",
+      "typeId": "biological-half-sibling",
+      "displayName": "Half biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "28d7305d-016b-47b9-af20-e67faa5ed34a",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "half siblings are biological siblings"
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "their biological parents are siblings"
+    },
+    {
+      "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "their biological parents are siblings"
+    },
+    {
+      "sourceCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-descendant",
+      "displayName": "Biological descendant",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological great-grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "targetCharacterId": "0817f0be-00b8-45d1-a938-251d7a224ab5",
+      "typeId": "biological-great-grandchild",
+      "displayName": "Biological great-grandchild",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "three biological parent generations"
+    },
+    {
+      "sourceCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "targetCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "typeId": "biological-descendant",
+      "displayName": "Biological descendant",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "targetCharacterId": "12c57f20-eb81-49c9-961f-3ab359c08fdb",
+      "typeId": "biological-grandchild",
+      "displayName": "Biological grandchild",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
+    },
+    {
+      "sourceCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "targetCharacterId": "2d49f04f-b211-4d4f-91cd-d08b8b9d2dbf",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "targetCharacterId": "509064a2-0b6a-4e4b-902a-c7ce7b9dc4c5",
+      "typeId": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
     }
   ]
 }
