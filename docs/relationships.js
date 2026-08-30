@@ -1,5 +1,12 @@
 const SVG_NS = "http://www.w3.org/2000/svg";
 const regionPalette = ["#c8a96a", "#8ba6a9", "#a17f9b", "#9ea86b", "#c27f68", "#7892b2", "#b29469"];
+const parentTypeIds = new Set(["biological-parent", "biological-child"]);
+const peerTypeIds = new Set([
+  "biological-sibling",
+  "biological-full-sibling",
+  "biological-half-sibling",
+  "biological-twin"
+]);
 
 const state = {
   characters: [],
@@ -11,8 +18,11 @@ const state = {
   contextId: null,
   showInferred: true,
   category: "",
+  layoutMode: "network",
   positions: new Map(),
   pairs: [],
+  graphPairs: [],
+  generationRows: [],
   pan: { x: 0, y: 0 },
   zoom: 1,
   pointer: null,
@@ -26,6 +36,7 @@ const elements = {
   status: document.querySelector("#atlas-status"),
   search: document.querySelector("#focus-search"),
   searchResults: document.querySelector("#focus-results"),
+  layoutButtons: [...document.querySelectorAll("[data-layout]")],
   category: document.querySelector("#category-filter"),
   inferred: document.querySelector("#show-inferred"),
   fit: document.querySelector("#fit-map"),
@@ -34,6 +45,7 @@ const elements = {
   stage: document.querySelector("#map-stage"),
   svg: document.querySelector("#relationship-map"),
   viewport: document.querySelector("#map-viewport"),
+  guides: document.querySelector("#map-guides"),
   edges: document.querySelector("#map-edges"),
   edgeLabels: document.querySelector("#map-edge-labels"),
   nodes: document.querySelector("#map-nodes"),
@@ -47,6 +59,8 @@ const elements = {
   connectionList: document.querySelector("#connection-list"),
   ledgerSummary: document.querySelector("#ledger-summary"),
   relationshipList: document.querySelector("#relationship-list"),
+  legendDirect: document.querySelector("#legend-direct"),
+  legendInferred: document.querySelector("#legend-inferred"),
   menu: document.querySelector("#node-menu"),
   menuTitle: document.querySelector("#node-menu-title")
 };
@@ -88,6 +102,8 @@ function bindEvents() {
   elements.search.addEventListener("keydown", handleSearchKeydown);
   elements.search.addEventListener("focus", () => renderSearchResults(elements.search.value));
   elements.search.addEventListener("blur", () => setTimeout(hideSearchResults, 120));
+  for (const button of elements.layoutButtons)
+    button.addEventListener("click", () => setLayoutMode(button.dataset.layout));
   elements.category.addEventListener("change", () => {
     state.category = elements.category.value;
     refreshView(true);
@@ -124,7 +140,9 @@ function bindEvents() {
 function refreshView(relayout) {
   const visible = visibleRelationships();
   state.pairs = buildPairs(visible);
-  if (relayout) layoutGraph(state.pairs);
+  state.graphPairs = state.layoutMode === "tree" ? buildTreePairs(visible) : state.pairs;
+  updateLayoutUi();
+  if (relayout) layoutGraph(state.graphPairs);
   renderGraph();
   renderInspector(visible);
   renderLedger();
@@ -137,6 +155,10 @@ function refreshView(relayout) {
     elements.status.textContent = "Characters are charted, but no public relationships have been published yet.";
   } else if (state.pairs.length === 0) {
     elements.status.textContent = "No connections match the current filters.";
+  } else if (state.layoutMode === "tree") {
+    elements.status.textContent = state.graphPairs.length
+      ? `${state.positions.size.toLocaleString()} characters arranged from older generations to younger · ${state.graphPairs.length.toLocaleString()} structural ${pluralize(state.graphPairs.length, "tie")}.`
+      : "No direct biological parent, sibling, or twin relationships are available for a family tree.";
   } else {
     const inferredCount = state.pairs.filter(pair => pair.isInferred).length;
     elements.status.textContent = `${state.pairs.length.toLocaleString()} visible ${pluralize(state.pairs.length, "connection")} · ${inferredCount.toLocaleString()} inferred.`;
@@ -163,9 +185,23 @@ function buildPairs(relationships) {
   }));
 }
 
+function buildTreePairs(relationships) {
+  return buildPairs(relationships.filter(relationship =>
+    relationship.category === "Biological" &&
+    !relationship.isInferred &&
+    (parentTypeIds.has(relationship.typeId) || peerTypeIds.has(relationship.typeId))))
+    .map(pair => ({ ...pair, treeKind: parentChildForPair(pair) ? "parent" : "peer" }));
+}
+
 function layoutGraph(pairs) {
   state.positions = new Map();
+  state.generationRows = [];
   if (state.characters.length === 0) return;
+
+  if (state.layoutMode === "tree") {
+    layoutFamilyTree(pairs);
+    return;
+  }
 
   const focusId = state.charactersById.has(state.focusId) ? state.focusId : state.characters[0].publicId;
   state.focusId = focusId;
@@ -192,20 +228,20 @@ function layoutGraph(pairs) {
     const ids = state.characters
       .filter(character => distance.get(character.publicId) === level)
       .map(character => character.publicId);
-    placeAcrossRings(ids, 165 + (level - 1) * 145, level * 0.47);
+    placeAcrossRings(ids, 235 + (level - 1) * 205, level * 0.47);
   }
 
   const disconnected = state.characters
     .filter(character => !distance.has(character.publicId))
     .map(character => character.publicId);
-  placeAcrossRings(disconnected, Math.max(345, 175 + maxDistance * 160), 0.18);
+  placeAcrossRings(disconnected, Math.max(490, 255 + maxDistance * 220), 0.18);
 }
 
 function placeAcrossRings(ids, firstRadius, offset) {
-  const perRing = 16;
+  const perRing = 12;
   for (let start = 0; start < ids.length; start += perRing) {
     const ring = ids.slice(start, start + perRing);
-    const radius = firstRadius + Math.floor(start / perRing) * 125;
+    const radius = firstRadius + Math.floor(start / perRing) * 180;
     ring.forEach((id, index) => {
       const angle = offset - Math.PI / 2 + (index * Math.PI * 2) / ring.length;
       state.positions.set(id, { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
@@ -213,30 +249,129 @@ function placeAcrossRings(ids, firstRadius, offset) {
   }
 }
 
+function layoutFamilyTree(pairs) {
+  const nodeIds = new Set(pairs.flatMap(pair => [pair.a, pair.b]));
+  if (nodeIds.size === 0 && state.charactersById.has(state.selectedId)) nodeIds.add(state.selectedId);
+  if (nodeIds.size === 0) return;
+
+  const parents = new Map([...nodeIds].map(id => [id, id]));
+  const find = id => {
+    let root = id;
+    while (parents.get(root) !== root) root = parents.get(root);
+    while (parents.get(id) !== id) {
+      const next = parents.get(id);
+      parents.set(id, root);
+      id = next;
+    }
+    return root;
+  };
+  const union = (left, right) => {
+    const leftRoot = find(left);
+    const rightRoot = find(right);
+    if (leftRoot !== rightRoot) parents.set(rightRoot, leftRoot);
+  };
+
+  for (const pair of pairs.filter(pair => pair.treeKind === "peer")) union(pair.a, pair.b);
+
+  const groups = new Map();
+  for (const id of nodeIds) {
+    const root = find(id);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(id);
+  }
+
+  const groupEdges = new Map();
+  for (const pair of pairs) {
+    const relation = parentChildForPair(pair);
+    if (!relation) continue;
+    const parentGroup = find(relation.parent);
+    const childGroup = find(relation.child);
+    if (parentGroup === childGroup) continue;
+    groupEdges.set(`${parentGroup}|${childGroup}`, { parent: parentGroup, child: childGroup });
+  }
+
+  const outgoing = new Map([...groups.keys()].map(id => [id, new Set()]));
+  const incoming = new Map([...groups.keys()].map(id => [id, 0]));
+  for (const edge of groupEdges.values()) {
+    if (outgoing.get(edge.parent).has(edge.child)) continue;
+    outgoing.get(edge.parent).add(edge.child);
+    incoming.set(edge.child, incoming.get(edge.child) + 1);
+  }
+
+  const rank = new Map([...groups.keys()].map(id => [id, 0]));
+  const queue = [...groups.keys()]
+    .filter(id => incoming.get(id) === 0)
+    .sort((left, right) => compareAgeValues(oldestAge(groups.get(left)), oldestAge(groups.get(right))));
+  for (let index = 0; index < queue.length; index += 1) {
+    const current = queue[index];
+    for (const child of outgoing.get(current)) {
+      rank.set(child, Math.max(rank.get(child), rank.get(current) + 1));
+      incoming.set(child, incoming.get(child) - 1);
+      if (incoming.get(child) === 0) queue.push(child);
+    }
+  }
+
+  const rows = new Map();
+  for (const [groupId, ids] of groups) {
+    const row = rank.get(groupId) ?? 0;
+    if (!rows.has(row)) rows.set(row, []);
+    rows.get(row).push({ ids, oldest: oldestAge(ids) });
+  }
+
+  const horizontalGap = 265;
+  const verticalGap = 235;
+  for (const [row, rowGroups] of [...rows].sort(([left], [right]) => left - right)) {
+    const ids = rowGroups
+      .sort((left, right) => compareAgeValues(left.oldest, right.oldest) || characterName(left.ids[0]).localeCompare(characterName(right.ids[0])))
+      .flatMap(group => group.ids.sort(compareCharactersOldestFirst));
+    ids.forEach((id, index) => state.positions.set(id, {
+      x: (index - (ids.length - 1) / 2) * horizontalGap,
+      y: row * verticalGap
+    }));
+    state.generationRows.push({ rank: row, y: row * verticalGap, ids });
+  }
+}
+
+function parentChildForPair(pair) {
+  for (const record of pair.records.filter(record => !record.isInferred)) {
+    if (record.typeId === "biological-parent")
+      return { parent: record.sourceCharacterId, child: record.targetCharacterId };
+    if (record.typeId === "biological-child")
+      return { parent: record.targetCharacterId, child: record.sourceCharacterId };
+  }
+  return null;
+}
+
 function renderGraph() {
+  elements.guides.replaceChildren();
   elements.edges.replaceChildren();
   elements.edgeLabels.replaceChildren();
   elements.nodes.replaceChildren();
 
-  for (const pair of state.pairs) {
+  renderGenerationGuides();
+  for (const pair of state.graphPairs) {
     const source = state.positions.get(pair.a);
     const target = state.positions.get(pair.b);
     if (!source || !target) continue;
     const selected = pair.a === state.selectedId || pair.b === state.selectedId;
     const focused = pair.a === state.focusId || pair.b === state.focusId;
+    const relationshipClass = state.layoutMode === "tree"
+      ? pair.treeKind === "parent" ? "map-edge--tree-parent" : "map-edge--tree-peer"
+      : pair.isInferred ? "map-edge--inferred" : "map-edge--direct";
     const line = svgElement("line", {
       x1: source.x,
       y1: source.y,
       x2: target.x,
       y2: target.y,
-      class: `map-edge ${pair.isInferred ? "map-edge--inferred" : "map-edge--direct"}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
+      class: `map-edge ${relationshipClass}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
     });
     elements.edges.append(line);
 
     if (selected) {
+      const labelPoint = edgeLabelPoint(pair, source, target);
       const label = svgElement("text", {
-        x: (source.x + target.x) / 2,
-        y: (source.y + target.y) / 2 - 9,
+        x: labelPoint.x,
+        y: labelPoint.y,
         class: "map-edge-label",
         "text-anchor": "middle"
       });
@@ -251,6 +386,37 @@ function renderGraph() {
     elements.nodes.append(createNode(character, position));
   }
   applyTransform();
+}
+
+function renderGenerationGuides() {
+  if (state.layoutMode !== "tree" || state.generationRows.length === 0) return;
+  const points = [...state.positions.values()];
+  const minX = Math.min(...points.map(point => point.x)) - 110;
+  const maxX = Math.max(...points.map(point => point.x)) + 110;
+  const lastIndex = state.generationRows.length - 1;
+  state.generationRows.forEach((row, index) => {
+    const guideY = row.y - 92;
+    const line = svgElement("line", { x1: minX, y1: guideY, x2: maxX, y2: guideY, class: "generation-guide" });
+    const label = svgElement("text", { x: minX, y: guideY - 12, class: "generation-label" });
+    const direction = index === 0 ? " · older" : index === lastIndex ? " · younger" : "";
+    label.textContent = `GENERATION ${row.rank + 1}${direction}`;
+    elements.guides.append(line, label);
+  });
+}
+
+function edgeLabelPoint(pair, source, target) {
+  const selectedIsSource = pair.a === state.selectedId;
+  const origin = selectedIsSource ? source : target;
+  const destination = selectedIsSource ? target : source;
+  const ratio = state.layoutMode === "tree" ? 0.5 : 0.64;
+  const dx = destination.x - origin.x;
+  const dy = destination.y - origin.y;
+  const length = Math.max(1, Math.hypot(dx, dy));
+  const side = stableHash(pair.key) % 2 === 0 ? 1 : -1;
+  return {
+    x: origin.x + dx * ratio + (-dy / length) * 12 * side,
+    y: origin.y + dy * ratio + (dx / length) * 12 * side - 8
+  };
 }
 
 function createNode(character, position) {
@@ -454,8 +620,33 @@ function hideSearchResults() {
   elements.search.setAttribute("aria-expanded", "false");
 }
 
+function setLayoutMode(layout) {
+  if (layout !== "network" && layout !== "tree") return;
+  state.layoutMode = layout;
+  if (layout === "tree" && [...elements.category.options].some(option => option.value === "Biological")) {
+    state.category = "Biological";
+    elements.category.value = "Biological";
+  }
+  refreshView(true);
+  requestAnimationFrame(fitMap);
+}
+
+function updateLayoutUi() {
+  const isTree = state.layoutMode === "tree";
+  for (const button of elements.layoutButtons)
+    button.setAttribute("aria-pressed", String(button.dataset.layout === state.layoutMode));
+  elements.category.disabled = isTree;
+  elements.stage.classList.toggle("is-tree", isTree);
+  elements.legendDirect.textContent = isTree ? "Parent → child" : "Direct";
+  elements.legendInferred.textContent = isTree ? "Sibling / twin" : "Inferred";
+}
+
 function setFocus(characterId, updateHistory = true) {
   if (!state.charactersById.has(characterId)) return;
+  if (state.layoutMode === "tree") {
+    const treeIds = new Set(buildTreePairs(visibleRelationships()).flatMap(pair => [pair.a, pair.b]));
+    if (!treeIds.has(characterId)) state.layoutMode = "network";
+  }
   state.focusId = characterId;
   state.selectedId = characterId;
   if (updateHistory) writeFocusToUrl(characterId);
@@ -579,9 +770,11 @@ function fitMap() {
   const rect = elements.svg.getBoundingClientRect();
   if (!rect.width || !rect.height || state.positions.size === 0) return;
   const points = [...state.positions.values()];
-  const minX = Math.min(...points.map(point => point.x)) - 70;
-  const maxX = Math.max(...points.map(point => point.x)) + 70;
-  const minY = Math.min(...points.map(point => point.y)) - 80;
+  const horizontalMargin = state.layoutMode === "tree" ? 155 : 70;
+  const topMargin = state.layoutMode === "tree" ? 140 : 80;
+  const minX = Math.min(...points.map(point => point.x)) - horizontalMargin;
+  const maxX = Math.max(...points.map(point => point.x)) + horizontalMargin;
+  const minY = Math.min(...points.map(point => point.y)) - topMargin;
   const maxY = Math.max(...points.map(point => point.y)) + 80;
   const width = Math.max(160, maxX - minX);
   const height = Math.max(160, maxY - minY);
@@ -708,6 +901,33 @@ function searchableName(character) {
 
 function characterName(characterId) {
   return state.charactersById.get(characterId)?.name ?? "Unknown character";
+}
+
+function oldestAge(characterIds) {
+  return Math.max(...characterIds.map(characterAge));
+}
+
+function characterAge(characterId) {
+  const match = String(state.charactersById.get(characterId)?.age ?? "").match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : Number.NEGATIVE_INFINITY;
+}
+
+function compareCharactersOldestFirst(leftId, rightId) {
+  return compareAgeValues(characterAge(leftId), characterAge(rightId)) ||
+    characterName(leftId).localeCompare(characterName(rightId));
+}
+
+function compareAgeValues(left, right) {
+  if (left === right) return 0;
+  if (!Number.isFinite(left)) return 1;
+  if (!Number.isFinite(right)) return -1;
+  return right - left;
+}
+
+function stableHash(value) {
+  let hash = 0;
+  for (const character of value) hash = ((hash << 5) - hash + character.charCodeAt(0)) | 0;
+  return Math.abs(hash);
 }
 
 function colorForRegion(region) {
