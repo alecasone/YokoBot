@@ -17,6 +17,10 @@ internal static class Program
     private static readonly PermissionStore PermissionSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "permissions.json"));
     private static readonly PermissionService Permissions = new(PermissionSettings);
     private static readonly PublicIdentityStore PublicIdentities = new(Path.Combine(Environment.CurrentDirectory, "data", "public-identities.json"));
+    private static readonly SiteSettingsStore SiteSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "site-settings.json"));
+    private static readonly PublicSiteExporter SiteExporter = new(Characters);
+    private static readonly GitHubContentsClient GitHubPages = new();
+    private static readonly SitePublicationService SitePublisher = new(SiteSettings, SiteExporter, GitHubPages);
     private static readonly string[] Rooms =
     {
         "ATTIC", "BASEMENT", "BEDROOM", "CELLAR", "HALLWAY", "KITCHEN", "LIBRARY", "PANTRY"
@@ -57,6 +61,7 @@ internal static class Program
         Client.Ready += RegisterCommandsAsync;
         Client.Ready += CharacterRoles.StartAsync;
         Client.Ready += AutoModerator.StartAsync;
+        Client.Ready += SitePublisher.StartAsync;
         Client.UserJoined += AutoModerator.HandleUserJoinedAsync;
         Client.SlashCommandExecuted += HandleSlashCommandAsync;
         Client.AutocompleteExecuted += HandleAutocompleteAsync;
@@ -66,6 +71,7 @@ internal static class Program
         await Client.StartAsync();
         await ShutdownSignal.Task;
         AutoModerator.Stop();
+        SitePublisher.Stop();
         await Client.StopAsync();
         await Client.LogoutAsync();
     }
@@ -87,7 +93,8 @@ internal static class Program
         ApplicationCommandProperties[] commands =
             [pingCommand, shutdownCommand, .. CharacterCommands.Build(), CharacterAdminCommands.Build(),
              AutoModerationCommands.Build(), VerificationCommands.VerifyCommand(), VerificationCommands.AdminCommand(),
-             DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build(), PermissionCommands.Build()];
+             DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build(), PermissionCommands.Build(),
+             SiteAdminCommands.Build()];
 
         var testGuildIdText = Environment.GetEnvironmentVariable("DISCORD_TEST_GUILD_ID");
         if (ulong.TryParse(testGuildIdText, out var testGuildId))
@@ -117,7 +124,7 @@ internal static class Program
                 await PerformShutdownAsync(command);
                 break;
             case "character":
-                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings, CharacterRoles);
+                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings, CharacterRoles, SitePublisher);
                 break;
             case "charadmin":
                 await CharacterAdminCommands.HandleAsync(command, CharacterSettings, CharacterRoles);
@@ -142,6 +149,9 @@ internal static class Program
                 break;
             case "permissions":
                 await PermissionCommands.HandleAsync(command, PermissionSettings);
+                break;
+            case "siteadmin":
+                await SiteAdminCommands.HandleAsync(command, SiteSettings, SitePublisher);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -251,6 +261,6 @@ internal static class Program
         if (await AutoModerationCommands.HandleWizardMessageAsync(message, AutoModerationRules)) return;
         if (await VerificationCommands.HandleWizardMessageAsync(message, VerificationSettings)) return;
         if (await CharacterAdminCommands.HandleWizardMessageAsync(message, CharacterSettings, CharacterRoles)) return;
-        await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles);
+        await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles, SitePublisher);
     }
 }

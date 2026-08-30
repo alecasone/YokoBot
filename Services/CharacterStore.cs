@@ -76,6 +76,19 @@ internal sealed class CharacterStore
         finally { _gate.Release(); }
     }
 
+    public async Task<IReadOnlyList<Character>> GetAllAsync(ulong guildId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync(guildId);
+            return data.TryGetValue(guildId.ToString(), out var server)
+                ? server.Values.SelectMany(user => user.Characters).ToArray()
+                : [];
+        }
+        finally { _gate.Release(); }
+    }
+
     public async Task<IReadOnlyDictionary<ulong, int>> ReindexOcRolesAsync(ulong guildId, ulong? userId = null)
     {
         await _gate.WaitAsync();

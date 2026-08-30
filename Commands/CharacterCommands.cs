@@ -136,7 +136,8 @@ internal static class CharacterCommands
         SocketSlashCommand command,
         CharacterStore store,
         CharacterSettingsStore settings,
-        CharacterRoleService characterRoles)
+        CharacterRoleService characterRoles,
+        SitePublicationService sitePublisher)
     {
         if (command.GuildId is not { } guildId)
         {
@@ -182,6 +183,7 @@ internal static class CharacterCommands
                         suppliedFields[prefillField] = suppliedValue;
                     }
                 }
+                await sitePublisher.QueueAsync(guildId);
 
                 var remainingFields = new List<FilloutField>();
                 foreach (var property in await settings.GetDefaultPropertiesAsync(guildId))
@@ -208,6 +210,7 @@ internal static class CharacterCommands
                 var field = (string)Option(subcommand.Options, "field").Value;
                 var value = (string)Option(subcommand.Options, "value").Value;
                 var edited = await store.SetFieldAsync(guildId, user.Id, characterName, field, value);
+                if (edited) await sitePublisher.QueueAsync(guildId);
                 await command.RespondAsync(edited
                     ? $"Set **{field}** on **{characterName}** to `{value}`."
                     : "Character not found.", ephemeral: true);
@@ -215,6 +218,7 @@ internal static class CharacterCommands
             case "remove-field":
                 var removedField = (string)Option(subcommand.Options, "field").Value;
                 var removed = await store.RemoveFieldAsync(guildId, user.Id, characterName, removedField);
+                if (removed) await sitePublisher.QueueAsync(guildId);
                 await command.RespondAsync(removed
                     ? $"Removed **{removedField}** from **{characterName}**."
                     : "Character or property not found.", ephemeral: true);
@@ -249,13 +253,14 @@ internal static class CharacterCommands
     public static async Task HandleFilloutMessageAsync(
         SocketMessage message,
         CharacterStore store,
-        CharacterRoleService characterRoles)
+        CharacterRoleService characterRoles,
+        SitePublicationService sitePublisher)
     {
         if (message.Author.IsBot) return;
 
         if (DeleteSessions.TryGetValue((message.Channel.Id, message.Author.Id), out var deletion))
         {
-            await HandleDeleteConfirmationAsync(message, store, characterRoles, deletion);
+            await HandleDeleteConfirmationAsync(message, store, characterRoles, sitePublisher, deletion);
             return;
         }
 
@@ -276,7 +281,10 @@ internal static class CharacterCommands
 
         var field = session.Fields[session.FieldIndex].Field;
         if (!string.IsNullOrWhiteSpace(reply) && !reply.Equals("skip", StringComparison.OrdinalIgnoreCase))
-            await store.SetFieldAsync(session.GuildId, session.OwnerId, session.CharacterName, field, reply);
+        {
+            var changed = await store.SetFieldAsync(session.GuildId, session.OwnerId, session.CharacterName, field, reply);
+            if (changed) await sitePublisher.QueueAsync(session.GuildId);
+        }
 
         session.FieldIndex++;
         if (session.FieldIndex >= session.Fields.Length)
@@ -393,6 +401,7 @@ internal static class CharacterCommands
         SocketMessage message,
         CharacterStore store,
         CharacterRoleService characterRoles,
+        SitePublicationService sitePublisher,
         DeleteSession session)
     {
         var reply = message.Content.Trim();
@@ -419,6 +428,7 @@ internal static class CharacterCommands
         var roleSync = deleted
             ? await characterRoles.SyncMemberAsync(session.GuildId, session.OwnerId)
             : null;
+        if (deleted) await sitePublisher.QueueAsync(session.GuildId);
         DeleteSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
         await session.Interaction.ModifyOriginalResponseAsync(properties => properties.Content = deleted
             ? $"**{session.CharacterName}** and all of its stored data were permanently deleted." +

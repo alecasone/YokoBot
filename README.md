@@ -49,14 +49,19 @@ Discord only controls visibility at the top-level slash-command name, not separa
 | `scenetracker.manage.any` | The same scene-management commands for any scene, without needing to participate |
 | `permissions.view` | `/permissions list`, `/permissions view`, and `/permissions role` |
 | `permissions.manage` | `/permissions grant`, `/permissions revoke`, `/permissions grant-user`, and `/permissions revoke-user`; also permits all permission-viewing commands |
+| `site.view` | `/siteadmin status` |
+| `site.publish` | `/siteadmin publish`; also permits `/siteadmin status` |
+| `site.configure` | `/siteadmin setup` and `/siteadmin autopublish`; also permits publishing and status |
 
 Wildcard grants affect every matching permission in this table. For example, `character.*` grants every character and charadmin permission, while `character.configure.*` grants only the four charadmin configuration sections. The global `*` grants every current and future permission.
 
 ## Public character archive
 
-The GitHub Pages scaffold in `docs/` is a searchable master directory built from sanitized character-only JSON. It intentionally excludes Discord usernames and IDs, verification state, roles, moderation data, and private administrative metadata. Follow `GITHUB_PAGES_SETUP.md` to preview it locally and publish it from this repository's `main` branch and `/docs` folder.
+The GitHub Pages scaffold in `docs/` is a searchable master directory built from sanitized character-only JSON. It intentionally excludes Discord usernames and IDs, verification state, roles, moderation data, and private administrative metadata. Follow `GITHUB_PAGES_SETUP.md` to preview it locally and publish it from the dedicated `pages` branch and `/docs` folder. Keeping bot-generated data commits off `main` prevents them from interfering with normal source-code work.
 
-Characters have stable random `publicId` values, so renames do not break public links. Renaming a character automatically preserves the previous name as an alias; `/character edit` can also set the `aliases` field from a comma-separated list, and `/character remove-field` can clear it. Discord users receive separate stable random IDs in the ignored local file `data/public-identities.json`; the private Discord-ID mapping is not exported to Pages. The current directory uses fabricated sample records until the sanitized publisher is connected.
+Characters have stable random `publicId` values, so renames do not break public links. Renaming a character automatically preserves the previous name as an alias; `/character edit` can also set the `aliases` field from a comma-separated list, and `/character remove-field` can clear it. Discord users receive separate stable random IDs in the ignored local file `data/public-identities.json`; the private Discord-ID mapping is not exported to Pages.
+
+`/siteadmin setup` configures the repository, branch, JSON path, and public URL. `/siteadmin publish` publishes one complete sanitized snapshot immediately, `/siteadmin autopublish` controls automatic publication, and `/siteadmin status` reports pending changes, token availability, the last attempt, the last successful commit, and any error. Character approval, approval-fillout values, edits, removed fields, aliases, renames, and confirmed deletion all mark the snapshot dirty. Automatic publishing waits 20 seconds after the most recent change so a burst of edits becomes one commit.
 
 ## Character workflow
 
@@ -152,7 +157,7 @@ Use `/verifyadmin successmessage channel:#general` to start a private setup prom
 
 1. Install the recommended **C# Dev Kit** extension when prompted.
 2. Press `F5` and select **Run Yoko Bot**.
-3. Paste the bot token into the password prompt and the test server ID into the next prompt.
+3. Paste the bot token, test server ID, and optional fine-grained GitHub Pages token into the prompts.
 4. Once the console says the command was registered, use `/ping` in the test server.
 
 The token is passed only to the launched process; it is not written into the repository.
@@ -162,6 +167,7 @@ The token is passed only to the launched process; it is not written into the rep
 ```powershell
 $env:DISCORD_BOT_TOKEN = "paste-token-here"
 $env:DISCORD_TEST_GUILD_ID = "paste-server-id-here"
+$env:GITHUB_PAGES_TOKEN = "paste-fine-grained-token-here"
 dotnet run
 ```
 
@@ -170,6 +176,7 @@ Remove the environment variables afterward if desired:
 ```powershell
 Remove-Item Env:DISCORD_BOT_TOKEN
 Remove-Item Env:DISCORD_TEST_GUILD_ID
+Remove-Item Env:GITHUB_PAGES_TOKEN
 ```
 
 If `DISCORD_TEST_GUILD_ID` is omitted, `/ping` is registered globally and may take Discord up to an hour to appear.

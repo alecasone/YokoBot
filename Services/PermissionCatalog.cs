@@ -39,6 +39,9 @@ internal static class PermissionCatalog
         new("scenetracker.manage.any", "Manage any scene without being a participant."),
         new("permissions.view", "View the permission catalog and assignments."),
         new("permissions.manage", "Grant and revoke permissions."),
+        new("site.view", "View GitHub Pages publishing status."),
+        new("site.publish", "Publish the sanitized character directory."),
+        new("site.configure", "Configure GitHub Pages publishing."),
     ];
 
     public static IReadOnlyList<string> AssignableNames { get; } = BuildAssignableNames();
@@ -132,4 +135,3 @@ internal static class PermissionCatalog
         grant.RoleIds.Add(roleId);
     }
 }
-

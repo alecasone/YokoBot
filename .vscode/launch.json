@@ -11,12 +11,14 @@
       "console": "integratedTerminal",
       "env": {
         "DISCORD_BOT_TOKEN": "${input:discordBotToken}",
-        "DISCORD_TEST_GUILD_ID": "${input:discordTestGuildId}"
+        "DISCORD_TEST_GUILD_ID": "${input:discordTestGuildId}",
+        "GITHUB_PAGES_TOKEN": "${input:githubPagesToken}"
       }
     }
   ],
   "inputs": [
     { "id": "discordBotToken", "type": "promptString", "description": "Discord bot token", "password": true },
-    { "id": "discordTestGuildId", "type": "promptString", "description": "Test server ID (recommended for instant command updates)" }
+    { "id": "discordTestGuildId", "type": "promptString", "description": "Test server ID (recommended for instant command updates)" },
+    { "id": "githubPagesToken", "type": "promptString", "description": "Fine-grained GitHub Pages token (optional until publishing is configured)", "password": true }
   ]
 }

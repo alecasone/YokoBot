@@ -21,6 +21,7 @@ internal static class CommandPermissionResolver
             "overworld" => ["overworld.worlddate"],
             "scenetracker" => ResolveSceneTracker(root),
             "permissions" => ResolvePermissionAdmin(root),
+            "siteadmin" => ResolveSiteAdmin(root),
             _ => []
         };
     }
@@ -98,6 +99,15 @@ internal static class CommandPermissionResolver
         {
             "list" or "view" or "role" => ["permissions.view", "permissions.manage"],
             "grant" or "revoke" or "grant-user" or "revoke-user" => ["permissions.manage"],
+            _ => []
+        };
+
+    private static IReadOnlyList<string> ResolveSiteAdmin(SocketSlashCommandDataOption? subcommand) =>
+        subcommand?.Name switch
+        {
+            "status" => ["site.view", "site.publish", "site.configure"],
+            "publish" => ["site.publish", "site.configure"],
+            "setup" or "autopublish" => ["site.configure"],
             _ => []
         };
 
