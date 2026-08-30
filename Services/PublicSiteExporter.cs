@@ -18,21 +18,71 @@ internal sealed class PublicSiteExporter
     };
 
     private readonly CharacterStore _characters;
+    private readonly RelationshipStore _relationships;
+    private readonly RelationshipInferenceEngine _inference;
 
-    public PublicSiteExporter(CharacterStore characters) => _characters = characters;
+    public PublicSiteExporter(
+        CharacterStore characters,
+        RelationshipStore relationships,
+        RelationshipInferenceEngine inference)
+    {
+        _characters = characters;
+        _relationships = relationships;
+        _inference = inference;
+    }
 
     public async Task<string> BuildJsonAsync(ulong guildId)
     {
         var characters = await _characters.GetAllAsync(guildId);
+        var characterIds = characters.Select(character => character.PublicId).ToHashSet();
+        var relationships = _inference.Build(await _relationships.GetDirectAsync(guildId))
+            .Where(edge => characterIds.Contains(edge.SourceCharacterId) &&
+                           characterIds.Contains(edge.TargetCharacterId))
+            .Select(ToPublicRelationship)
+            .Where(record => record is not null)
+            .Cast<PublicRelationshipRecord>()
+            .OrderBy(record => record.SourceCharacterId)
+            .ThenBy(record => record.TargetCharacterId)
+            .ThenBy(record => record.IsInferred)
+            .ThenBy(record => record.TypeId, StringComparer.OrdinalIgnoreCase)
+            .ToList();
         var snapshot = new PublicCharacterSnapshot
         {
             GeneratedAt = DateTimeOffset.UtcNow,
             Characters = characters
                 .OrderBy(character => character.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(ToPublicRecord)
-                .ToList()
+                .ToList(),
+            RelationshipTypes = relationships
+                .Select(record => new PublicRelationshipTypeRecord
+                {
+                    Id = record.TypeId,
+                    DisplayName = record.DisplayName,
+                    Category = record.Category
+                })
+                .DistinctBy(record => record.Id, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(record => record.Category, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(record => record.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToList(),
+            Relationships = relationships
         };
         return JsonSerializer.Serialize(snapshot, JsonOptions) + Environment.NewLine;
+    }
+
+    private static PublicRelationshipRecord? ToPublicRelationship(RelationshipEdge edge)
+    {
+        var definition = RelationshipCatalog.Get(edge.TypeId);
+        if (definition is null) return null;
+        return new PublicRelationshipRecord
+        {
+            SourceCharacterId = edge.SourceCharacterId,
+            TargetCharacterId = edge.TargetCharacterId,
+            TypeId = definition.Id,
+            DisplayName = definition.DisplayName,
+            Category = definition.Category,
+            IsInferred = edge.IsInferred,
+            Explanation = edge.IsInferred ? edge.Explanation : null
+        };
     }
 
     private static PublicCharacterRecord ToPublicRecord(Character character)

@@ -23,7 +23,7 @@ From the `YokoBot` repository:
 python -m http.server 8080 --directory docs
 ```
 
-Then open `http://localhost:8080/`. Do not open `docs/index.html` directly because browsers normally block its JSON request when loaded as a local file.
+Then open `http://localhost:8080/` for the character directory or `http://localhost:8080/relationships.html` for the interactive relationship atlas. Do not open the HTML files directly because browsers normally block their JSON request when loaded as local files.
 
 ## Public data boundary
 
@@ -33,9 +33,11 @@ The Pages site reads only `docs/data/characters.json`. Its public contract conta
 - character name and optional aliases;
 - approved character fields and custom properties;
 - an optional public character-reference URL; and
-- approval time for sorting.
+- approval time for sorting;
+- relationship type display names and categories; and
+- approved and inferred connections between character `publicId` values, including a human-readable inference explanation.
 
-It must never contain Discord user IDs, usernames, role IDs, verification state, moderation history, private approval metadata, or the mapping in `data/public-identities.json`.
+It must never contain Discord user IDs, usernames, role IDs, verification state, moderation history, private approval metadata, pending relationship requests, internal relationship IDs, or the mapping in `data/public-identities.json`.
 
 Each Discord user receives a stable random ID in the local-only `data/public-identities.json`. That mapping survives moderation-record removal and can support public ownership aliases later without revealing the Discord account. It is intentionally absent from the first directory export.
 
@@ -61,7 +63,7 @@ After restarting the bot so `/siteadmin` is registered:
 3. Run `/siteadmin status` and confirm the token is loaded, no local changes are pending, and a short commit hash is shown.
 4. Run `/siteadmin autopublish enabled:true`.
 
-Character creation, supplied approval fields, fillout replies, edits, removed fields, aliases, renames, and confirmed deletion now mark the directory pending. Yoko waits 20 seconds after the latest change and then publishes one complete snapshot. Rapid changes are combined, and GitHub writes are serialized to prevent update conflicts.
+Character creation, supplied approval fields, fillout replies, edits, removed fields, aliases, renames, confirmed deletion, relationship approval, and relationship removal now mark the directory pending. Yoko waits 20 seconds after the latest change and then publishes one complete snapshot. Rapid changes are combined, and GitHub writes are serialized to prevent update conflicts.
 
 Yoko updates only `docs/data/characters.json` through GitHub's Contents API. It never runs `git add .` or commits the local working tree, because unrelated source changes may be present. If GitHub is unavailable, the local character operation still succeeds and `/siteadmin status` reports a pending snapshot and the last error. `/siteadmin publish` retries immediately.
 
@@ -69,4 +71,4 @@ Deleting a character will remove it from the current public snapshot. Previous v
 
 ## Updating the site design later
 
-Keep editing `docs/index.html`, `docs/styles.css`, `docs/app.js`, and other site assets on `main` with the bot source. Copy or merge those asset changes into `pages`, then run `/siteadmin publish` again so the live character JSON is refreshed. Do not treat the sample `docs/data/characters.json` on `main` as live server data.
+Keep editing `docs/index.html`, `docs/relationships.html`, `docs/styles.css`, both JavaScript files, and other site assets on `main` with the bot source. Copy or merge those asset changes into `pages`, then run `/siteadmin publish` again so the live character and relationship JSON is refreshed. Do not treat the sample `docs/data/characters.json` on `main` as live server data.

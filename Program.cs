@@ -20,7 +20,7 @@ internal static class Program
     private static readonly PermissionService Permissions = new(PermissionSettings);
     private static readonly PublicIdentityStore PublicIdentities = new(Path.Combine(Environment.CurrentDirectory, "data", "public-identities.json"));
     private static readonly SiteSettingsStore SiteSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "site-settings.json"));
-    private static readonly PublicSiteExporter SiteExporter = new(Characters);
+    private static readonly PublicSiteExporter SiteExporter = new(Characters, Relationships, RelationshipInference);
     private static readonly GitHubContentsClient GitHubPages = new();
     private static readonly SitePublicationService SitePublisher = new(SiteSettings, SiteExporter, GitHubPages);
     private static readonly string[] Rooms =
@@ -168,7 +168,8 @@ internal static class Program
                 await SiteAdminCommands.HandleAsync(command, SiteSettings, SitePublisher);
                 break;
             case "relationship":
-                await RelationshipCommands.HandleAsync(command, Characters, Relationships, RelationshipInference);
+                await RelationshipCommands.HandleAsync(
+                    command, Characters, Relationships, RelationshipInference, SitePublisher);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -275,7 +276,8 @@ internal static class Program
     {
         await AutoModerator.RecordMessageAsync(message);
         if (await AutoModerator.HandleApprovalMessageAsync(message)) return;
-        if (await RelationshipCommands.HandleReplyAsync(message, Characters, Relationships, Permissions)) return;
+        if (await RelationshipCommands.HandleReplyAsync(
+                message, Characters, Relationships, Permissions, SitePublisher)) return;
         if (await SceneTrackerCommands.HandleInviteReplyAsync(message, Scenes, Characters)) return;
         if (await AutoModerationCommands.HandleWizardMessageAsync(message, AutoModerationRules)) return;
         if (await VerificationCommands.HandleWizardMessageAsync(message, VerificationSettings)) return;

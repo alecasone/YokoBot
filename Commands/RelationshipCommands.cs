@@ -58,7 +58,8 @@ internal static class RelationshipCommands
         SocketSlashCommand command,
         CharacterStore characters,
         RelationshipStore relationships,
-        RelationshipInferenceEngine inference)
+        RelationshipInferenceEngine inference,
+        SitePublicationService sitePublisher)
     {
         if (command.GuildId is not { } guildId || command.Channel is not SocketGuildChannel guildChannel)
         {
@@ -84,10 +85,11 @@ internal static class RelationshipCommands
                     (string)Option(subcommand.Options, "request").Value,
                     subcommand.Name == "approve",
                     characters,
-                    relationships);
+                    relationships,
+                    sitePublisher);
                 return;
             case "remove":
-                await RemoveAsync(command, guildId, subcommand, characters, relationships);
+                await RemoveAsync(command, guildId, subcommand, characters, relationships, sitePublisher);
                 return;
             case "view":
                 await ViewAsync(command, guildId, subcommand, characters, relationships, inference);
@@ -184,7 +186,8 @@ internal static class RelationshipCommands
         SocketMessage message,
         CharacterStore characters,
         RelationshipStore relationships,
-        PermissionService permissions)
+        PermissionService permissions,
+        SitePublicationService sitePublisher)
     {
         if (message.Author.IsBot ||
             message.Channel is not SocketGuildChannel channel ||
@@ -236,6 +239,8 @@ internal static class RelationshipCommands
         }
 
         var result = await relationships.ApproveAsync(channel.Guild.Id, pending.Id, message.Author.Id);
+        if (result.Status == RelationshipMutationStatus.Success)
+            await sitePublisher.QueueAsync(channel.Guild.Id);
         await UpdateInvitationAsync(channel.Guild, pending, ApprovalMessage(result, source.Character.Name, target.Character.Name));
         return true;
     }
@@ -343,7 +348,8 @@ internal static class RelationshipCommands
         string requestId,
         bool approve,
         CharacterStore characters,
-        RelationshipStore relationships)
+        RelationshipStore relationships,
+        SitePublicationService sitePublisher)
     {
         var pending = await relationships.GetPendingAsync(guildId, requestId);
         if (pending is null)
@@ -370,6 +376,8 @@ internal static class RelationshipCommands
         var result = approve
             ? await relationships.ApproveAsync(guildId, pending.Id, command.User.Id)
             : await relationships.DeclineAsync(guildId, pending.Id, command.User.Id);
+        if (approve && result.Status == RelationshipMutationStatus.Success)
+            await sitePublisher.QueueAsync(guildId);
         var message = approve
             ? ApprovalMessage(result, source.Character.Name, target.Character.Name)
             : $"{command.User.Mention} declined this relationship request.";
@@ -394,7 +402,8 @@ internal static class RelationshipCommands
         ulong guildId,
         SocketSlashCommandDataOption subcommand,
         CharacterStore characters,
-        RelationshipStore relationships)
+        RelationshipStore relationships,
+        SitePublicationService sitePublisher)
     {
         var characterName = (string)Option(subcommand.Options, "character").Value;
         var relationshipId = (string)Option(subcommand.Options, "relationship").Value;
@@ -407,6 +416,8 @@ internal static class RelationshipCommands
 
         var result = await relationships.RemoveAsync(
             guildId, relationshipId, character.PublicId, command.User.Id);
+        if (result.Status == RelationshipMutationStatus.Success)
+            await sitePublisher.QueueAsync(guildId);
         await command.RespondAsync(result.Status switch
         {
             RelationshipMutationStatus.Success =>

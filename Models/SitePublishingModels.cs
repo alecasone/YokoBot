@@ -26,9 +26,11 @@ internal sealed class SiteGuildSettings
 
 internal sealed class PublicCharacterSnapshot
 {
-    public int SchemaVersion { get; set; } = 1;
+    public int SchemaVersion { get; set; } = 2;
     public DateTimeOffset GeneratedAt { get; set; } = DateTimeOffset.UtcNow;
     public List<PublicCharacterRecord> Characters { get; set; } = [];
+    public List<PublicRelationshipTypeRecord> RelationshipTypes { get; set; } = [];
+    public List<PublicRelationshipRecord> Relationships { get; set; } = [];
 }
 
 internal sealed class PublicCharacterRecord
@@ -50,6 +52,24 @@ internal sealed class PublicCharacterReference
     public string Kind { get; set; } = "sheet";
     public string Format { get; set; } = "link";
     public string? Value { get; set; }
+}
+
+internal sealed class PublicRelationshipTypeRecord
+{
+    public required string Id { get; set; }
+    public required string DisplayName { get; set; }
+    public required string Category { get; set; }
+}
+
+internal sealed class PublicRelationshipRecord
+{
+    public Guid SourceCharacterId { get; set; }
+    public Guid TargetCharacterId { get; set; }
+    public required string TypeId { get; set; }
+    public required string DisplayName { get; set; }
+    public required string Category { get; set; }
+    public bool IsInferred { get; set; }
+    public string? Explanation { get; set; }
 }
 
 internal sealed record SitePublishResult(bool Success, string Message, string? CommitSha = null);

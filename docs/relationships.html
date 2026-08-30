@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11100f">
+  <meta name="description" content="Explore the direct and inferred connections between Yoko roleplay characters.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Yoko Relationship Atlas">
+  <meta property="og:description" content="An interactive map of approved and inferred character relationships.">
+  <meta property="og:url" content="https://alecasone.github.io/YokoBot/relationships.html">
+  <meta property="og:image" content="https://alecasone.github.io/YokoBot/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Yoko Relationship Atlas">
+  <meta name="twitter:description" content="An interactive map of approved and inferred character relationships.">
+  <meta name="twitter:image" content="https://alecasone.github.io/YokoBot/og.png">
+  <title>Relationship Atlas · Yoko Character Archive</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="relationship-page">
+  <header class="atlas-header">
+    <nav class="site-nav" aria-label="Archive sections">
+      <a href="./">Character directory</a>
+      <a href="./relationships.html" aria-current="page">Relationship atlas</a>
+    </nav>
+    <div class="atlas-heading">
+      <div>
+        <p class="masthead__eyebrow">Yoko / Lines of relation</p>
+        <h1>Relationship Atlas</h1>
+        <p>Follow the threads between characters. Direct ties are solid; relationships Yoko infers from the family graph are traced in gold.</p>
+      </div>
+      <dl class="archive-stats atlas-stats" aria-label="Relationship statistics">
+        <div><dt>Characters</dt><dd id="atlas-character-count">—</dd></div>
+        <div><dt>Connections</dt><dd id="atlas-connection-count">—</dd></div>
+        <div><dt>Updated</dt><dd id="atlas-updated">—</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <main class="atlas-main">
+    <section class="atlas-toolbar" aria-label="Relationship map controls">
+      <div class="focus-search">
+        <label for="focus-search">Find a character</label>
+        <input id="focus-search" type="search" autocomplete="off" placeholder="Name or alias…" aria-controls="focus-results" aria-expanded="false">
+        <div id="focus-results" class="focus-results" role="listbox" hidden></div>
+      </div>
+      <label>
+        <span>Relationship family</span>
+        <select id="category-filter">
+          <option value="">All relationship families</option>
+        </select>
+      </label>
+      <label class="toggle-control">
+        <input id="show-inferred" type="checkbox" checked>
+        <span>Show inferred ties</span>
+      </label>
+      <div class="toolbar-actions" aria-label="Map view controls">
+        <button id="fit-map" class="utility-button" type="button">Fit map</button>
+        <button id="zoom-out" class="icon-button" type="button" aria-label="Zoom out">−</button>
+        <button id="zoom-in" class="icon-button" type="button" aria-label="Zoom in">+</button>
+      </div>
+    </section>
+
+    <p id="atlas-status" class="status atlas-status" role="status">Charting the archive…</p>
+
+    <section class="atlas-workspace" aria-label="Interactive relationship explorer">
+      <div id="map-stage" class="map-stage">
+        <svg id="relationship-map" role="img" aria-label="Interactive character relationship map" tabindex="0">
+          <g id="map-viewport">
+            <g id="map-edges"></g>
+            <g id="map-edge-labels"></g>
+            <g id="map-nodes"></g>
+          </g>
+        </svg>
+        <div id="map-empty" class="map-empty" hidden>
+          <span aria-hidden="true">◇</span>
+          <strong>No threads recorded yet</strong>
+          <p>Characters will appear here as soon as approved relationships are published.</p>
+        </div>
+        <div class="map-legend" aria-label="Relationship map legend">
+          <span><i class="legend-line legend-line--direct"></i>Direct</span>
+          <span><i class="legend-line legend-line--inferred"></i>Inferred</span>
+        </div>
+        <p class="map-hint">Drag to pan · Scroll to zoom · Right-click a character for actions</p>
+      </div>
+
+      <aside class="relationship-inspector" aria-labelledby="inspector-title">
+        <p class="section-label">Character in focus</p>
+        <h2 id="inspector-title">Choose a character</h2>
+        <p id="inspector-meta" class="inspector-meta">Select a node to read its connections.</p>
+        <div id="inspector-actions" class="inspector-actions" hidden>
+          <button id="center-selected" class="utility-button" type="button">Center on map</button>
+          <a id="open-record" class="utility-link" href="./">Open record</a>
+        </div>
+        <div class="inspector-rule"></div>
+        <p id="connection-summary" class="connection-summary"></p>
+        <ol id="connection-list" class="connection-list"></ol>
+      </aside>
+    </section>
+
+    <section class="relationship-ledger" aria-labelledby="ledger-title">
+      <div class="ledger-heading">
+        <div>
+          <p class="section-label">Readable index</p>
+          <h2 id="ledger-title">Visible connections</h2>
+        </div>
+        <p id="ledger-summary">—</p>
+      </div>
+      <div id="relationship-list" class="relationship-list"></div>
+    </section>
+  </main>
+
+  <div id="node-menu" class="node-menu" role="menu" hidden>
+    <p id="node-menu-title"></p>
+    <button type="button" role="menuitem" data-action="center">Center this character</button>
+    <button type="button" role="menuitem" data-action="record">Open character record</button>
+    <button type="button" role="menuitem" data-action="copy">Copy focused link</button>
+  </div>
+
+  <footer>
+    <span>Generated from sanitized Yoko character records.</span>
+    <span>Pending requests and Discord identities remain private.</span>
+  </footer>
+
+  <noscript>The relationship atlas requires JavaScript to draw its map.</noscript>
+  <script src="./relationships.js" defer></script>
+</body>
+</html>

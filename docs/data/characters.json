@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "generatedAt": "2026-08-29T22:00:00Z",
   "characters": [
     {
@@ -59,6 +59,101 @@
         "office-hours": "After dusk"
       }
     }
+  ],
+  "relationshipTypes": [
+    {
+      "id": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-full-sibling",
+      "displayName": "Full biological sibling",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological"
+    }
+  ],
+  "relationships": [
+    {
+      "sourceCharacterId": "7577d63f-3c20-45e1-b4dc-aaea86c0f50e",
+      "targetCharacterId": "115166a2-5131-4947-bf76-7f012b139bd3",
+      "typeId": "biological-full-sibling",
+      "displayName": "Full biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "115166a2-5131-4947-bf76-7f012b139bd3",
+      "targetCharacterId": "7577d63f-3c20-45e1-b4dc-aaea86c0f50e",
+      "typeId": "biological-full-sibling",
+      "displayName": "Full biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "ea0d261a-7940-4e1a-90d1-d69f4f89333f",
+      "targetCharacterId": "7577d63f-3c20-45e1-b4dc-aaea86c0f50e",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "7577d63f-3c20-45e1-b4dc-aaea86c0f50e",
+      "targetCharacterId": "ea0d261a-7940-4e1a-90d1-d69f4f89333f",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "ea0d261a-7940-4e1a-90d1-d69f4f89333f",
+      "targetCharacterId": "115166a2-5131-4947-bf76-7f012b139bd3",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "115166a2-5131-4947-bf76-7f012b139bd3",
+      "targetCharacterId": "ea0d261a-7940-4e1a-90d1-d69f4f89333f",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "7577d63f-3c20-45e1-b4dc-aaea86c0f50e",
+      "targetCharacterId": "115166a2-5131-4947-bf76-7f012b139bd3",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "full siblings are biological siblings"
+    },
+    {
+      "sourceCharacterId": "115166a2-5131-4947-bf76-7f012b139bd3",
+      "targetCharacterId": "7577d63f-3c20-45e1-b4dc-aaea86c0f50e",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "full siblings are biological siblings"
+    }
   ]
 }
-

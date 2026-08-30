@@ -65,7 +65,7 @@ The GitHub Pages scaffold in `docs/` is a searchable master directory built from
 
 Characters have stable random `publicId` values, so renames do not break public links. Renaming a character automatically preserves the previous name as an alias; `/character edit` can also set the `aliases` field from a comma-separated list, and `/character remove-field` can clear it. Discord users receive separate stable random IDs in the ignored local file `data/public-identities.json`; the private Discord-ID mapping is not exported to Pages.
 
-`/siteadmin setup` configures the repository, branch, JSON path, and public URL. `/siteadmin publish` publishes one complete sanitized snapshot immediately, `/siteadmin autopublish` controls automatic publication, and `/siteadmin status` reports pending changes, token availability, the last attempt, the last successful commit, and any error. Character approval, approval-fillout values, edits, removed fields, aliases, renames, and confirmed deletion all mark the snapshot dirty. Automatic publishing waits 20 seconds after the most recent change so a burst of edits becomes one commit.
+`/siteadmin setup` configures the repository, branch, JSON path, and public URL. `/siteadmin publish` publishes one complete sanitized snapshot immediately, `/siteadmin autopublish` controls automatic publication, and `/siteadmin status` reports pending changes, token availability, the last attempt, the last successful commit, and any error. Character approval, approval-fillout values, edits, removed fields, aliases, renames, confirmed deletion, approved relationships, and removed relationships all mark the snapshot dirty. Automatic publishing waits 20 seconds after the most recent change so a burst of edits becomes one commit.
 
 ## Character workflow
 
@@ -97,7 +97,7 @@ Every new character reference defaults to `link/sheet`; set its URL with the `re
 
 ## Biological relationships
 
-Approved relationships are stored per server in the ignored local file `data/relationships.json`. Records use stable character `publicId` values, so character renames do not break them. A direct record stores one perspective and Yoko automatically supplies the inverse perspective—for example, biological parent ↔ biological child. Pending requests and Discord owner IDs remain local and are not exported to the public site.
+Approved relationships are stored per server in the ignored local file `data/relationships.json`. Records use stable character `publicId` values, so character renames do not break them. A direct record stores one perspective and Yoko automatically supplies the inverse perspective—for example, biological parent ↔ biological child. The sanitized Pages snapshot exports approved and inferred connections between public character IDs for the interactive relationship atlas. Pending requests, internal relationship IDs, and Discord owner IDs remain local.
 
 The initial biological catalog contains:
 
@@ -117,6 +117,8 @@ Autocomplete recognizes neutral labels and aliases such as mother, father, son, 
 - `/relationship view user character` publicly shows direct relationships and background inferences, including the rule that produced each inference.
 
 Inference is recalculated from the complete approved graph rather than permanently stored. Current rules derive siblinghood from a shared parent, grandparent and great-grandparent chains, aunt/uncle and nibling relationships, cousins through sibling parents, and multi-generation ancestors/descendants. Removing a direct fact or deleting a character therefore cascades safely: every unsupported derived relationship disappears, while unrelated direct facts remain. Definitions and path rules are isolated in `Services/RelationshipCatalog.cs`, allowing later categories such as adopted, political, feudal, or succession relationships to use the same storage and graph engine.
+
+The public `relationships.html` atlas supports search, category and inference filters, pan/zoom, draggable nodes, a readable connection ledger, and character-focused links. Selecting a node opens its relationship list; double-clicking or using **Center on map** rebuilds the radial layout around that character. Right-clicking a node opens actions for centering it, opening its public record, or copying a focused URL.
 
 The local server includes an eight-character **Vale family graph** split between the two requested accounts. Only eight direct facts are seeded, while sibling, grandparent, great-grandparent, pibling/nibling, cousin, ancestor, and descendant results must be inferred. They are ordinary approved characters: they consume sequential OC-role slots and appear in sanitized GitHub Pages exports. Account mappings remain only in ignored local JSON and are not documented in the public repository.
 
