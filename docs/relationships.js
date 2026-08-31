@@ -25,6 +25,8 @@ const state = {
   pairs: [],
   graphPairs: [],
   generationRows: [],
+  familyIslands: [],
+  islandByNode: new Map(),
   biologicalDistances: new Map(),
   maximumBiologicalDistance: 1,
   mapColors: { ...defaultMapColors },
@@ -243,6 +245,8 @@ function buildTreePairs(relationships) {
 function layoutGraph(pairs) {
   state.positions = new Map();
   state.generationRows = [];
+  state.familyIslands = [];
+  state.islandByNode = new Map();
   if (state.characters.length === 0) return;
 
   if (state.layoutMode === "tree") {
@@ -252,46 +256,219 @@ function layoutGraph(pairs) {
 
   const focusId = state.charactersById.has(state.focusId) ? state.focusId : state.characters[0].publicId;
   state.focusId = focusId;
-  const adjacency = new Map(state.characters.map(character => [character.publicId, new Set()]));
+
+  // Inferred relationships are visual shortcuts. They should never pull separate
+  // branches together or overpower the approved relationships that define the map.
+  const directPairs = pairs.filter(pair => !pair.isInferred);
+  const structuralPairs = directPairs.length > 0 ? directPairs : pairs;
+  const islands = buildNetworkIslands(structuralPairs, focusId);
+  placeNetworkIslands(islands, structuralPairs, focusId);
+  for (const island of islands) layoutNetworkIsland(island, structuralPairs, focusId);
+
+  state.familyIslands = islands;
+  state.islandByNode = new Map(islands.flatMap(island => island.ids.map(id => [id, island.id])));
+}
+
+function buildNetworkIslands(pairs, focusId) {
+  const characterIds = state.characters.map(character => character.publicId);
+  const bridgeKeys = new Set();
+  for (const component of connectedGroups(characterIds, pairs)) {
+    const ids = new Set(component);
+    const componentPairs = pairs.filter(pair => ids.has(pair.a) && ids.has(pair.b));
+    for (const key of separableBridgeKeys(component, componentPairs, focusId)) bridgeKeys.add(key);
+  }
+
+  return connectedGroups(characterIds, pairs, bridgeKeys)
+    .map((ids, index) => ({
+      id: `family-island-${index}`,
+      ids: ids.sort((left, right) => characterName(left).localeCompare(characterName(right))),
+      center: { x: 0, y: 0 },
+      radius: islandRadius(ids.length),
+      distance: Number.POSITIVE_INFINITY,
+      isFocus: ids.includes(focusId)
+    }));
+}
+
+function connectedGroups(characterIds, pairs, excludedPairKeys = new Set()) {
+  const adjacency = new Map(characterIds.map(id => [id, new Set()]));
   for (const pair of pairs) {
+    if (excludedPairKeys.has(pair.key)) continue;
     adjacency.get(pair.a)?.add(pair.b);
     adjacency.get(pair.b)?.add(pair.a);
   }
 
-  const distance = new Map([[focusId, 0]]);
-  const queue = [focusId];
+  const groups = [];
+  const visited = new Set();
+  for (const start of characterIds) {
+    if (visited.has(start)) continue;
+    const group = [];
+    const queue = [start];
+    visited.add(start);
+    for (let index = 0; index < queue.length; index += 1) {
+      const current = queue[index];
+      group.push(current);
+      for (const neighbor of adjacency.get(current) ?? []) {
+        if (visited.has(neighbor)) continue;
+        visited.add(neighbor);
+        queue.push(neighbor);
+      }
+    }
+    groups.push(group);
+  }
+  return groups;
+}
+
+function separableBridgeKeys(characterIds, pairs, focusId) {
+  if (characterIds.length < 4 || pairs.length === 0) return [];
+  const adjacency = new Map(characterIds.map(id => [id, []]));
+  for (const pair of pairs) {
+    adjacency.get(pair.a)?.push({ neighbor: pair.b, pair });
+    adjacency.get(pair.b)?.push({ neighbor: pair.a, pair });
+  }
+
+  const discovered = new Map();
+  const low = new Map();
+  const subtreeSize = new Map();
+  const bridgeKeys = [];
+  let time = 0;
+
+  const visit = (characterId, parentPairKey = null) => {
+    discovered.set(characterId, ++time);
+    low.set(characterId, time);
+    subtreeSize.set(characterId, 1);
+    for (const { neighbor, pair } of adjacency.get(characterId) ?? []) {
+      if (pair.key === parentPairKey) continue;
+      if (!discovered.has(neighbor)) {
+        visit(neighbor, pair.key);
+        subtreeSize.set(characterId, subtreeSize.get(characterId) + subtreeSize.get(neighbor));
+        low.set(characterId, Math.min(low.get(characterId), low.get(neighbor)));
+        if (low.get(neighbor) > discovered.get(characterId)) {
+          const smallerSide = Math.min(subtreeSize.get(neighbor), characterIds.length - subtreeSize.get(neighbor));
+          if (shouldSeparateBridge(pair, smallerSide, focusId)) bridgeKeys.push(pair.key);
+        }
+      } else {
+        low.set(characterId, Math.min(low.get(characterId), discovered.get(neighbor)));
+      }
+    }
+  };
+
+  for (const characterId of characterIds)
+    if (!discovered.has(characterId)) visit(characterId);
+  return bridgeKeys;
+}
+
+function shouldSeparateBridge(pair, smallerSide, focusId) {
+  if (pair.a === focusId || pair.b === focusId) return false;
+  if (sharedFamilyName(pair.a, pair.b)) return false;
+  const biological = pair.records.some(record => record.category === "Biological");
+  return smallerSide >= (biological ? 3 : 2);
+}
+
+function sharedFamilyName(leftId, rightId) {
+  const familyName = characterId => {
+    const parts = characterName(characterId).trim().split(/\s+/);
+    return parts.length > 1 ? normalize(parts.at(-1)) : "";
+  };
+  const left = familyName(leftId);
+  return left && left === familyName(rightId);
+}
+
+function islandRadius(characterCount) {
+  if (characterCount <= 1) return 72;
+  return 225 + Math.max(0, Math.ceil((characterCount - 8) / 8)) * 145;
+}
+
+function placeNetworkIslands(islands, pairs, focusId) {
+  if (islands.length === 0) return;
+  const islandByNode = new Map(islands.flatMap(island => island.ids.map(id => [id, island.id])));
+  const islandById = new Map(islands.map(island => [island.id, island]));
+  const islandAdjacency = new Map(islands.map(island => [island.id, new Set()]));
+  for (const pair of pairs) {
+    const left = islandByNode.get(pair.a);
+    const right = islandByNode.get(pair.b);
+    if (!left || !right || left === right) continue;
+    islandAdjacency.get(left).add(right);
+    islandAdjacency.get(right).add(left);
+  }
+
+  const focusIsland = islands.find(island => island.ids.includes(focusId)) ?? islands[0];
+  focusIsland.isFocus = true;
+  focusIsland.distance = 0;
+  focusIsland.center = { x: 0, y: 0 };
+  const queue = [focusIsland.id];
   for (let index = 0; index < queue.length; index += 1) {
-    const current = queue[index];
-    for (const neighbor of adjacency.get(current) ?? []) {
-      if (distance.has(neighbor)) continue;
-      distance.set(neighbor, distance.get(current) + 1);
-      queue.push(neighbor);
+    const current = islandById.get(queue[index]);
+    for (const neighborId of islandAdjacency.get(current.id) ?? []) {
+      const neighbor = islandById.get(neighborId);
+      if (Number.isFinite(neighbor.distance)) continue;
+      neighbor.distance = current.distance + 1;
+      queue.push(neighborId);
     }
   }
 
-  state.positions.set(focusId, { x: 0, y: 0 });
-  const maxDistance = Math.max(0, ...distance.values());
-  for (let level = 1; level <= maxDistance; level += 1) {
-    const ids = state.characters
-      .filter(character => distance.get(character.publicId) === level)
-      .map(character => character.publicId);
-    placeAcrossRings(ids, 235 + (level - 1) * 205, level * 0.47);
-  }
+  const ordered = islands
+    .filter(island => island !== focusIsland)
+    .sort((left, right) =>
+      compareFiniteDistances(left.distance, right.distance) ||
+      right.ids.length - left.ids.length ||
+      characterName(left.ids[0]).localeCompare(characterName(right.ids[0])));
+  const placed = [focusIsland];
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
 
-  const disconnected = state.characters
-    .filter(character => !distance.has(character.publicId))
-    .map(character => character.publicId);
-  placeAcrossRings(disconnected, Math.max(490, 255 + maxDistance * 220), 0.18);
+  ordered.forEach((island, order) => {
+    const related = Number.isFinite(island.distance);
+    const preferredRadius = focusIsland.radius + island.radius + (related ? 150 + island.distance * 90 : 300);
+    for (let attempt = 0; attempt < 240; attempt += 1) {
+      const angle = -Math.PI / 2 + (order * 2.3 + attempt) * goldenAngle;
+      const ring = Math.floor(attempt / 12);
+      const radius = preferredRadius + ring * 170;
+      const candidate = { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+      const overlaps = placed.some(other =>
+        Math.hypot(candidate.x - other.center.x, candidate.y - other.center.y) < island.radius + other.radius + 145);
+      if (overlaps) continue;
+      island.center = candidate;
+      placed.push(island);
+      break;
+    }
+  });
 }
 
-function placeAcrossRings(ids, firstRadius, offset) {
-  const perRing = 12;
-  for (let start = 0; start < ids.length; start += perRing) {
-    const ring = ids.slice(start, start + perRing);
-    const radius = firstRadius + Math.floor(start / perRing) * 180;
+function compareFiniteDistances(left, right) {
+  if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
+  if (Number.isFinite(left)) return -1;
+  if (Number.isFinite(right)) return 1;
+  return 0;
+}
+
+function layoutNetworkIsland(island, pairs, focusId) {
+  const ids = new Set(island.ids);
+  const internalPairs = pairs.filter(pair => ids.has(pair.a) && ids.has(pair.b));
+  const degrees = new Map(island.ids.map(id => [id, 0]));
+  for (const pair of internalPairs) {
+    degrees.set(pair.a, degrees.get(pair.a) + 1);
+    degrees.set(pair.b, degrees.get(pair.b) + 1);
+  }
+  const root = ids.has(focusId)
+    ? focusId
+    : [...island.ids].sort((left, right) =>
+        degrees.get(right) - degrees.get(left) ||
+        compareCharactersOldestFirst(left, right))[0];
+  state.positions.set(root, { ...island.center });
+
+  const remaining = island.ids
+    .filter(id => id !== root)
+    .sort((left, right) => degrees.get(right) - degrees.get(left) || compareCharactersOldestFirst(left, right));
+  const perRing = 7;
+  for (let start = 0; start < remaining.length; start += perRing) {
+    const ring = remaining.slice(start, start + perRing);
+    const radius = 155 + Math.floor(start / perRing) * 145;
+    const offset = (stableHash(island.id) % 180) * Math.PI / 180 - Math.PI / 2;
     ring.forEach((id, index) => {
-      const angle = offset - Math.PI / 2 + (index * Math.PI * 2) / ring.length;
-      state.positions.set(id, { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
+      const angle = offset + index * Math.PI * 2 / ring.length;
+      state.positions.set(id, {
+        x: island.center.x + Math.cos(angle) * radius,
+        y: island.center.y + Math.sin(angle) * radius
+      });
     });
   }
 }
@@ -396,12 +573,15 @@ function renderGraph() {
   elements.nodes.replaceChildren();
 
   renderGenerationGuides();
+  renderFamilyIslands();
   for (const pair of state.graphPairs) {
+    if (state.layoutMode === "network" && !shouldRenderNetworkPair(pair)) continue;
     const source = state.positions.get(pair.a);
     const target = state.positions.get(pair.b);
     if (!source || !target) continue;
     const selected = pair.a === state.selectedId || pair.b === state.selectedId;
     const focused = pair.a === state.focusId || pair.b === state.focusId;
+    const bridge = state.layoutMode === "network" && crossesFamilyIslands(pair);
     const relationshipClass = state.layoutMode === "tree"
       ? pair.treeKind === "parent" ? "map-edge--tree-parent" : "map-edge--tree-peer"
       : pair.isInferred ? "map-edge--inferred" : "map-edge--direct";
@@ -410,7 +590,7 @@ function renderGraph() {
       y1: source.y,
       x2: target.x,
       y2: target.y,
-      class: `map-edge ${relationshipClass}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
+      class: `map-edge ${relationshipClass}${bridge ? " map-edge--bridge" : ""}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
     };
     const heatColor = heatColorForPair(pair);
     if (heatColor) attributes.style = `--heat-color: ${heatColor}`;
@@ -452,6 +632,42 @@ function renderGenerationGuides() {
     label.textContent = `GENERATION ${row.rank + 1}${direction}`;
     elements.guides.append(line, label);
   });
+}
+
+function renderFamilyIslands() {
+  if (state.layoutMode !== "network") return;
+  for (const island of state.familyIslands.filter(candidate => candidate.ids.length > 1)) {
+    const points = island.ids.map(id => state.positions.get(id)).filter(Boolean);
+    if (points.length < 2) continue;
+    const paddingX = 82;
+    const paddingTop = 78;
+    const paddingBottom = 104;
+    const minX = Math.min(...points.map(point => point.x)) - paddingX;
+    const maxX = Math.max(...points.map(point => point.x)) + paddingX;
+    const minY = Math.min(...points.map(point => point.y)) - paddingTop;
+    const maxY = Math.max(...points.map(point => point.y)) + paddingBottom;
+    elements.guides.append(svgElement("rect", {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+      rx: 64,
+      ry: 64,
+      class: `family-island${island.isFocus ? " is-focus" : ""}`
+    }));
+  }
+}
+
+function crossesFamilyIslands(pair) {
+  const left = state.islandByNode.get(pair.a);
+  const right = state.islandByNode.get(pair.b);
+  return left && right && left !== right;
+}
+
+function shouldRenderNetworkPair(pair) {
+  if (!pair.isInferred || !crossesFamilyIslands(pair)) return true;
+  return pair.a === state.focusId || pair.b === state.focusId ||
+    pair.a === state.selectedId || pair.b === state.selectedId;
 }
 
 function edgeLabelPoint(pair, source, target) {
