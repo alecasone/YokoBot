@@ -1,5 +1,7 @@
 const SVG_NS = "http://www.w3.org/2000/svg";
 const regionPalette = ["#c8a96a", "#8ba6a9", "#a17f9b", "#9ea86b", "#c27f68", "#7892b2", "#b29469"];
+const mapColorStorageKey = "yoko.relationshipAtlas.mapColors.v1";
+const defaultMapColors = { near: "#ffd65c", far: "#7f1d1d" };
 const parentTypeIds = new Set(["biological-parent", "biological-child"]);
 const peerTypeIds = new Set([
   "biological-sibling",
@@ -23,6 +25,9 @@ const state = {
   pairs: [],
   graphPairs: [],
   generationRows: [],
+  biologicalDistances: new Map(),
+  maximumBiologicalDistance: 1,
+  mapColors: { ...defaultMapColors },
   pan: { x: 0, y: 0 },
   zoom: 1,
   pointer: null,
@@ -62,7 +67,13 @@ const elements = {
   legendDirect: document.querySelector("#legend-direct"),
   legendInferred: document.querySelector("#legend-inferred"),
   menu: document.querySelector("#node-menu"),
-  menuTitle: document.querySelector("#node-menu-title")
+  menuTitle: document.querySelector("#node-menu-title"),
+  mapMenu: document.querySelector("#map-menu"),
+  mapColorsToggle: document.querySelector("#map-colors-toggle"),
+  mapColorPanel: document.querySelector("#map-color-panel"),
+  nearColor: document.querySelector("#near-color"),
+  farColor: document.querySelector("#far-color"),
+  resetMapColors: document.querySelector("#reset-map-colors")
 };
 
 initialize().catch(error => {
@@ -91,6 +102,7 @@ async function initialize() {
   elements.characterCount.textContent = state.characters.length.toLocaleString();
   elements.updated.textContent = formatDate(payload.generatedAt);
 
+  loadMapColors();
   populateCategories();
   bindEvents();
   refreshView(true);
@@ -127,26 +139,36 @@ function bindEvents() {
   window.addEventListener("popstate", applyFocusFromUrl);
   document.addEventListener("pointerdown", event => {
     if (!elements.menu.contains(event.target)) hideNodeMenu();
+    if (!elements.mapMenu.contains(event.target) && !elements.svg.contains(event.target)) hideMapMenu();
   });
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") {
       hideNodeMenu();
+      hideMapMenu();
       hideSearchResults();
     }
   });
   elements.menu.addEventListener("click", handleMenuAction);
+  elements.mapColorsToggle.addEventListener("click", toggleMapColors);
+  elements.nearColor.addEventListener("input", updateMapColors);
+  elements.farColor.addEventListener("input", updateMapColors);
+  elements.resetMapColors.addEventListener("click", resetMapColors);
 }
 
 function refreshView(relayout) {
   const visible = visibleRelationships();
   state.pairs = buildPairs(visible);
   state.graphPairs = state.layoutMode === "tree" ? buildTreePairs(visible) : state.pairs;
+  calculateBiologicalDistances(visible);
   updateLayoutUi();
   if (relayout) layoutGraph(state.graphPairs);
   renderGraph();
   renderInspector(visible);
   renderLedger();
 
+  const heatNotice = visible.some(relationship => relationship.category === "Biological")
+    ? ` · heat centered on ${characterName(state.focusId)}`
+    : "";
   elements.connectionCount.textContent = state.pairs.length.toLocaleString();
   elements.empty.hidden = state.characters.length !== 0;
   if (state.characters.length === 0) {
@@ -157,11 +179,11 @@ function refreshView(relayout) {
     elements.status.textContent = "No connections match the current filters.";
   } else if (state.layoutMode === "tree") {
     elements.status.textContent = state.graphPairs.length
-      ? `${state.positions.size.toLocaleString()} characters arranged from older generations to younger · ${state.graphPairs.length.toLocaleString()} structural ${pluralize(state.graphPairs.length, "tie")}.`
+      ? `${state.positions.size.toLocaleString()} characters arranged from older generations to younger${heatNotice}.`
       : "No direct biological parent, sibling, or twin relationships are available for a family tree.";
   } else {
     const inferredCount = state.pairs.filter(pair => pair.isInferred).length;
-    elements.status.textContent = `${state.pairs.length.toLocaleString()} visible ${pluralize(state.pairs.length, "connection")} · ${inferredCount.toLocaleString()} inferred.`;
+    elements.status.textContent = `${state.pairs.length.toLocaleString()} visible ${pluralize(state.pairs.length, "connection")} · ${inferredCount.toLocaleString()} inferred${heatNotice}.`;
   }
 }
 
@@ -169,6 +191,31 @@ function visibleRelationships() {
   return state.relationships.filter(relationship =>
     (!state.category || relationship.category === state.category) &&
     (state.showInferred || !relationship.isInferred));
+}
+
+function calculateBiologicalDistances(visibleRelationships) {
+  const adjacency = new Map(state.characters.map(character => [character.publicId, new Set()]));
+  const biologicalPairs = buildPairs(visibleRelationships.filter(relationship =>
+    relationship.category === "Biological"));
+  for (const pair of biologicalPairs) {
+    adjacency.get(pair.a)?.add(pair.b);
+    adjacency.get(pair.b)?.add(pair.a);
+  }
+
+  const distances = new Map();
+  if (state.charactersById.has(state.focusId)) distances.set(state.focusId, 0);
+  const queue = state.focusId ? [state.focusId] : [];
+  for (let index = 0; index < queue.length; index += 1) {
+    const current = queue[index];
+    for (const neighbor of adjacency.get(current) ?? []) {
+      if (distances.has(neighbor)) continue;
+      distances.set(neighbor, distances.get(current) + 1);
+      queue.push(neighbor);
+    }
+  }
+
+  state.biologicalDistances = distances;
+  state.maximumBiologicalDistance = Math.max(1, ...distances.values());
 }
 
 function buildPairs(relationships) {
@@ -358,13 +405,16 @@ function renderGraph() {
     const relationshipClass = state.layoutMode === "tree"
       ? pair.treeKind === "parent" ? "map-edge--tree-parent" : "map-edge--tree-peer"
       : pair.isInferred ? "map-edge--inferred" : "map-edge--direct";
-    const line = svgElement("line", {
+    const attributes = {
       x1: source.x,
       y1: source.y,
       x2: target.x,
       y2: target.y,
       class: `map-edge ${relationshipClass}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
-    });
+    };
+    const heatColor = heatColorForPair(pair);
+    if (heatColor) attributes.style = `--heat-color: ${heatColor}`;
+    const line = svgElement("line", attributes);
     elements.edges.append(line);
 
     if (selected) {
@@ -675,13 +725,15 @@ function applyFocusFromUrl() {
 function beginPan(event) {
   if (event.button !== 0 || event.target.closest(".map-node")) return;
   hideNodeMenu();
+  hideMapMenu();
   state.pointer = {
     kind: "pan",
     id: event.pointerId,
     startX: event.clientX,
     startY: event.clientY,
     panX: state.pan.x,
-    panY: state.pan.y
+    panY: state.pan.y,
+    moved: false
   };
   elements.stage.classList.add("is-panning");
 }
@@ -689,6 +741,7 @@ function beginPan(event) {
 function beginNodeDrag(event, characterId) {
   if (event.button !== 0) return;
   event.stopPropagation();
+  hideMapMenu();
   const position = state.positions.get(characterId);
   if (!position) return;
   state.pointer = {
@@ -709,6 +762,7 @@ function movePointer(event) {
   const dx = event.clientX - state.pointer.startX;
   const dy = event.clientY - state.pointer.startY;
   if (state.pointer.kind === "pan") {
+    if (Math.hypot(dx, dy) > 4) state.pointer.moved = true;
     state.pan.x = state.pointer.panX + dx;
     state.pan.y = state.pointer.panY + dy;
     applyTransform();
@@ -725,12 +779,15 @@ function movePointer(event) {
 
 function endPointer(event) {
   if (!state.pointer || state.pointer.id !== event.pointerId) return;
+  const pointer = state.pointer;
   if (state.pointer.kind === "node" && state.pointer.moved) {
     state.suppressClick = true;
     setTimeout(() => { state.suppressClick = false; }, 0);
   }
   state.pointer = null;
   elements.stage.classList.remove("is-panning");
+  if (pointer.kind === "pan" && !pointer.moved)
+    showMapMenu(event.clientX, event.clientY);
 }
 
 function handleWheel(event) {
@@ -749,6 +806,10 @@ function handleMapKeydown(event) {
   } else if (event.key === "0") {
     event.preventDefault();
     fitMap();
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    const rect = elements.svg.getBoundingClientRect();
+    showMapMenu(rect.left + rect.width / 2, rect.top + rect.height / 2);
   }
 }
 
@@ -791,6 +852,7 @@ function applyTransform() {
 function showNodeMenu(characterId, clientX, clientY) {
   const character = state.charactersById.get(characterId);
   if (!character) return;
+  hideMapMenu();
   state.contextId = characterId;
   elements.menuTitle.textContent = character.name;
   elements.menu.hidden = false;
@@ -805,6 +867,78 @@ function showNodeMenu(characterId, clientX, clientY) {
 function hideNodeMenu() {
   elements.menu.hidden = true;
   state.contextId = null;
+}
+
+function showMapMenu(clientX, clientY) {
+  hideNodeMenu();
+  elements.mapColorPanel.hidden = true;
+  elements.mapColorsToggle.setAttribute("aria-expanded", "false");
+  elements.mapMenu.hidden = false;
+  requestAnimationFrame(() => {
+    const rect = elements.mapMenu.getBoundingClientRect();
+    elements.mapMenu.style.left = `${clamp(clientX, 8, window.innerWidth - rect.width - 8)}px`;
+    elements.mapMenu.style.top = `${clamp(clientY, 8, window.innerHeight - rect.height - 8)}px`;
+    elements.mapColorsToggle.focus();
+  });
+}
+
+function hideMapMenu() {
+  elements.mapMenu.hidden = true;
+  elements.mapColorPanel.hidden = true;
+  elements.mapColorsToggle.setAttribute("aria-expanded", "false");
+}
+
+function toggleMapColors() {
+  const opening = elements.mapColorPanel.hidden;
+  elements.mapColorPanel.hidden = !opening;
+  elements.mapColorsToggle.setAttribute("aria-expanded", String(opening));
+  if (opening) {
+    requestAnimationFrame(() => {
+      const rect = elements.mapMenu.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 8)
+        elements.mapMenu.style.top = `${Math.max(8, window.innerHeight - rect.height - 8)}px`;
+      elements.nearColor.focus();
+    });
+  }
+}
+
+function loadMapColors() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(mapColorStorageKey) ?? "null");
+    if (isHexColor(saved?.near) && isHexColor(saved?.far))
+      state.mapColors = { near: saved.near.toLowerCase(), far: saved.far.toLowerCase() };
+  } catch { }
+  applyMapColors();
+}
+
+function updateMapColors() {
+  if (!isHexColor(elements.nearColor.value) || !isHexColor(elements.farColor.value)) return;
+  state.mapColors = {
+    near: elements.nearColor.value.toLowerCase(),
+    far: elements.farColor.value.toLowerCase()
+  };
+  applyMapColors();
+  saveMapColors();
+  renderGraph();
+}
+
+function resetMapColors() {
+  state.mapColors = { ...defaultMapColors };
+  applyMapColors();
+  saveMapColors();
+  renderGraph();
+}
+
+function applyMapColors() {
+  elements.nearColor.value = state.mapColors.near;
+  elements.farColor.value = state.mapColors.far;
+  document.documentElement.style.setProperty("--heat-near", state.mapColors.near);
+  document.documentElement.style.setProperty("--heat-far", state.mapColors.far);
+}
+
+function saveMapColors() {
+  try { window.localStorage.setItem(mapColorStorageKey, JSON.stringify(state.mapColors)); }
+  catch { }
 }
 
 async function handleMenuAction(event) {
@@ -928,6 +1062,36 @@ function stableHash(value) {
   let hash = 0;
   for (const character of value) hash = ((hash << 5) - hash + character.charCodeAt(0)) | 0;
   return Math.abs(hash);
+}
+
+function heatColorForPair(pair) {
+  if (!pair.records.some(record => record.category === "Biological")) return null;
+  const distances = [
+    state.biologicalDistances.get(pair.a),
+    state.biologicalDistances.get(pair.b)
+  ].filter(Number.isFinite);
+  if (distances.length === 0) return state.mapColors.far;
+  const distance = Math.max(...distances);
+  const progress = state.maximumBiologicalDistance <= 1
+    ? 0
+    : clamp((Math.max(1, distance) - 1) / (state.maximumBiologicalDistance - 1), 0, 1);
+  return mixHexColors(state.mapColors.near, state.mapColors.far, progress);
+}
+
+function mixHexColors(start, end, progress) {
+  const startChannels = hexChannels(start);
+  const endChannels = hexChannels(end);
+  const channels = startChannels.map((channel, index) =>
+    Math.round(channel + (endChannels[index] - channel) * progress));
+  return `#${channels.map(channel => channel.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function hexChannels(value) {
+  return [1, 3, 5].map(index => Number.parseInt(value.slice(index, index + 2), 16));
+}
+
+function isHexColor(value) {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
 }
 
 function colorForRegion(region) {
