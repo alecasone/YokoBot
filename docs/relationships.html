@@ -88,8 +88,9 @@
         <div class="map-legend" aria-label="Relationship map legend">
           <span><i class="legend-line legend-line--direct"></i><b id="legend-direct">Direct</b></span>
           <span><i class="legend-line legend-line--inferred"></i><b id="legend-inferred">Inferred</b></span>
+          <span class="heat-scale"><b>Near</b><i aria-hidden="true"></i><b>Far</b></span>
         </div>
-        <p class="map-hint">Drag to pan · Scroll to zoom · Right-click a character for actions</p>
+        <p class="map-hint">Click empty space for map settings · Drag to pan · Scroll to zoom</p>
       </div>
 
       <aside class="relationship-inspector" aria-labelledby="inspector-title">
@@ -123,6 +124,27 @@
     <button type="button" role="menuitem" data-action="center">Center this character</button>
     <button type="button" role="menuitem" data-action="record">Open character record</button>
     <button type="button" role="menuitem" data-action="copy">Copy focused link</button>
+  </div>
+
+  <div id="map-menu" class="map-menu" role="dialog" aria-label="Map settings" hidden>
+    <p>Map</p>
+    <button id="map-colors-toggle" class="map-menu__toggle" type="button" aria-expanded="false" aria-controls="map-color-panel">
+      <span>Map colors</span><span aria-hidden="true">›</span>
+    </button>
+    <div id="map-color-panel" class="map-color-panel" hidden>
+      <div class="color-ramp-preview" aria-hidden="true"></div>
+      <div class="color-ramp-labels"><span>Closest</span><span>Farthest</span></div>
+      <label>
+        <span>Near color</span>
+        <input id="near-color" type="color" value="#ffd65c">
+      </label>
+      <label>
+        <span>Far color</span>
+        <input id="far-color" type="color" value="#7f1d1d">
+      </label>
+      <button id="reset-map-colors" class="map-menu__reset" type="button">Reset colors</button>
+      <small>Saved on this device. Distance follows approved biological steps from the centered character.</small>
+    </div>
   </div>
 
   <footer>
