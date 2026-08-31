@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-30T23:21:07.8666723+00:00",
+  "generatedAt": "2026-08-31T00:30:08.622744+00:00",
   "characters": [
     {
       "publicId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
@@ -610,6 +610,24 @@
       "category": "Biological",
       "isInferred": true,
       "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "88caf68c-3499-4e4d-a23a-ca6fed5a5a03",
+      "targetCharacterId": "bee88542-15d3-4689-aae7-3430b3fea551",
+      "typeId": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "bee88542-15d3-4689-aae7-3430b3fea551",
+      "targetCharacterId": "88caf68c-3499-4e4d-a23a-ca6fed5a5a03",
+      "typeId": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
     },
     {
       "sourceCharacterId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
