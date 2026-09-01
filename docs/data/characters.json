@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-31T02:32:16.3471679+00:00",
+  "generatedAt": "2026-09-01T02:31:36.0112871+00:00",
   "characters": [
     {
       "publicId": "6976f0d6-f916-46f7-8ff5-a9fedb690753",
@@ -50,6 +50,18 @@
         "eyecolor": "Brown",
         "hair-colour": "Brown"
       }
+    },
+    {
+      "publicId": "1010f604-48fd-4a40-8f4f-34306206f82c",
+      "name": "child",
+      "aliases": [],
+      "age": null,
+      "gender": null,
+      "region": null,
+      "occupation": null,
+      "approvedAt": "2026-09-01T02:31:15.2746243+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "97726b34-c6ae-4ead-ae05-6ac686a248d3",
