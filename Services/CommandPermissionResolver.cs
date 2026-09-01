@@ -23,6 +23,7 @@ internal static class CommandPermissionResolver
             "permissions" => ResolvePermissionAdmin(root),
             "siteadmin" => ResolveSiteAdmin(root),
             "relationship" => ResolveRelationship(root),
+            "alertadmin" => ResolveMemberAlertAdmin(root),
             _ => []
         };
     }
@@ -120,6 +121,15 @@ internal static class CommandPermissionResolver
             "requests" or "approve" or "decline" => ["relationship.respond"],
             "remove" => ["relationship.remove"],
             "view" => ["relationship.view"],
+            _ => []
+        };
+
+    private static IReadOnlyList<string> ResolveMemberAlertAdmin(SocketSlashCommandDataOption? subcommand) =>
+        subcommand?.Name switch
+        {
+            "view" => ["alerts.view", "alerts.configure.leave", "alerts.configure.new-account"],
+            "leave" => ["alerts.configure.leave"],
+            "newaccount" => ["alerts.configure.new-account"],
             _ => []
         };
 

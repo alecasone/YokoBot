@@ -9,7 +9,7 @@ Yoko uses an internal, per-server PEX-style permission system stored in `data/pe
 The first time a server checks permissions, Yoko seeds these role assignments:
 
 - **Admin** (`1541979162242195466`) receives `*`.
-- **Moderator** (`1541979611754135643`) receives character approval/edit/view/delete access, verification, auto-moderation viewing and approvals, the verification recheck, every scene-tracker permission, biological relationship access, and permission viewing.
+- **Moderator** (`1541979611754135643`) receives character approval/edit/view/delete access, verification, auto-moderation viewing and approvals, member-alert viewing, the verification recheck, every scene-tracker permission, biological relationship access, and permission viewing.
 - **Verified** (`1542018931894521887`) receives `/ping`, self-scoped character edit/view/delete, scene creation/view/history, management of scenes in which they participate, and biological relationship access.
 
 Use `/permissions list` to see every recognized permission together with the roles and direct users that currently receive it, including inherited wildcard grants. `/permissions view permission` focuses on one permission, and `/permissions role role` inspects a role. Members with `permissions.manage` can use `/permissions grant`, `/permissions revoke`, `/permissions grant-user`, and `/permissions revoke-user`. Removing a seeded grant is persistent; restarting Yoko does not add it back. Keep at least one Discord Administrator available because that bypass cannot be removed from the JSON file.
@@ -40,6 +40,9 @@ Discord only controls visibility at the top-level slash-command name, not separa
 | `automod.delete` | `/automod delete` |
 | `automod.view` | `/automod view` |
 | `automod.approve` | Replying `Confirm, Yoko.` or `Cancel, Yoko.` to a queued moderation approval message |
+| `alerts.view` | `/alertadmin view` |
+| `alerts.configure.leave` | `/alertadmin leave add`, `/alertadmin leave edit`, and `/alertadmin leave delete` |
+| `alerts.configure.new-account` | `/alertadmin newaccount set` and `/alertadmin newaccount delete` |
 | `debug.recheck-verified` | `/debug recheck-verified` |
 | `overworld.worlddate` | `/overworld worlddate` |
 | `scenetracker.create` | `/scenetracker create` |
@@ -169,6 +172,18 @@ The first supported rule type is `time-warn`. Its clock can be `unverified` or `
 The bot requires **Kick Members** for kicks, **Ban Members** for bans, and **Moderate Members** for mute/timeouts, in addition to the existing message and role permissions.
 
 Actions can execute immediately or require approval. An approval rule posts its saved template in the chosen channel and persists the pending request. A member with `automod.approve` approves or rejects it by using Discord's **Reply** on that exact bot message and writing `Confirm, Yoko.` or `Cancel, Yoko.`. Available message placeholders are `{user}`, `{automod}`, `{title}`, `{message}`, and `{action}`.
+
+## Member alerts
+
+Member join and leave alerts are server-specific and stored in the ignored local file `data/member-alerts.json`.
+
+- `/alertadmin leave add role:@role` alerts when a member who had that role leaves. Use `edit` to replace its destination or message and `delete` to remove it. Multiple watched roles may be configured; a member matching multiple rules triggers each rule.
+- `/alertadmin newaccount set days:7` alerts when a joining member's Discord account is less than seven days old. Running `set` again changes the threshold, destination, or message; `delete` disables it.
+- `/alertadmin view` shows every configured alert, destination, threshold, and message.
+
+Add, edit, and set commands use private wizards whose channel replies are deleted. Destinations may be `here`, any mentioned text channel, `dm` for the member who triggered the alert, `dm me`, or `dm @user` for a fixed recipient. A subject DM can fail when that member's Discord privacy settings reject bot messages; channel and fixed-recipient alerts continue independently.
+
+All templates support `{user}`, `{username}`, `{displayname}`, `{userid}`, and `{server}`. Leave alerts additionally support `{role}`, `{rolename}`, and `{joinedat}`. New-account alerts support `{accountage}`, `{accountagedays}`, `{threshold}`, and `{createdat}`. Yoko keeps an in-memory role snapshot for each member so leave alerts remain accurate after Discord removes the departed member from the server cache.
 
 ## Verification profiles
 

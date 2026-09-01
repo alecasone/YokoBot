@@ -11,6 +11,7 @@ internal static class Program
     private static readonly CharacterSettingsStore CharacterSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "character-settings.json"));
     private static readonly UserStore Users = new(Path.Combine(Environment.CurrentDirectory, "data", "users.json"));
     private static readonly AutoModerationRuleStore AutoModerationRules = new(Path.Combine(Environment.CurrentDirectory, "data", "automod-rules.json"));
+    private static readonly MemberAlertStore MemberAlertSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "member-alerts.json"));
     private static readonly VerificationSettingsStore VerificationSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "verification-settings.json"));
     private static readonly UniverseStore Universes = new(Path.Combine(Environment.CurrentDirectory, "data", "universe.json"));
     private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"));
@@ -45,6 +46,7 @@ internal static class Program
     });
     private static readonly CharacterRoleService CharacterRoles = new(Client, Characters, CharacterSettings);
     private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules, Permissions, PublicIdentities);
+    private static readonly MemberAlertService MemberAlerts = new(Client, MemberAlertSettings);
     private static readonly VerificationService Verification = new(Client, VerificationSettings, AutoModerator);
 
     private static bool _commandsRegistered;
@@ -75,8 +77,12 @@ internal static class Program
         Client.Ready += RegisterCommandsAsync;
         Client.Ready += CharacterRoles.StartAsync;
         Client.Ready += AutoModerator.StartAsync;
+        Client.Ready += MemberAlerts.StartAsync;
         Client.Ready += SitePublisher.StartAsync;
         Client.UserJoined += AutoModerator.HandleUserJoinedAsync;
+        Client.UserJoined += MemberAlerts.HandleUserJoinedAsync;
+        Client.UserLeft += MemberAlerts.HandleUserLeftAsync;
+        Client.GuildMemberUpdated += MemberAlerts.HandleGuildMemberUpdatedAsync;
         Client.SlashCommandExecuted += HandleSlashCommandAsync;
         Client.AutocompleteExecuted += HandleAutocompleteAsync;
         Client.MessageReceived += HandleMessageReceivedAsync;
@@ -108,7 +114,7 @@ internal static class Program
             [pingCommand, shutdownCommand, .. CharacterCommands.Build(), CharacterAdminCommands.Build(),
              AutoModerationCommands.Build(), VerificationCommands.VerifyCommand(), VerificationCommands.AdminCommand(),
              DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build(), PermissionCommands.Build(),
-             SiteAdminCommands.Build(), RelationshipCommands.Build()];
+             SiteAdminCommands.Build(), RelationshipCommands.Build(), MemberAlertCommands.Build()];
 
         var testGuildIdText = Environment.GetEnvironmentVariable("DISCORD_TEST_GUILD_ID");
         if (ulong.TryParse(testGuildIdText, out var testGuildId))
@@ -170,6 +176,9 @@ internal static class Program
             case "relationship":
                 await RelationshipCommands.HandleAsync(
                     command, Characters, Relationships, RelationshipInference, SitePublisher);
+                break;
+            case "alertadmin":
+                await MemberAlertCommands.HandleAsync(command, MemberAlertSettings);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -280,6 +289,7 @@ internal static class Program
                 message, Characters, Relationships, Permissions, SitePublisher)) return;
         if (await SceneTrackerCommands.HandleInviteReplyAsync(message, Scenes, Characters)) return;
         if (await AutoModerationCommands.HandleWizardMessageAsync(message, AutoModerationRules)) return;
+        if (await MemberAlertCommands.HandleWizardMessageAsync(message, MemberAlertSettings)) return;
         if (await VerificationCommands.HandleWizardMessageAsync(message, VerificationSettings)) return;
         if (await CharacterAdminCommands.HandleWizardMessageAsync(message, CharacterSettings, CharacterRoles)) return;
         await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles, Relationships, SitePublisher);
