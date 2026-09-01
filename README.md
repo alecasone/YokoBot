@@ -222,6 +222,19 @@ The file has this shape:
 
 Environment variables override local-file values. Select **Run Yoko Bot (prompt for secrets)** if you prefer the original password prompts.
 
+## Host on another Windows PC
+
+After cloning or pulling the repository, double-click **`Start-Yoko.cmd`**. The launcher always runs Yoko from the correct repository folder, checks for a compatible .NET 8 SDK, restores dependencies, and uses the ignored `local.settings.json`. If that file is missing, the launcher creates it from the safe template and opens it in Notepad. It never prints the saved tokens. After an unexpected crash it waits five seconds and restarts the bot; a clean `/shutdown` stops it without restarting.
+
+For a first-time handoff:
+
+1. Install the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and clone or pull Yoko.
+2. Securely copy `local.settings.json` from the current host into the new repository root, or let the launcher create it and paste the tokens locally. Never commit or send this file through GitHub.
+3. To preserve live characters and configuration, securely copy the current host's `data/*.json` files into the new clone's `data` folder. These files are also ignored by Git and do not arrive in a pull.
+4. Stop Yoko on the old computer, then double-click `Start-Yoko.cmd` on the new computer. Do not run the same Discord bot token on both computers simultaneously.
+
+The GitHub Pages token is optional when this PC will not publish site updates; set `githubPagesToken` to an empty string in that case. The Discord bot token is required. For terminal use, `./Start-Yoko.ps1 -ValidateOnly` performs setup checks without starting the bot, while `-NoRestart` disables crash restarts.
+
 ## Run from PowerShell
 
 ```powershell
