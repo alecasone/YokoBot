@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-02T01:19:58.9523049+00:00",
+  "generatedAt": "2026-09-02T01:22:12.7940979+00:00",
   "characters": [
     {
       "publicId": "6976f0d6-f916-46f7-8ff5-a9fedb690753",
@@ -321,6 +321,18 @@
         "eyecolor": "Blue",
         "hair-colour": "Blond"
       }
+    },
+    {
+      "publicId": "e2138cee-1807-498e-a4e1-ef3ab121680e",
+      "name": "Radicus",
+      "aliases": [],
+      "age": null,
+      "gender": null,
+      "region": null,
+      "occupation": null,
+      "approvedAt": "2026-09-02T01:21:51.9744956+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "8963c0fd-6ebd-4362-940a-4c77231b364e",
