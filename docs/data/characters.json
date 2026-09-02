@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-02T01:34:04.585874+00:00",
+  "generatedAt": "2026-09-02T01:34:38.160684+00:00",
   "characters": [
     {
       "publicId": "6976f0d6-f916-46f7-8ff5-a9fedb690753",
@@ -346,7 +346,9 @@
       "occupation": null,
       "approvedAt": "2026-09-02T01:21:51.9744956+00:00",
       "reference": null,
-      "properties": {}
+      "properties": {
+        "eyecolor": "4"
+      }
     },
     {
       "publicId": "8963c0fd-6ebd-4362-940a-4c77231b364e",
