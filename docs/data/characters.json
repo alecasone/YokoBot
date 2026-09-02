@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-02T01:22:12.7940979+00:00",
+  "generatedAt": "2026-09-02T01:26:29.2611033+00:00",
   "characters": [
     {
       "publicId": "6976f0d6-f916-46f7-8ff5-a9fedb690753",
@@ -539,6 +539,11 @@
     {
       "id": "biological-twin",
       "displayName": "Biological twin",
+      "category": "Biological"
+    },
+    {
+      "id": "biological-full-sibling",
+      "displayName": "Full biological sibling",
       "category": "Biological"
     },
     {
@@ -1323,6 +1328,24 @@
       "explanation": null
     },
     {
+      "sourceCharacterId": "8ad62823-40fb-4ad5-a2dd-267fa357feff",
+      "targetCharacterId": "e2138cee-1807-498e-a4e1-ef3ab121680e",
+      "typeId": "biological-full-sibling",
+      "displayName": "Full biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "8ad62823-40fb-4ad5-a2dd-267fa357feff",
+      "targetCharacterId": "e2138cee-1807-498e-a4e1-ef3ab121680e",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "full siblings are biological siblings"
+    },
+    {
       "sourceCharacterId": "97726b34-c6ae-4ead-ae05-6ac686a248d3",
       "targetCharacterId": "1f724069-4c20-43da-b432-d6f49667048d",
       "typeId": "biological-descendant",
@@ -1609,6 +1632,42 @@
       "category": "Biological",
       "isInferred": false,
       "explanation": null
+    },
+    {
+      "sourceCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "targetCharacterId": "e2138cee-1807-498e-a4e1-ef3ab121680e",
+      "typeId": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "e2138cee-1807-498e-a4e1-ef3ab121680e",
+      "targetCharacterId": "8ad62823-40fb-4ad5-a2dd-267fa357feff",
+      "typeId": "biological-full-sibling",
+      "displayName": "Full biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "e2138cee-1807-498e-a4e1-ef3ab121680e",
+      "targetCharacterId": "8ad62823-40fb-4ad5-a2dd-267fa357feff",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "full siblings are biological siblings"
+    },
+    {
+      "sourceCharacterId": "e2138cee-1807-498e-a4e1-ef3ab121680e",
+      "targetCharacterId": "d68fae85-8995-4d82-9103-7801e012ae6d",
+      "typeId": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
     },
     {
       "sourceCharacterId": "ec3bea2e-f97e-4015-a0d7-1705bfc8b34a",
