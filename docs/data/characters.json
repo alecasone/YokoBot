@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-02T01:33:31.014636+00:00",
+  "generatedAt": "2026-09-02T01:34:04.585874+00:00",
   "characters": [
     {
       "publicId": "6976f0d6-f916-46f7-8ff5-a9fedb690753",
@@ -157,6 +157,20 @@
       }
     },
     {
+      "publicId": "c0b66444-4e10-41df-ac23-7ed39187b559",
+      "name": "Goldfish Imposter",
+      "aliases": [
+        "https://www.google.com/search?q=goldfish\u002Bphoto\u0026oq=goldfish\u0026gs_lcrp=EgZjaHJvbWUqCAgAEEUYJxg7MggIABBFGCcYOzIPCAEQLhhDGLEDGIAEGIoFMgwIAhAAGEMYgAQYigUyDwgDEAAYQxixAxiABBiKBTIMCAQQABhDGIAEGIoFMgwIBRAAGEMYgAQYigUyDAgGEAAYQxiABBiKBTISCAcQABhDGIMBGLEDGIAEGIoFMgcICBAAGI8CMgcICRAAGI8C0gEHOTA4ajBqN6gCALACAA\u0026sourceid=chrome\u0026source=chrome.ob\u0026ie=UTF-8"
+      ],
+      "age": null,
+      "gender": null,
+      "region": null,
+      "occupation": null,
+      "approvedAt": "2026-09-02T01:29:09.79482+00:00",
+      "reference": null,
+      "properties": {}
+    },
+    {
       "publicId": "bee88542-15d3-4689-aae7-3430b3fea551",
       "name": "grub",
       "aliases": [],
@@ -165,18 +179,6 @@
       "region": null,
       "occupation": null,
       "approvedAt": "2026-08-29T21:03:17.4083226+00:00",
-      "reference": null,
-      "properties": {}
-    },
-    {
-      "publicId": "c0b66444-4e10-41df-ac23-7ed39187b559",
-      "name": "https://www.google.com/search?q=goldfish\u002Bphoto\u0026oq=goldfish\u0026gs_lcrp=EgZjaHJvbWUqCAgAEEUYJxg7MggIABBFGCcYOzIPCAEQLhhDGLEDGIAEGIoFMgwIAhAAGEMYgAQYigUyDwgDEAAYQxixAxiABBiKBTIMCAQQABhDGIAEGIoFMgwIBRAAGEMYgAQYigUyDAgGEAAYQxiABBiKBTISCAcQABhDGIMBGLEDGIAEGIoFMgcICBAAGI8CMgcICRAAGI8C0gEHOTA4ajBqN6gCALACAA\u0026sourceid=chrome\u0026source=chrome.ob\u0026ie=UTF-8",
-      "aliases": [],
-      "age": null,
-      "gender": null,
-      "region": null,
-      "occupation": null,
-      "approvedAt": "2026-09-02T01:29:09.79482+00:00",
       "reference": null,
       "properties": {}
     },
