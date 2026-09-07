@@ -18,6 +18,8 @@ internal sealed class CharacterStore
 
     public async Task<Character?> AddAsync(ulong guildId, ulong userId, string name, ulong approvedBy)
     {
+        if (!CharacterSchema.TryNormalizeName(name, out var normalizedName)) return null;
+
         await _gate.WaitAsync();
         try
         {
@@ -25,12 +27,12 @@ internal sealed class CharacterStore
             var server = GetOrAddServer(data, guildId);
             if (!server.TryGetValue(userId.ToString(), out var user))
                 server[userId.ToString()] = user = new UserCharacters();
-            if (Find(user, name) is not null) return null;
+            if (Find(user, normalizedName) is not null) return null;
 
             var character = new Character
             {
                 PublicId = Guid.NewGuid(),
-                Name = name.Trim(),
+                Name = normalizedName,
                 ApprovedBy = approvedBy,
                 OcRoleIndex = user.Characters.Count + 1
             };
@@ -60,6 +62,22 @@ internal sealed class CharacterStore
             var data = await LoadUnsafeAsync(guildId);
             return TryGetUser(data, guildId, userId, out var user)
                 ? user!.Characters.Select(character => character.Name).OrderBy(name => name).ToArray()
+                : [];
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<IReadOnlyList<CharacterChoice>> GetCharacterChoicesAsync(ulong guildId, ulong userId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync(guildId);
+            return TryGetUser(data, guildId, userId, out var user)
+                ? user!.Characters
+                    .Select(character => new CharacterChoice(character.PublicId, character.Name))
+                    .OrderBy(choice => choice.Name)
+                    .ToArray()
                 : [];
         }
         finally { _gate.Release(); }
@@ -155,6 +173,8 @@ internal sealed class CharacterStore
 
     public async Task<bool> SetFieldAsync(ulong guildId, ulong userId, string name, string field, string value)
     {
+        if (!CharacterSchema.TryNormalizeProperty(field, out _)) return false;
+
         await _gate.WaitAsync();
         try
         {
@@ -165,8 +185,13 @@ internal sealed class CharacterStore
             switch (Normalize(field))
             {
                 case "name":
-                    var updatedName = value.Trim();
-                    if (!character.Name.Equals(updatedName, StringComparison.OrdinalIgnoreCase) &&
+                    if (!CharacterSchema.TryNormalizeName(value, out var updatedName) ||
+                        user!.Characters.Any(other =>
+                            other.PublicId != character.PublicId &&
+                            other.Name.Equals(updatedName, StringComparison.OrdinalIgnoreCase)))
+                        return false;
+                    if (CharacterSchema.TryNormalizeName(character.Name, out _) &&
+                        !character.Name.Equals(updatedName, StringComparison.OrdinalIgnoreCase) &&
                         !character.Aliases.Contains(character.Name, StringComparer.OrdinalIgnoreCase))
                         character.Aliases.Add(character.Name);
                     character.Name = updatedName;
@@ -199,6 +224,8 @@ internal sealed class CharacterStore
 
     public async Task<bool> RemoveFieldAsync(ulong guildId, ulong userId, string name, string field)
     {
+        if (!CharacterSchema.TryNormalizeProperty(field, out _)) return false;
+
         await _gate.WaitAsync();
         try
         {
@@ -311,8 +338,15 @@ internal sealed class CharacterStore
         return data.TryGetValue(guildId.ToString(), out var server) && server.TryGetValue(userId.ToString(), out user);
     }
 
-    private static Character? Find(UserCharacters user, string name) =>
-        user.Characters.FirstOrDefault(character => character.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase));
+    private static Character? Find(UserCharacters user, string nameOrSelector)
+    {
+        var value = nameOrSelector.Trim();
+        if (CharacterSchema.TryParseSelector(value, out var publicId))
+            return user.Characters.FirstOrDefault(character => character.PublicId == publicId);
+
+        return user.Characters.FirstOrDefault(character =>
+            character.Name.Equals(value, StringComparison.OrdinalIgnoreCase));
+    }
 
     private static string Normalize(string field) =>
         new(field.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());

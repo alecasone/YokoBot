@@ -244,6 +244,7 @@ internal static class CharacterAdminCommands
         var typed = interaction.Data.Current.Value?.ToString() ?? string.Empty;
         await interaction.RespondAsync(candidates
             .Where(item => item.Contains(typed, StringComparison.OrdinalIgnoreCase))
+            .Where(item => item.Length is > 0 and <= CharacterSchema.AutocompleteLabelMaxLength)
             .Take(25)
             .Select(item => new AutocompleteResult(item, item)));
     }
@@ -265,6 +266,7 @@ internal static class CharacterAdminCommands
                 .WithDescription("Property name, such as eye-color")
                 .WithType(ApplicationCommandOptionType.String)
                 .WithRequired(true)
+                .WithMaxLength(CharacterSchema.PropertyNameMaxLength)
                 .WithAutocomplete(propertyAutocomplete));
         }
         return command;
@@ -280,8 +282,14 @@ internal static class CharacterAdminCommands
                 .WithDescription("Default property; a new name is allowed when adding")
                 .WithType(ApplicationCommandOptionType.String)
                 .WithRequired(true)
+                .WithMaxLength(CharacterSchema.PropertyNameMaxLength)
                 .WithAutocomplete(true))
-            .AddOption("value", ApplicationCommandOptionType.String, "Suggested value", isRequired: true);
+            .AddOption(new SlashCommandOptionBuilder()
+                .WithName("value")
+                .WithDescription($"Suggested value ({CharacterSchema.AutofillValueMaxLength} characters maximum)")
+                .WithType(ApplicationCommandOptionType.String)
+                .WithRequired(true)
+                .WithMaxLength(CharacterSchema.AutofillValueMaxLength));
 
     private static string Value(IReadOnlyCollection<SocketSlashCommandDataOption> options, string name) =>
         (string)options.First(option => option.Name == name).Value;
@@ -387,12 +395,22 @@ internal static class CharacterAdminCommands
             wizard.Phase = ApprovalMessagePhase.Template;
             await UpdateApprovalAsync(wizard,
                 $"What message should be sent to {DestinationLabel(wizard)}? Your next reply is stored verbatim, including Markdown and emoji. " +
-                "Use `{user}` for the member and `{charactername}` for the approved character. Reply `cancel` to stop. Your reply will be deleted.");
+                $"Use `{{user}}` for the member and `{{charactername}}` for the approved character. Keep it at or below " +
+                $"**{CharacterSchema.ApprovalTemplateMaxLength} characters** so expanded placeholders remain within Discord's message limit. " +
+                "Reply `cancel` to stop. Your reply will be deleted.");
             return;
         }
 
         if (wizard.Phase == ApprovalMessagePhase.Template)
         {
+            if (content.Length > CharacterSchema.ApprovalTemplateMaxLength)
+            {
+                await UpdateApprovalAsync(wizard,
+                    $"That template contains **{content.Length}** characters. Shorten it to " +
+                    $"**{CharacterSchema.ApprovalTemplateMaxLength} characters or fewer** and reply again.");
+                return;
+            }
+
             await store.AddApprovalMessageAsync(wizard.GuildId, new CharacterApprovalMessage
             {
                 Destination = wizard.Destination,

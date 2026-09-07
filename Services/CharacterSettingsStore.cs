@@ -159,8 +159,8 @@ internal sealed class CharacterSettingsStore
 
     public async Task<bool> AddPropertyAsync(ulong guildId, string property)
     {
-        var normalized = CharacterSchema.Normalize(property);
-        if (string.IsNullOrWhiteSpace(normalized) || CharacterSchema.ReservedProperties.Contains(normalized)) return false;
+        if (!CharacterSchema.TryNormalizeProperty(property, out var normalized) ||
+            CharacterSchema.ReservedProperties.Contains(normalized)) return false;
 
         await _gate.WaitAsync();
         try
@@ -195,7 +195,9 @@ internal sealed class CharacterSettingsStore
 
     public async Task<bool> AddAutofillAsync(ulong guildId, string field, string value)
     {
-        var normalized = CharacterSchema.Normalize(field);
+        if (!CharacterSchema.TryNormalizeProperty(field, out var normalized)) return false;
+        value = value.Trim();
+        if (value.Length is 0 or > CharacterSchema.AutofillValueMaxLength) return false;
         await _gate.WaitAsync();
         try
         {
@@ -206,7 +208,7 @@ internal sealed class CharacterSettingsStore
             if (!settings.AutofillValues.TryGetValue(normalized, out var values))
                 settings.AutofillValues[normalized] = values = [];
             if (values.Contains(value, StringComparer.OrdinalIgnoreCase)) return false;
-            values.Add(value.Trim());
+            values.Add(value);
             values.Sort(StringComparer.OrdinalIgnoreCase);
             await SaveUnsafeAsync(data);
             return true;

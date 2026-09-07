@@ -86,12 +86,14 @@ internal static class SceneTrackerCommands
         }
 
         var options = command.Data.Options.First().Options;
-        var characterName = (string)Option(options, "character").Value;
-        if (await characters.GetAsync(guildId, command.User.Id, characterName) is null)
+        var characterInput = (string)Option(options, "character").Value;
+        var character = await characters.GetAsync(guildId, command.User.Id, characterInput);
+        if (character is null)
         {
             await command.RespondAsync("That character is not stored under your account.", ephemeral: true);
             return;
         }
+        var characterName = character.Name;
 
         var universe = await universes.GetAsync(guildId);
         if (universe.CurrentWorldDate is not { } currentWorldDate)
@@ -114,7 +116,7 @@ internal static class SceneTrackerCommands
         var title = string.IsNullOrWhiteSpace(requestedTitle) ? sceneDate.Display : requestedTitle;
         var scene = await scenes.CreateAsync(guildId, command.User.Id, characterName, sceneDate, title!);
         await command.RespondAsync(
-            $"Created scene **{scene.Title}** on **{scene.WorldDate.Display}** with **{characterName}**. " +
+            $"Created scene **{scene.Title}** on **{scene.WorldDate.Display}** with **{CharacterSchema.BoundedName(characterName)}**. " +
             $"Scene ID: `{ShortId(scene.Id)}`.",
             ephemeral: true);
     }
@@ -157,7 +159,7 @@ internal static class SceneTrackerCommands
         if (root.Name == "view")
         {
             await command.RespondAsync(
-                FormatSceneDetails(scene),
+                TrimMessage(FormatSceneDetails(scene)),
                 allowedMentions: AllowedMentions.None);
             return;
         }
@@ -197,12 +199,15 @@ internal static class SceneTrackerCommands
         var user = (IUser)Option(action.Options, "user").Value;
         if (root.Name == "invite")
         {
-            var characterName = (string)Option(action.Options, "character").Value;
-            if (await characters.GetAsync(guildId, user.Id, characterName) is null)
+            var characterInput = (string)Option(action.Options, "character").Value;
+            var invitedCharacter = await characters.GetAsync(guildId, user.Id, characterInput);
+            if (invitedCharacter is null)
             {
-                await command.RespondAsync($"**{characterName}** is not stored under {user.Mention}.", ephemeral: true);
+                await command.RespondAsync($"That character is not stored under {user.Mention}.", ephemeral: true);
                 return;
             }
+            var characterName = invitedCharacter.Name;
+            var characterDisplay = CharacterSchema.BoundedName(characterName);
 
             if (scene.Participants.Any(participant =>
                     participant.UserId == user.Id &&
@@ -219,7 +224,7 @@ internal static class SceneTrackerCommands
 
             await command.DeferAsync(ephemeral: true);
             var invitationMessage = await command.Channel.SendMessageAsync(
-                $"{user.Mention}, <@{command.User.Id}> invited your character **{characterName}** to " +
+                $"{user.Mention}, <@{command.User.Id}> invited your character **{characterDisplay}** to " +
                 $"scene **{scene.Title}** (`{scene.WorldDate.Display}`).\n" +
                 "Reply to this message with `Accept, Yoko.` or `Decline, Yoko.`");
             var inviteStatus = await scenes.AddPendingInviteAsync(guildId, new PendingSceneInvite
@@ -245,7 +250,7 @@ internal static class SceneTrackerCommands
             }
 
             await command.ModifyOriginalResponseAsync(properties =>
-                properties.Content = $"Invitation sent to {user.Mention} for **{characterName}** in **{scene.Title}**.");
+                properties.Content = $"Invitation sent to {user.Mention} for **{characterDisplay}** in **{scene.Title}**.");
             return;
         }
 
@@ -258,11 +263,19 @@ internal static class SceneTrackerCommands
             return;
         }
 
-        var removedCharacter = (string)Option(action.Options, "character").Value;
+        var removedCharacterInput = (string)Option(action.Options, "character").Value;
+        var storedCharacter = await characters.GetAsync(guildId, user.Id, removedCharacterInput);
+        if (storedCharacter is null)
+        {
+            await command.RespondAsync("That character is no longer stored under that member.", ephemeral: true);
+            return;
+        }
+        var removedCharacter = storedCharacter.Name;
+        var removedCharacterDisplay = CharacterSchema.BoundedName(removedCharacter);
         var removeStatus = await scenes.RemoveCharacterAsync(guildId, sceneId, user.Id, removedCharacter);
         await command.RespondAsync(removeStatus switch
         {
-            SceneMutationStatus.Success => $"Removed {user.Mention}'s **{removedCharacter}** from **{scene.Title}**.",
+            SceneMutationStatus.Success => $"Removed {user.Mention}'s **{removedCharacterDisplay}** from **{scene.Title}**.",
             SceneMutationStatus.ParticipantNotFound => "That member is not part of the scene.",
             SceneMutationStatus.CharacterNotFound => "That character is not part of the scene.",
             _ => "That scene is no longer active."
@@ -294,11 +307,7 @@ internal static class SceneTrackerCommands
         if (interaction.Data.Current.Name == "character")
         {
             var userId = ReadUserId(interaction.Data.Options) ?? interaction.User.Id;
-            var names = await characters.GetCharacterNamesAsync(guildId, userId);
-            await interaction.RespondAsync(names
-                .Where(name => name.Contains(typed, StringComparison.OrdinalIgnoreCase))
-                .Take(25)
-                .Select(name => new AutocompleteResult(name, name)));
+            await CharacterAutocomplete.RespondAsync(interaction, characters, guildId, userId, typed);
             return;
         }
 
@@ -324,6 +333,7 @@ internal static class SceneTrackerCommands
 
         var pending = await scenes.GetPendingInviteAsync(channel.Guild.Id, referencedMessageId.Value);
         if (pending is null) return false;
+        var pendingCharacterDisplay = CharacterSchema.BoundedName(pending.CharacterName);
         if (message.Author.Id != pending.InvitedUserId)
         {
             await message.Channel.SendMessageAsync($"Only <@{pending.InvitedUserId}> can answer that scene invitation.");
@@ -346,7 +356,7 @@ internal static class SceneTrackerCommands
             await UpdateInvitationAsync(
                 channel.Guild,
                 pending,
-                $"{message.Author.Mention} declined the invitation for **{pending.CharacterName}**.");
+                $"{message.Author.Mention} declined the invitation for **{pendingCharacterDisplay}**.");
             return true;
         }
 
@@ -364,7 +374,7 @@ internal static class SceneTrackerCommands
             await UpdateInvitationAsync(
                 channel.Guild,
                 pending,
-                $"This invitation expired because **{pending.CharacterName}** is no longer stored for {message.Author.Mention}.");
+                $"This invitation expired because **{pendingCharacterDisplay}** is no longer stored for {message.Author.Mention}.");
             return true;
         }
 
@@ -375,11 +385,11 @@ internal static class SceneTrackerCommands
             pending.CharacterName);
         await scenes.RemovePendingInviteAsync(channel.Guild.Id, pending.InvitationMessageId);
         await UpdateInvitationAsync(channel.Guild, pending, status switch
-        {
-            SceneMutationStatus.Success =>
-                $"{message.Author.Mention} accepted. **{pending.CharacterName}** joined scene **{scene.Title}**.",
+            {
+                SceneMutationStatus.Success =>
+                $"{message.Author.Mention} accepted. **{pendingCharacterDisplay}** joined scene **{scene.Title}**.",
             SceneMutationStatus.AlreadyExists =>
-                $"{message.Author.Mention}'s **{pending.CharacterName}** is already part of scene **{scene.Title}**.",
+                $"{message.Author.Mention}'s **{pendingCharacterDisplay}** is already part of scene **{scene.Title}**.",
             _ => "This invitation expired because the scene is no longer active."
         });
         return true;
@@ -472,6 +482,9 @@ internal static class SceneTrackerCommands
 
     private static string ShortId(string sceneId) => sceneId[..Math.Min(8, sceneId.Length)];
 
+    private static string TrimMessage(string content) =>
+        content.Length <= 2000 ? content : content[..1997] + "...";
+
     private static SlashCommandOptionBuilder SceneAction(string name, string description) =>
         new SlashCommandOptionBuilder()
             .WithName(name)
@@ -490,9 +503,10 @@ internal static class SceneTrackerCommands
     private static SlashCommandOptionBuilder CharacterOption(string name, string description) =>
         new SlashCommandOptionBuilder()
             .WithName(name)
-            .WithDescription(description)
+            .WithDescription($"{description} ({CharacterSchema.NameMaxLength} characters maximum)")
             .WithType(ApplicationCommandOptionType.String)
             .WithRequired(true)
+            .WithMaxLength(CharacterSchema.NameMaxLength)
             .WithAutocomplete(true);
 
     private static SocketSlashCommandDataOption Option(

@@ -76,7 +76,7 @@ Character data is stored locally in `data/characters.json`, keyed first by Disco
 
 Character commands (subject to the permission nodes above):
 
-- `/character approve user character-name [age] [gender] [region]` creates the character. Age, gender, and region can be supplied immediately; a private prompt asks only for remaining baseline fields. Reply `skip` to leave a value empty, or `stop`/`end` to save and exit early. The bot immediately deletes each channel reply and updates the ephemeral prompt. Discord does not permit truly empty messages.
+- `/character approve user character-name [age] [gender] [region]` creates the character. Character names are limited to **100 characters**, matching Discord's autocomplete limit; biographies and descriptions belong in character properties instead. Age, gender, and region can be supplied immediately; a private prompt asks only for remaining baseline fields. Reply `skip` to leave a value empty, or `stop`/`end` to save and exit early. The bot immediately deletes each channel reply and updates the ephemeral prompt. Discord does not permit truly empty messages.
 - `/character edit user character-name field value` changes a field. Baseline names are `name`, `age`, `gender`, `region`, `occupation`, `reference`, `reference-kind`, and `reference-format`. Any other name creates a flexible custom property.
 - `/character remove-field user character-name field` clears a baseline value or deletes a custom property.
 - `/character view user character-name` previews the current record privately.
@@ -95,6 +95,10 @@ Use `/charadmin approvemessage add` to configure messages sent when a character 
 Each add-wizard run appends messages to the existing list. `/charadmin approvemessage delete` displays a numbered destination/template summary and accepts comma-separated selections such as `1`, `1,3`, or `1,4,5`. Reply `clear` or `none` at an add-wizard destination prompt to remove every configured approval message. A delivery failure does not undo character approval; the private approval response reports how many configured messages succeeded or failed.
 
 After selecting a user, Discord autocompletes that user's available character names. Edit/remove commands also autocomplete the baseline fields and any custom fields already stored on the selected character.
+
+Character choices use the character's short internal selector behind the displayed name. This keeps rename-safe command selection and allows an old, oversized name to be selected, renamed, or deleted without violating Discord's 100-character autocomplete limit. When deleting such a legacy record, Yoko asks for its internal ID instead of repeating the oversized name in the confirmation message.
+
+Other Discord-facing character configuration follows the same boundary: property names and autofill suggestions are limited to **100 characters** because they appear in autocomplete. Approval-message templates are limited to **1,800 characters**, leaving room for `{user}` and `{charactername}` to expand beneath Discord's 2,000-character message limit. Long property values remain storable; character views are safely shortened at Discord's message boundary instead of corrupting the stored value.
 
 Every new character reference defaults to `link/sheet`; set its URL with the `reference` field. Region currently accepts text, with a dedicated validation point ready for the future region catalog.
 

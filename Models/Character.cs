@@ -33,3 +33,5 @@ internal sealed class UserCharacters
 {
     public List<Character> Characters { get; set; } = [];
 }
+
+internal sealed record CharacterChoice(Guid PublicId, string Name);

@@ -18,7 +18,13 @@ internal static class CharacterCommands
                 .WithDescription("Approves and creates a user's character.")
                 .WithType(ApplicationCommandOptionType.SubCommand)
                 .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
-                .AddOption("character-name", ApplicationCommandOptionType.String, "Character name", isRequired: true)
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName("character-name")
+                    .WithDescription($"Character name ({CharacterSchema.NameMaxLength} characters maximum)")
+                    .WithType(ApplicationCommandOptionType.String)
+                    .WithRequired(true)
+                    .WithMinLength(1)
+                    .WithMaxLength(CharacterSchema.NameMaxLength))
                 .AddOption(AutocompleteOption("age", "Optional age", required: false))
                 .AddOption(AutocompleteOption("gender", "Optional gender", required: false))
                 .AddOption(AutocompleteOption("region", "Optional region", required: false));
@@ -28,8 +34,8 @@ internal static class CharacterCommands
                 .WithDescription("Changes a baseline or custom character property.")
                 .WithType(ApplicationCommandOptionType.SubCommand)
                 .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
-                .AddOption(AutocompleteOption("character-name", "Character name"))
-                .AddOption(AutocompleteOption("field", "Property to edit"))
+                .AddOption(CharacterOption("character-name", "Character name"))
+                .AddOption(PropertyOption("field", "Property to edit"))
                 .AddOption("value", ApplicationCommandOptionType.String, "New value", isRequired: true);
 
         var removeField = new SlashCommandOptionBuilder()
@@ -37,22 +43,22 @@ internal static class CharacterCommands
                 .WithDescription("Clears a baseline property or removes a custom property.")
                 .WithType(ApplicationCommandOptionType.SubCommand)
                 .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
-                .AddOption(AutocompleteOption("character-name", "Character name"))
-                .AddOption(AutocompleteOption("field", "Property to remove"));
+                .AddOption(CharacterOption("character-name", "Character name"))
+                .AddOption(PropertyOption("field", "Property to remove"));
 
         var view = new SlashCommandOptionBuilder()
                 .WithName("view")
                 .WithDescription("Displays a stored character.")
                 .WithType(ApplicationCommandOptionType.SubCommand)
                 .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
-                .AddOption(AutocompleteOption("character-name", "Character name"));
+                .AddOption(CharacterOption("character-name", "Character name"));
 
         var delete = new SlashCommandOptionBuilder()
                 .WithName("delete")
                 .WithDescription("Permanently deletes a character after typed confirmation.")
                 .WithType(ApplicationCommandOptionType.SubCommand)
                 .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
-                .AddOption(AutocompleteOption("character-name", "Character name"));
+                .AddOption(CharacterOption("character-name", "Character name"));
 
         return
         [
@@ -95,12 +101,15 @@ internal static class CharacterCommands
             return;
         }
 
-        IReadOnlyList<string> candidates;
         if (interaction.Data.Current.Name == "character-name")
         {
-            candidates = await store.GetCharacterNamesAsync(guildId, userId.Value);
+            var typed = interaction.Data.Current.Value?.ToString() ?? string.Empty;
+            await CharacterAutocomplete.RespondAsync(interaction, store, guildId, userId.Value, typed);
+            return;
         }
-        else if (interaction.Data.Current.Name == "field")
+
+        IReadOnlyList<string> candidates;
+        if (interaction.Data.Current.Name == "field")
         {
             var characterName = options.FirstOrDefault(option => option.Name == "character-name")?.Value?.ToString();
             if (string.IsNullOrWhiteSpace(characterName))
@@ -127,6 +136,7 @@ internal static class CharacterCommands
         var typed = interaction.Data.Current.Value?.ToString() ?? string.Empty;
         var results = candidates
             .Where(candidate => candidate.Contains(typed, StringComparison.OrdinalIgnoreCase))
+            .Where(candidate => candidate.Length is > 0 and <= CharacterSchema.AutocompleteLabelMaxLength)
             .Take(25)
             .Select(candidate => new AutocompleteResult(candidate, candidate));
         await interaction.RespondAsync(results);
@@ -148,11 +158,19 @@ internal static class CharacterCommands
 
         var subcommand = command.Data.Options.First();
         var user = (IUser)Option(subcommand.Options, "user").Value;
-        var characterName = (string)Option(subcommand.Options, "character-name").Value;
+        var characterInput = (string)Option(subcommand.Options, "character-name").Value;
 
         switch (subcommand.Name)
         {
             case "approve":
+                if (!CharacterSchema.TryNormalizeName(characterInput, out var characterName))
+                {
+                    await command.RespondAsync(
+                        $"Character names must contain 1–{CharacterSchema.NameMaxLength} characters. " +
+                        "Put biographies and descriptions in character properties rather than the name field.",
+                        ephemeral: true);
+                    break;
+                }
                 await command.DeferAsync(ephemeral: true);
                 var capacity = await characterRoles.GetCapacityAsync(guildId, user.Id);
                 if (capacity.IsFull)
@@ -210,42 +228,102 @@ internal static class CharacterCommands
             case "edit":
                 var field = (string)Option(subcommand.Options, "field").Value;
                 var value = (string)Option(subcommand.Options, "value").Value;
-                var edited = await store.SetFieldAsync(guildId, user.Id, characterName, field, value);
+                if (!CharacterSchema.TryNormalizeProperty(field, out _))
+                {
+                    await command.RespondAsync(
+                        $"Property names must contain 1–{CharacterSchema.PropertyNameMaxLength} characters.",
+                        ephemeral: true);
+                    break;
+                }
+                var editingCharacter = await store.GetAsync(guildId, user.Id, characterInput);
+                if (editingCharacter is null)
+                {
+                    await command.RespondAsync("Character not found.", ephemeral: true);
+                    break;
+                }
+                if (CharacterSchema.Normalize(field) == "name" &&
+                    !CharacterSchema.TryNormalizeName(value, out _))
+                {
+                    await command.RespondAsync(
+                        $"Character names must contain 1–{CharacterSchema.NameMaxLength} characters and cannot begin with `character:`.",
+                        ephemeral: true);
+                    break;
+                }
+                var edited = await store.SetFieldAsync(
+                    guildId,
+                    user.Id,
+                    CharacterSchema.Selector(editingCharacter.PublicId),
+                    field,
+                    value);
                 if (edited) await sitePublisher.QueueAsync(guildId);
                 await command.RespondAsync(edited
-                    ? $"Set **{field}** on **{characterName}** to `{value}`."
-                    : "Character not found.", ephemeral: true);
+                    ? $"Set **{field}** on **{CharacterSchema.BoundedName(editingCharacter.Name)}**."
+                    : CharacterSchema.Normalize(field) == "name"
+                        ? "That name is already used by another character or is not valid."
+                        : "That field could not be updated.", ephemeral: true);
                 break;
             case "remove-field":
                 var removedField = (string)Option(subcommand.Options, "field").Value;
-                var removed = await store.RemoveFieldAsync(guildId, user.Id, characterName, removedField);
+                if (!CharacterSchema.TryNormalizeProperty(removedField, out _))
+                {
+                    await command.RespondAsync(
+                        $"Property names must contain 1–{CharacterSchema.PropertyNameMaxLength} characters.",
+                        ephemeral: true);
+                    break;
+                }
+                var removingFieldFrom = await store.GetAsync(guildId, user.Id, characterInput);
+                if (removingFieldFrom is null)
+                {
+                    await command.RespondAsync("Character not found.", ephemeral: true);
+                    break;
+                }
+                var removed = await store.RemoveFieldAsync(
+                    guildId,
+                    user.Id,
+                    CharacterSchema.Selector(removingFieldFrom.PublicId),
+                    removedField);
                 if (removed) await sitePublisher.QueueAsync(guildId);
                 await command.RespondAsync(removed
-                    ? $"Removed **{removedField}** from **{characterName}**."
+                    ? $"Removed **{removedField}** from **{CharacterSchema.BoundedName(removingFieldFrom.Name)}**."
                     : "Character or property not found.", ephemeral: true);
                 break;
             case "view":
                 await store.ReindexOcRolesAsync(guildId, user.Id);
-                var character = await store.GetAsync(guildId, user.Id, characterName);
+                var character = await store.GetAsync(guildId, user.Id, characterInput);
                 var defaultProperties = await settings.GetDefaultPropertiesAsync(guildId);
                 var ocRoleIds = await settings.GetOcRoleIdsAsync(guildId);
                 await command.RespondAsync(character is null
                     ? "Character not found."
-                    : Format(character, user, defaultProperties, ocRoleIds), ephemeral: true);
+                    : TrimMessage(Format(character, user, defaultProperties, ocRoleIds)), ephemeral: true);
                 break;
             case "delete":
-                if (await store.GetAsync(guildId, user.Id, characterName) is null)
+                var deletingCharacter = await store.GetAsync(guildId, user.Id, characterInput);
+                if (deletingCharacter is null)
                 {
                     await command.RespondAsync("Character not found.", ephemeral: true);
                     break;
                 }
 
-                var deleteSession = new DeleteSession(guildId, user.Id, characterName, command);
+                var deletionName = CharacterSchema.BoundedName(deletingCharacter.Name);
+                var confirmationTarget = deletingCharacter.Name.Length <= CharacterSchema.NameMaxLength
+                    ? deletingCharacter.Name
+                    : deletingCharacter.PublicId.ToString("N");
+                var confirmationText = $"confirm {confirmationTarget}";
+                var deleteSession = new DeleteSession(
+                    guildId,
+                    user.Id,
+                    CharacterSchema.Selector(deletingCharacter.PublicId),
+                    deletionName,
+                    confirmationText,
+                    command);
                 FilloutSessions.TryRemove((command.Channel.Id, command.User.Id), out _);
                 DeleteSessions[(command.Channel.Id, command.User.Id)] = deleteSession;
                 await command.RespondAsync(
-                    $"This permanently removes **{characterName}** and all of its stored properties. " +
-                    $"To verify, type `confirm {characterName}` in this channel. Type `cancel` to stop. Your reply will be deleted.",
+                    $"This permanently removes **{deletionName}** and all of its stored properties. " +
+                    $"To verify, type `{confirmationText}` in this channel. Type `cancel` to stop. Your reply will be deleted." +
+                    (deletingCharacter.Name.Length > CharacterSchema.NameMaxLength
+                        ? " This is a legacy oversized name, so its short internal ID is used for confirmation."
+                        : string.Empty),
                     ephemeral: true);
                 break;
         }
@@ -314,6 +392,14 @@ internal static class CharacterCommands
             .WithRequired(required)
             .WithAutocomplete(true);
 
+    private static SlashCommandOptionBuilder CharacterOption(string name, string description) =>
+        AutocompleteOption(name, $"{description} ({CharacterSchema.NameMaxLength} characters maximum)")
+            .WithMaxLength(CharacterSchema.NameMaxLength);
+
+    private static SlashCommandOptionBuilder PropertyOption(string name, string description) =>
+        AutocompleteOption(name, $"{description} ({CharacterSchema.PropertyNameMaxLength} characters maximum)")
+            .WithMaxLength(CharacterSchema.PropertyNameMaxLength);
+
     private static ulong? ReadUserId(IReadOnlyCollection<AutocompleteOption> options)
     {
         var value = options.FirstOrDefault(option => option.Name == "user")?.Value;
@@ -327,7 +413,7 @@ internal static class CharacterCommands
         IReadOnlyList<string> defaultProperties,
         IReadOnlyList<ulong> ocRoleIds)
     {
-        var text = new StringBuilder($"**{character.Name}** — {owner.Mention}\n");
+        var text = new StringBuilder($"**{CharacterSchema.BoundedName(character.Name)}** — {owner.Mention}\n");
         if (character.OcRoleIndex > 0)
         {
             var role = character.OcRoleIndex <= ocRoleIds.Count
@@ -419,16 +505,15 @@ internal static class CharacterCommands
             return;
         }
 
-        var expected = $"confirm {session.CharacterName}";
-        if (!reply.Equals(expected, StringComparison.OrdinalIgnoreCase))
+        if (!reply.Equals(session.ConfirmationText, StringComparison.OrdinalIgnoreCase))
         {
             await session.Interaction.ModifyOriginalResponseAsync(properties =>
-                properties.Content = $"Confirmation did not match. Type exactly `confirm {session.CharacterName}` or type `cancel`.");
+                properties.Content = $"Confirmation did not match. Type exactly `{session.ConfirmationText}` or type `cancel`.");
             return;
         }
 
-        var deletingCharacter = await store.GetAsync(session.GuildId, session.OwnerId, session.CharacterName);
-        var deleted = await store.DeleteAsync(session.GuildId, session.OwnerId, session.CharacterName);
+        var deletingCharacter = await store.GetAsync(session.GuildId, session.OwnerId, session.CharacterSelector);
+        var deleted = await store.DeleteAsync(session.GuildId, session.OwnerId, session.CharacterSelector);
         var removedRelationships = deleted && deletingCharacter is not null
             ? await relationships.RemoveForCharacterAsync(session.GuildId, deletingCharacter.PublicId)
             : 0;
@@ -438,7 +523,7 @@ internal static class CharacterCommands
         if (deleted) await sitePublisher.QueueAsync(session.GuildId);
         DeleteSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
         await session.Interaction.ModifyOriginalResponseAsync(properties => properties.Content = deleted
-            ? $"**{session.CharacterName}** and all of its stored data were permanently deleted." +
+            ? $"**{session.DisplayName}** and all of its stored data were permanently deleted." +
               (removedRelationships > 0
                   ? $" Removed **{removedRelationships}** direct or pending relationship record(s); inferred relations were recalculated."
                   : string.Empty) +
@@ -449,7 +534,7 @@ internal static class CharacterCommands
     }
 
     private static Task UpdateOriginalAsync(SocketSlashCommand command, string content) =>
-        command.ModifyOriginalResponseAsync(properties => properties.Content = content);
+        command.ModifyOriginalResponseAsync(properties => properties.Content = TrimMessage(content));
 
     private static string RoleNotice(CharacterRoleSyncResult result)
     {
@@ -519,6 +604,9 @@ internal static class CharacterCommands
         return $" Sent **{delivery.Sent}** approval message(s); **{delivery.Failed}** could not be delivered.";
     }
 
+    private static string TrimMessage(string content) =>
+        content.Length <= 2000 ? content : content[..1997] + "...";
+
     private sealed record FilloutSession(
         ulong GuildId,
         ulong OwnerId,
@@ -532,7 +620,9 @@ internal static class CharacterCommands
     private sealed record DeleteSession(
         ulong GuildId,
         ulong OwnerId,
-        string CharacterName,
+        string CharacterSelector,
+        string DisplayName,
+        string ConfirmationText,
         SocketSlashCommand Interaction);
 
     private sealed record FilloutField(string Field, string Label, IReadOnlyList<string> Suggestions);

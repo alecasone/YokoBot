@@ -116,15 +116,17 @@ internal static class RelationshipCommands
         if (current == "my-character" ||
             current == "character" && !options.Any(option => option.Name == "user"))
         {
-            await RespondNamesAsync(interaction, await characters.GetCharacterNamesAsync(guildId, interaction.User.Id), typed);
+            await CharacterAutocomplete.RespondAsync(interaction, characters, guildId, interaction.User.Id, typed);
             return;
         }
 
         if (current == "their-character" || current == "character")
         {
             var userId = ReadUserId(options);
-            var names = userId is null ? [] : await characters.GetCharacterNamesAsync(guildId, userId.Value);
-            await RespondNamesAsync(interaction, names, typed);
+            if (userId is null)
+                await interaction.RespondAsync([]);
+            else
+                await CharacterAutocomplete.RespondAsync(interaction, characters, guildId, userId.Value, typed);
             return;
         }
 
@@ -288,10 +290,12 @@ internal static class RelationshipCommands
 
         await command.DeferAsync(ephemeral: true);
         var inverse = RelationshipCatalog.Get(definition.InverseId)!;
+        var sourceDisplay = CharacterSchema.BoundedName(source.Name);
+        var targetDisplay = CharacterSchema.BoundedName(target.Name);
         var invitation = await command.Channel.SendMessageAsync(
-            $"{targetUser.Mention}, **{source.Name}** is requesting a biological relationship with **{target.Name}**.\n" +
-            $"- **{source.Name}** → **{definition.DisplayName}** of **{target.Name}**\n" +
-            $"- **{target.Name}** → **{inverse.DisplayName}** of **{source.Name}**\n\n" +
+            $"{targetUser.Mention}, **{sourceDisplay}** is requesting a biological relationship with **{targetDisplay}**.\n" +
+            $"- **{sourceDisplay}** → **{definition.DisplayName}** of **{targetDisplay}**\n" +
+            $"- **{targetDisplay}** → **{inverse.DisplayName}** of **{sourceDisplay}**\n\n" +
             "Reply directly to this message with `Accept` or `Decline`.");
 
         var pending = new PendingRelationshipRequest
@@ -388,7 +392,8 @@ internal static class RelationshipCommands
         await command.RespondAsync(result.Status switch
         {
             RelationshipMutationStatus.Success when approve =>
-                $"Approved. **{source.Character.Name}** and **{target.Character.Name}** now show the accompanying relationship perspectives.",
+                $"Approved. **{CharacterSchema.BoundedName(source.Character.Name)}** and " +
+                $"**{CharacterSchema.BoundedName(target.Character.Name)}** now show the accompanying relationship perspectives.",
             RelationshipMutationStatus.Success => "Relationship request declined.",
             RelationshipMutationStatus.AlreadyExists => "That relationship already exists; the duplicate request was cleared.",
             RelationshipMutationStatus.NotAuthorized => "Only the receiving character's owner can answer that request.",
@@ -456,7 +461,7 @@ internal static class RelationshipCommands
 
         if (edges.Length == 0)
         {
-            await command.RespondAsync($"**{character.Name}** has no direct or inferred biological relationships.");
+            await command.RespondAsync($"**{CharacterSchema.BoundedName(character.Name)}** has no direct or inferred biological relationships.");
             return;
         }
 
@@ -534,6 +539,8 @@ internal static class RelationshipCommands
         string sourceName,
         string targetName)
     {
+        sourceName = CharacterSchema.BoundedName(sourceName);
+        targetName = CharacterSchema.BoundedName(targetName);
         if (result.Status == RelationshipMutationStatus.AlreadyExists)
             return $"The relationship between **{sourceName}** and **{targetName}** already exists.";
         var definition = result.Relationship is null ? null : RelationshipCatalog.Get(result.Relationship.TypeId);
@@ -594,14 +601,6 @@ internal static class RelationshipCommands
         return $"{RelationshipCatalog.Get(typeId)?.DisplayName ?? typeId} → {targetName} [{ShortId(relationship.Id)}]";
     }
 
-    private static Task RespondNamesAsync(
-        SocketAutocompleteInteraction interaction,
-        IReadOnlyList<string> names,
-        string typed) => interaction.RespondAsync(names
-        .Where(name => name.Contains(typed, StringComparison.OrdinalIgnoreCase))
-        .Take(25)
-        .Select(name => new AutocompleteResult(name, name)));
-
     private static ulong? ReferencedMessageId(SocketUserMessage message)
     {
         if (message.Reference?.MessageId.IsSpecified == true) return message.Reference.MessageId.Value;
@@ -619,7 +618,8 @@ internal static class RelationshipCommands
             .AddOption(AutocompleteOption("request", "Incoming relationship request"));
 
     private static SlashCommandOptionBuilder CharacterOption(string name, string description) =>
-        AutocompleteOption(name, description);
+        AutocompleteOption(name, $"{description} ({CharacterSchema.NameMaxLength} characters maximum)")
+            .WithMaxLength(CharacterSchema.NameMaxLength);
 
     private static SlashCommandOptionBuilder AutocompleteOption(string name, string description) =>
         new SlashCommandOptionBuilder()
