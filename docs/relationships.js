@@ -2,12 +2,13 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const regionPalette = ["#c8a96a", "#8ba6a9", "#a17f9b", "#9ea86b", "#c27f68", "#7892b2", "#b29469"];
 const mapColorStorageKey = "yoko.relationshipAtlas.mapColors.v1";
 const defaultMapColors = { near: "#ffd65c", far: "#7f1d1d" };
-const parentTypeIds = new Set(["biological-parent", "biological-child"]);
+const categoryColors = { Biological: "#c8a96a", Adoptive: "#87b9d2", Social: "#82c7b1", Romantic: "#e59aac", Societal: "#a6a0df" };
+const parentTypeIds = new Set(["biological-parent", "biological-child", "adoptive-parent", "adoptive-child"]);
 const peerTypeIds = new Set([
   "biological-sibling",
   "biological-full-sibling",
   "biological-half-sibling",
-  "biological-twin"
+  "biological-twin", "adoptive-sibling"
 ]);
 
 const state = {
@@ -20,6 +21,8 @@ const state = {
   contextId: null,
   showInferred: true,
   category: "",
+  typeId: "",
+  socialRings: [],
   layoutMode: "network",
   positions: new Map(),
   pairs: [],
@@ -45,6 +48,8 @@ const elements = {
   searchResults: document.querySelector("#focus-results"),
   layoutButtons: [...document.querySelectorAll("[data-layout]")],
   category: document.querySelector("#category-filter"),
+  categoryButtons: [...document.querySelectorAll("[data-category]")],
+  type: document.querySelector("#type-filter"),
   inferred: document.querySelector("#show-inferred"),
   fit: document.querySelector("#fit-map"),
   zoomIn: document.querySelector("#zoom-in"),
@@ -58,6 +63,7 @@ const elements = {
   nodes: document.querySelector("#map-nodes"),
   empty: document.querySelector("#map-empty"),
   inspectorTitle: document.querySelector("#inspector-title"),
+  inspectorOwner: document.querySelector("#inspector-owner"),
   inspectorMeta: document.querySelector("#inspector-meta"),
   inspectorActions: document.querySelector("#inspector-actions"),
   centerSelected: document.querySelector("#center-selected"),
@@ -89,6 +95,7 @@ async function initialize() {
   if (!response.ok) throw new Error(`Archive data returned ${response.status}.`);
 
   const payload = await response.json();
+  await window.ArchiveBranding.apply(payload.branding);
   state.characters = Array.isArray(payload.characters)
     ? payload.characters.filter(isCharacter).sort((left, right) => left.name.localeCompare(right.name))
     : [];
@@ -106,6 +113,7 @@ async function initialize() {
 
   loadMapColors();
   populateCategories();
+  populateTypes();
   bindEvents();
   refreshView(true);
   requestAnimationFrame(fitMap);
@@ -118,8 +126,11 @@ function bindEvents() {
   elements.search.addEventListener("blur", () => setTimeout(hideSearchResults, 120));
   for (const button of elements.layoutButtons)
     button.addEventListener("click", () => setLayoutMode(button.dataset.layout));
-  elements.category.addEventListener("change", () => {
-    state.category = elements.category.value;
+  elements.category.addEventListener("change", () => setCategory(elements.category.value));
+  for (const button of elements.categoryButtons)
+    button.addEventListener("click", () => setCategory(button.dataset.category));
+  elements.type.addEventListener("change", () => {
+    state.typeId = elements.type.value;
     refreshView(true);
     requestAnimationFrame(fitMap);
   });
@@ -182,7 +193,9 @@ function refreshView(relayout) {
   } else if (state.layoutMode === "tree") {
     elements.status.textContent = state.graphPairs.length
       ? `${state.positions.size.toLocaleString()} characters arranged from older generations to younger${heatNotice}.`
-      : "No direct biological parent, sibling, or twin relationships are available for a family tree.";
+      : "No approved parent, sibling, or twin relationships match this family tree.";
+  } else if (state.layoutMode === "circles") {
+    elements.status.textContent = `${state.pairs.length} connections around ${characterName(state.focusId)} · rings count relationship steps, not age or closeness.`;
   } else {
     const inferredCount = state.pairs.filter(pair => pair.isInferred).length;
     elements.status.textContent = `${state.pairs.length.toLocaleString()} visible ${pluralize(state.pairs.length, "connection")} · ${inferredCount.toLocaleString()} inferred${heatNotice}.`;
@@ -190,9 +203,38 @@ function refreshView(relayout) {
 }
 
 function visibleRelationships() {
+  const inverse = state.relationshipTypes.find(type => type.id === state.typeId)?.inverseId;
   return state.relationships.filter(relationship =>
     (!state.category || relationship.category === state.category) &&
+    (!state.typeId || relationship.typeId === state.typeId || relationship.typeId === inverse) &&
     (state.showInferred || !relationship.isInferred));
+}
+
+function setCategory(category) {
+  state.category = category;
+  state.typeId = "";
+  elements.category.value = category;
+  if (["Social", "Romantic", "Societal"].includes(category)) state.layoutMode = "circles";
+  else if (state.layoutMode === "tree" && !["Biological", "Adoptive"].includes(category)) state.layoutMode = "network";
+  const visible = visibleRelationships();
+  if (visible.length && !visible.some(edge => edge.sourceCharacterId === state.focusId || edge.targetCharacterId === state.focusId)) {
+    state.focusId = visible[0].sourceCharacterId;
+    state.selectedId = state.focusId;
+  }
+  populateTypes();
+  refreshView(true);
+  requestAnimationFrame(fitMap);
+}
+
+function populateTypes() {
+  const all = new Map([...state.relationshipTypes, ...state.relationships.map(edge => ({
+    id: edge.typeId, displayName: edge.displayName, category: edge.category
+  }))].map(type => [type.id, type]));
+  elements.type.replaceChildren(new Option("Every status", ""));
+  for (const type of [...all.values()].filter(type => !state.category || state.category === type.category)
+    .sort((a, b) => a.displayName.localeCompare(b.displayName)))
+    elements.type.append(new Option(type.displayName, type.id));
+  elements.type.value = state.typeId;
 }
 
 function calculateBiologicalDistances(visibleRelationships) {
@@ -236,7 +278,7 @@ function buildPairs(relationships) {
 
 function buildTreePairs(relationships) {
   return buildPairs(relationships.filter(relationship =>
-    relationship.category === "Biological" &&
+    ["Biological", "Adoptive"].includes(relationship.category) &&
     !relationship.isInferred &&
     (parentTypeIds.has(relationship.typeId) || peerTypeIds.has(relationship.typeId))))
     .map(pair => ({ ...pair, treeKind: parentChildForPair(pair) ? "parent" : "peer" }));
@@ -247,10 +289,15 @@ function layoutGraph(pairs) {
   state.generationRows = [];
   state.familyIslands = [];
   state.islandByNode = new Map();
+  state.socialRings = [];
   if (state.characters.length === 0) return;
 
   if (state.layoutMode === "tree") {
     layoutFamilyTree(pairs);
+    return;
+  }
+  if (state.layoutMode === "circles") {
+    layoutSocialCircles(pairs);
     return;
   }
 
@@ -269,8 +316,48 @@ function layoutGraph(pairs) {
   state.islandByNode = new Map(islands.flatMap(island => island.ids.map(id => [id, island.id])));
 }
 
+function layoutSocialCircles(pairs) {
+  const ids = [...new Set(pairs.flatMap(pair => [pair.a, pair.b]))];
+  if (!ids.includes(state.focusId) && state.focusId) ids.unshift(state.focusId);
+  if (!ids.length) return;
+  const focus = ids.includes(state.focusId) ? state.focusId : ids[0];
+  const adjacent = new Map(ids.map(id => [id, new Set()]));
+  for (const pair of pairs) { adjacent.get(pair.a).add(pair.b); adjacent.get(pair.b).add(pair.a); }
+  const depths = new Map([[focus, 0]]);
+  const queue = [focus];
+  for (let index = 0; index < queue.length; index++) {
+    for (const neighbor of adjacent.get(queue[index]) ?? []) {
+      if (depths.has(neighbor)) continue;
+      depths.set(neighbor, depths.get(queue[index]) + 1);
+      queue.push(neighbor);
+    }
+  }
+  const levels = new Map();
+  for (const id of ids.filter(id => id !== focus)) {
+    const depth = depths.get(id) ?? Infinity;
+    if (!levels.has(depth)) levels.set(depth, []);
+    levels.get(depth).push(id);
+  }
+  state.positions.set(focus, { x: 0, y: 0 });
+  let previousRadius = 0;
+  let ringIndex = 0;
+  for (const [depth, members] of [...levels.entries()].sort((a, b) => a[0] - b[0])) {
+    const radius = Math.max(previousRadius + 240, members.length * 210 / (2 * Math.PI));
+    state.socialRings.push({ radius, label: Number.isFinite(depth) ? `${depth} ${depth === 1 ? "STEP · DIRECT TIES" : "STEPS"}` : "OTHER CIRCLES" });
+    members.sort((a, b) => characterName(a).localeCompare(characterName(b))).forEach((id, index) => {
+      // Offset each ring so sparse chains do not stack into a single vertical line.
+      const angle = -Math.PI / 4 + ringIndex * 2.4 + index * Math.PI * 2 / members.length;
+      state.positions.set(id, { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
+    });
+    previousRadius = radius;
+    ringIndex++;
+  }
+}
+
 function buildNetworkIslands(pairs, focusId) {
-  const characterIds = state.characters.map(character => character.publicId);
+  const characterIds = state.category || state.typeId
+    ? [...new Set([...pairs.flatMap(pair => [pair.a, pair.b]), ...(state.focusId ? [state.focusId] : [])])]
+    : state.characters.map(character => character.publicId);
   const bridgeKeys = new Set();
   for (const component of connectedGroups(characterIds, pairs)) {
     const ids = new Set(component);
@@ -558,9 +645,9 @@ function layoutFamilyTree(pairs) {
 
 function parentChildForPair(pair) {
   for (const record of pair.records.filter(record => !record.isInferred)) {
-    if (record.typeId === "biological-parent")
+    if (record.typeId === "biological-parent" || record.typeId === "adoptive-parent")
       return { parent: record.sourceCharacterId, child: record.targetCharacterId };
-    if (record.typeId === "biological-child")
+    if (record.typeId === "biological-child" || record.typeId === "adoptive-child")
       return { parent: record.targetCharacterId, child: record.sourceCharacterId };
   }
   return null;
@@ -574,6 +661,12 @@ function renderGraph() {
 
   renderGenerationGuides();
   renderFamilyIslands();
+  for (const ring of state.socialRings) {
+    const circle = svgElement("circle", { cx: 0, cy: 0, r: ring.radius, class: "social-ring" });
+    const label = svgElement("text", { x: 14, y: -ring.radius - 18, class: "social-ring-label" });
+    label.textContent = ring.label;
+    elements.guides.append(circle, label);
+  }
   for (const pair of state.graphPairs) {
     if (state.layoutMode === "network" && !shouldRenderNetworkPair(pair)) continue;
     const source = state.positions.get(pair.a);
@@ -592,7 +685,7 @@ function renderGraph() {
       y2: target.y,
       class: `map-edge ${relationshipClass}${bridge ? " map-edge--bridge" : ""}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
     };
-    const heatColor = heatColorForPair(pair);
+    const heatColor = heatColorForPair(pair) || categoryColors[pair.records[0]?.category];
     if (heatColor) attributes.style = `--heat-color: ${heatColor}`;
     const line = svgElement("line", attributes);
     elements.edges.append(line);
@@ -740,6 +833,7 @@ function createNode(character, position) {
 function renderInspector(visible) {
   const character = state.charactersById.get(state.selectedId);
   if (!character) {
+    elements.inspectorOwner.replaceChildren();
     elements.inspectorTitle.textContent = "Choose a character";
     elements.inspectorMeta.textContent = "Select a node to read its connections.";
     elements.inspectorActions.hidden = true;
@@ -749,6 +843,7 @@ function renderInspector(visible) {
   }
 
   elements.inspectorTitle.textContent = character.name;
+  elements.inspectorOwner.replaceChildren(window.CharacterAttribution.create(character.owner));
   elements.inspectorMeta.textContent = [character.region, character.occupation].filter(Boolean).join(" · ") || "Public character record";
   elements.inspectorActions.hidden = false;
   elements.openRecord.href = `./?character=${encodeURIComponent(character.publicId)}`;
@@ -777,7 +872,8 @@ function createConnectionItem(connection) {
 
   const kind = document.createElement("span");
   kind.className = `connection-kind ${connection.isInferred ? "is-inferred" : "is-direct"}`;
-  kind.textContent = connection.isInferred ? "Inferred" : "Direct";
+  kind.style.setProperty("--relationship-color", categoryColors[connection.category] || "var(--accent)");
+  kind.textContent = `${connection.category} · ${connection.isInferred ? "Inferred" : "Approved"}`;
   const relation = document.createElement("strong");
   relation.textContent = connection.displayName;
   const name = document.createElement("span");
@@ -887,12 +983,14 @@ function hideSearchResults() {
 }
 
 function setLayoutMode(layout) {
-  if (layout !== "network" && layout !== "tree") return;
+  if (!["network", "tree", "circles"].includes(layout)) return;
   state.layoutMode = layout;
-  if (layout === "tree" && [...elements.category.options].some(option => option.value === "Biological")) {
+  if (layout === "tree" && state.category !== "Adoptive") {
     state.category = "Biological";
     elements.category.value = "Biological";
   }
+  state.typeId = "";
+  populateTypes();
   refreshView(true);
   requestAnimationFrame(fitMap);
 }
@@ -902,9 +1000,13 @@ function updateLayoutUi() {
   for (const button of elements.layoutButtons)
     button.setAttribute("aria-pressed", String(button.dataset.layout === state.layoutMode));
   elements.category.disabled = isTree;
+  for (const button of elements.categoryButtons) button.setAttribute("aria-pressed", String(button.dataset.category === state.category));
+  elements.inferred.disabled = isTree || (state.category && state.category !== "Biological");
+  document.querySelector(".heat-scale").hidden = Boolean(state.category && state.category !== "Biological");
   elements.stage.classList.toggle("is-tree", isTree);
   elements.legendDirect.textContent = isTree ? "Parent → child" : "Direct";
   elements.legendInferred.textContent = isTree ? "Sibling / twin" : "Inferred";
+  elements.legendInferred.parentElement.hidden = !isTree && Boolean(state.category && state.category !== "Biological");
 }
 
 function setFocus(characterId, updateHistory = true) {
@@ -1034,7 +1136,7 @@ function zoomAt(factor, screenX, screenY) {
   const anchorX = screenX ?? rect.width / 2;
   const anchorY = screenY ?? rect.height / 2;
   const previous = state.zoom;
-  const next = clamp(previous * factor, 0.22, 2.8);
+  const next = clamp(previous * factor, 0.06, 2.8);
   const worldX = (anchorX - state.pan.x) / previous;
   const worldY = (anchorY - state.pan.y) / previous;
   state.zoom = next;
@@ -1047,6 +1149,10 @@ function fitMap() {
   const rect = elements.svg.getBoundingClientRect();
   if (!rect.width || !rect.height || state.positions.size === 0) return;
   const points = [...state.positions.values()];
+  if (state.socialRings.length) {
+    const radius = Math.max(...state.socialRings.map(ring => ring.radius));
+    points.push({ x: -radius, y: -radius }, { x: radius, y: radius });
+  }
   const horizontalMargin = state.layoutMode === "tree" ? 155 : 70;
   const topMargin = state.layoutMode === "tree" ? 140 : 80;
   const minX = Math.min(...points.map(point => point.x)) - horizontalMargin;
@@ -1055,7 +1161,7 @@ function fitMap() {
   const maxY = Math.max(...points.map(point => point.y)) + 80;
   const width = Math.max(160, maxX - minX);
   const height = Math.max(160, maxY - minY);
-  state.zoom = clamp(Math.min((rect.width - 42) / width, (rect.height - 42) / height), 0.22, 1.35);
+  state.zoom = clamp(Math.min((rect.width - 42) / width, (rect.height - 42) / height), 0.06, 1.35);
   state.pan.x = rect.width / 2 - ((minX + maxX) / 2) * state.zoom;
   state.pan.y = rect.height / 2 - ((minY + maxY) / 2) * state.zoom;
   applyTransform();
@@ -1179,7 +1285,7 @@ async function handleMenuAction(event) {
 }
 
 function populateCategories() {
-  const categories = [...new Set([
+  const categories = [...new Set(["Biological", "Adoptive", "Social", "Romantic", "Societal",
     ...state.relationshipTypes.map(type => type.category),
     ...state.relationships.map(relationship => relationship.category)
   ].filter(Boolean))].sort((left, right) => left.localeCompare(right));
