@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11100f">
-  <meta name="description" content="A public directory of approved roleplay characters maintained by Yoko.">
+  <meta name="description" content="A public directory of approved roleplay characters." data-site-content="A public directory of approved roleplay characters maintained by {name}.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Yoko Character Archive">
+  <meta property="og:title" content="Character Archive" data-site-content="{name} · {archiveTitle}">
   <meta property="og:description" content="Public records of approved roleplay characters.">
   <meta property="og:url" content="https://alecasone.github.io/YokoBot/">
   <meta property="og:image" content="https://alecasone.github.io/YokoBot/og.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Yoko Character Archive">
+  <meta name="twitter:title" content="Character Archive" data-site-content="{name} · {archiveTitle}">
   <meta name="twitter:description" content="Public records of approved roleplay characters.">
   <meta name="twitter:image" content="https://alecasone.github.io/YokoBot/og.png">
-  <title>Yoko Character Archive</title>
-  <link rel="stylesheet" href="./styles.css">
+  <title>Character Archive</title>
+  <link rel="stylesheet" href="./styles.css?v=owners-1">
 </head>
 <body>
   <header class="masthead">
@@ -23,14 +23,14 @@
       <a href="./" aria-current="page">Character directory</a>
       <a href="./relationships.html">Relationship atlas</a>
     </nav>
-    <div class="masthead__eyebrow">Yoko / Public Records</div>
+    <div class="masthead__eyebrow" data-site-text="{name} / Public Records">Public Records</div>
     <div class="masthead__content">
       <div>
-        <h1>Character Archive</h1>
-        <p>An index of approved lives, legends, and questionable alibis.</p>
+        <h1 data-site-text="{archiveTitle}">Character Archive</h1>
+        <p data-site-text="{tagline}">An index of approved lives, legends, and questionable alibis.</p>
       </div>
       <div class="archive-mark" aria-hidden="true">
-        <span>Y</span>
+        <svg viewBox="0 0 100 100" focusable="false"><text x="50" y="54" dominant-baseline="middle" text-anchor="middle" data-site-text="{logoLetter}">Y</text></svg>
       </div>
     </div>
   </header>
@@ -77,6 +77,7 @@
     <button id="dialog-close" class="dialog-close" type="button" aria-label="Close character record">×</button>
     <p class="section-label">Character record</p>
     <h2 id="dialog-title"></h2>
+    <div id="dialog-owner"></div>
     <p id="dialog-aliases" class="dialog-aliases"></p>
     <div id="dialog-details" class="record-details"></div>
     <div id="dialog-properties" class="record-properties"></div>
@@ -87,11 +88,13 @@
   </dialog>
 
   <footer>
-    <span>Generated from sanitized Yoko character records.</span>
-    <span>No Discord account information is published.</span>
+    <span data-site-text="Generated from sanitized {name} character records.">Generated from sanitized character records.</span>
+    <span>Owners' display names and Discord IDs are public by default. Use <code>/character anonymize-website-discord-id</code> in the server to hide your ID; your name stays visible. Previous versions may remain in Git history or caches.</span>
   </footer>
 
   <noscript>This directory requires JavaScript to load its character records.</noscript>
-  <script src="./app.js" defer></script>
+  <script src="./branding.js?v=social-scenes-1" defer></script>
+  <script src="./owner.js?v=owners-1" defer></script>
+  <script src="./app.js?v=owners-1" defer></script>
 </body>
 </html>

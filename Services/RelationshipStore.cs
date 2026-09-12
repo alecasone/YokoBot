@@ -199,17 +199,20 @@ internal sealed class RelationshipStore
         finally { _gate.Release(); }
     }
 
-    public async Task<int> RemoveForCharacterAsync(ulong guildId, Guid characterId)
+    public Task<int> RemoveForCharacterAsync(ulong guildId, Guid characterId) => RemoveForCharactersAsync(guildId, [characterId]);
+
+    public async Task<int> RemoveForCharactersAsync(ulong guildId, IReadOnlyCollection<Guid> characterIds)
     {
         await _gate.WaitAsync();
         try
         {
             var data = await LoadUnsafeAsync();
             if (!TryGetGuild(data, guildId, out var guild)) return 0;
+            var ids = characterIds.ToHashSet();
             var direct = guild!.Relationships.RemoveAll(relationship =>
-                relationship.SourceCharacterId == characterId || relationship.TargetCharacterId == characterId);
+                ids.Contains(relationship.SourceCharacterId) || ids.Contains(relationship.TargetCharacterId));
             var pending = guild.PendingRequests.RemoveAll(request =>
-                request.SourceCharacterId == characterId || request.TargetCharacterId == characterId);
+                ids.Contains(request.SourceCharacterId) || ids.Contains(request.TargetCharacterId));
             if (direct + pending == 0) return 0;
             if (guild.Relationships.Count == 0 && guild.PendingRequests.Count == 0)
                 data.Remove(guildId.ToString());

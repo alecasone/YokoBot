@@ -13,24 +13,33 @@ internal sealed class SceneStore
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly string _filePath;
+    private readonly CharacterStore _characters;
 
-    public SceneStore(string filePath) => _filePath = filePath;
+    public SceneStore(string filePath, CharacterStore characters)
+    {
+        _filePath = filePath;
+        _characters = characters;
+    }
 
-    public async Task<SceneRecord> CreateAsync(
+    public async Task<SceneCreateResult> CreateAsync(
         ulong guildId,
         ulong creatorId,
-        string characterName,
+        Character character,
         WorldDate worldDate,
-        string title)
+        string? title)
     {
         await _gate.WaitAsync();
         try
         {
             var data = await LoadUnsafeAsync();
             var guild = GetGuild(data, guildId);
+            var capacity = Capacity(guild, creatorId, character.PublicId);
+            if (capacity.IsFull) return new SceneCreateResult(null, capacity);
+            var number = guild.NextSceneNumber++;
             var scene = new SceneRecord
             {
-                Title = title.Trim(),
+                Number = number,
+                Title = string.IsNullOrWhiteSpace(title) ? $"Scene #{number} — {worldDate.Display}" : title.Trim(),
                 WorldDate = worldDate,
                 CreatedBy = creatorId,
                 Participants =
@@ -38,13 +47,14 @@ internal sealed class SceneStore
                     new SceneParticipant
                     {
                         UserId = creatorId,
-                        Characters = [characterName]
+                        Characters = [character.Name],
+                        CharacterIds = new() { [character.Name] = character.PublicId }
                     }
                 ]
             };
             guild.Scenes.Add(scene);
             await SaveUnsafeAsync(data);
-            return scene;
+            return new SceneCreateResult(scene, capacity with { Active = capacity.Active + 1 });
         }
         finally { _gate.Release(); }
     }
@@ -88,22 +98,27 @@ internal sealed class SceneStore
         ulong guildId,
         string sceneId,
         ulong userId,
-        string characterName)
+        Character character)
     {
         await _gate.WaitAsync();
         try
         {
             var data = await LoadUnsafeAsync();
             if (!TryGetActive(data, guildId, sceneId, out var scene)) return SceneMutationStatus.NotFound;
+            var guild = GetGuild(data, guildId);
             var participant = scene!.Participants.FirstOrDefault(item => item.UserId == userId);
+            if (participant?.CharacterIds.ContainsValue(character.PublicId) == true)
+                return SceneMutationStatus.AlreadyExists;
+            if (Capacity(guild, userId, character.PublicId).IsFull) return SceneMutationStatus.AtCapacity;
             if (participant is null)
             {
                 participant = new SceneParticipant { UserId = userId };
                 scene.Participants.Add(participant);
             }
-            if (participant.Characters.Contains(characterName, StringComparer.OrdinalIgnoreCase))
+            if (participant.Characters.Contains(character.Name, StringComparer.OrdinalIgnoreCase))
                 return SceneMutationStatus.AlreadyExists;
-            participant.Characters.Add(characterName);
+            participant.Characters.Add(character.Name);
+            participant.CharacterIds[character.Name] = character.PublicId;
             await SaveUnsafeAsync(data);
             return SceneMutationStatus.Success;
         }
@@ -125,6 +140,8 @@ internal sealed class SceneStore
                 return SceneMutationStatus.AlreadyExists;
 
             var guild = GetGuild(data, guildId);
+            if (Capacity(guild, invite.InvitedUserId, invite.CharacterId).IsFull)
+                return SceneMutationStatus.AtCapacity;
             if (guild.PendingInvites.Any(pending =>
                     pending.SceneId.Equals(invite.SceneId, StringComparison.OrdinalIgnoreCase) &&
                     pending.InvitedUserId == invite.InvitedUserId &&
@@ -178,7 +195,6 @@ internal sealed class SceneStore
             if (!TryGetGuild(data, guildId, out var guild)) return;
             var removed = guild!.PendingInvites.RemoveAll(invite => invite.InvitationMessageId == invitationMessageId);
             if (removed == 0) return;
-            if (guild.Scenes.Count == 0 && guild.PendingInvites.Count == 0) data.Remove(guildId.ToString());
             await SaveUnsafeAsync(data);
         }
         finally { _gate.Release(); }
@@ -201,6 +217,7 @@ internal sealed class SceneStore
                 name.Equals(characterName, StringComparison.OrdinalIgnoreCase));
             if (storedName is null) return SceneMutationStatus.CharacterNotFound;
             participant.Characters.Remove(storedName);
+            participant.CharacterIds.Remove(storedName);
             if (participant.Characters.Count == 0) scene.Participants.Remove(participant);
             await SaveUnsafeAsync(data);
             return SceneMutationStatus.Success;
@@ -247,9 +264,51 @@ internal sealed class SceneStore
                 Find(guild!, sceneId) is not { IsCompleted: false } scene)
                 return false;
             guild!.Scenes.Remove(scene);
-            if (guild.Scenes.Count == 0 && guild.PendingInvites.Count == 0) data.Remove(guildId.ToString());
+            guild.PendingInvites.RemoveAll(invite => invite.SceneId == scene.Id);
             await SaveUnsafeAsync(data);
             return true;
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<int> RemoveCharactersAsync(ulong guildId, IReadOnlyList<OwnedCharacter> characters)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            if (!TryGetGuild(data, guildId, out var guild)) return 0;
+            var ids = characters.Select(item => item.Character.PublicId).ToHashSet();
+            var legacyNames = characters.GroupBy(item => item.OwnerId).ToDictionary(group => group.Key,
+                group => group.SelectMany(item => item.Character.Aliases.Append(item.Character.Name)).ToHashSet(StringComparer.OrdinalIgnoreCase));
+            bool Matches(ulong owner, string name, Guid id) => id != Guid.Empty
+                ? ids.Contains(id) : legacyNames.GetValueOrDefault(owner)?.Contains(name) == true;
+            var removed = 0;
+            foreach (var scene in guild!.Scenes.ToArray())
+            {
+                var touched = false;
+                foreach (var participant in scene.Participants.ToArray())
+                {
+                    foreach (var name in participant.Characters.ToArray())
+                    {
+                        if (!Matches(participant.UserId, name, participant.CharacterIds.GetValueOrDefault(name))) continue;
+                        participant.Characters.Remove(name);
+                        participant.CharacterIds.Remove(name);
+                        removed++;
+                        touched = true;
+                    }
+                    if (participant.Characters.Count == 0) scene.Participants.Remove(participant);
+                }
+                // Keep other characters' scenes/history; remove a scene made empty by this deletion.
+                if (touched && scene.Participants.Count == 0)
+                {
+                    guild.Scenes.Remove(scene);
+                    removed += guild.PendingInvites.RemoveAll(invite => invite.SceneId == scene.Id);
+                }
+            }
+            removed += guild.PendingInvites.RemoveAll(invite => Matches(invite.InvitedUserId, invite.CharacterName, invite.CharacterId));
+            if (removed > 0) await SaveUnsafeAsync(data);
+            return removed;
         }
         finally { _gate.Release(); }
     }
@@ -258,9 +317,105 @@ internal sealed class SceneStore
     {
         if (!File.Exists(_filePath)) return [];
         var json = await File.ReadAllTextAsync(_filePath);
-        return string.IsNullOrWhiteSpace(json)
+        var data = string.IsNullOrWhiteSpace(json)
             ? []
             : JsonSerializer.Deserialize<Dictionary<string, SceneGuildData>>(json, JsonOptions) ?? [];
+        var changed = false;
+        foreach (var (guildKey, guild) in data)
+        {
+            if (!ulong.TryParse(guildKey, out var guildId)) continue;
+            var owned = await _characters.GetAllOwnedAsync(guildId);
+            var byId = owned.ToDictionary(item => item.Character.PublicId);
+            Character? Resolve(ulong owner, string name) => owned.FirstOrDefault(item =>
+                item.OwnerId == owner && item.Character.Name.Equals(name, StringComparison.OrdinalIgnoreCase))?.Character
+                ?? owned.FirstOrDefault(item => item.OwnerId == owner &&
+                    item.Character.Aliases.Contains(name, StringComparer.OrdinalIgnoreCase))?.Character;
+            guild.NextSceneNumber = Math.Max(guild.NextSceneNumber, guild.Scenes.Select(s => s.Number).DefaultIfEmpty().Max() + 1);
+            foreach (var scene in guild.Scenes.OrderBy(s => s.CreatedAt))
+            {
+                if (scene.Number == 0) { scene.Number = guild.NextSceneNumber++; changed = true; }
+                foreach (var participant in scene.Participants)
+                foreach (var name in participant.Characters.ToArray())
+                {
+                    var known = participant.CharacterIds.TryGetValue(name, out var id);
+                    var character = known ? byId.GetValueOrDefault(id)?.Character : Resolve(participant.UserId, name);
+                    if (character is null) continue;
+                    if (!known || name != character.Name)
+                    {
+                        participant.Characters.Remove(name);
+                        participant.CharacterIds.Remove(name);
+                        if (!participant.Characters.Contains(character.Name)) participant.Characters.Add(character.Name);
+                        participant.CharacterIds[character.Name] = character.PublicId;
+                        changed = true;
+                    }
+                }
+            }
+            foreach (var invite in guild.PendingInvites)
+            {
+                var character = invite.CharacterId == Guid.Empty ? Resolve(invite.InvitedUserId, invite.CharacterName)
+                    : byId.GetValueOrDefault(invite.CharacterId)?.Character;
+                if (character is null || (invite.CharacterId == character.PublicId && invite.CharacterName == character.Name)) continue;
+                invite.CharacterId = character.PublicId;
+                invite.CharacterName = character.Name;
+                changed = true;
+            }
+        }
+        if (changed) await SaveUnsafeAsync(data);
+        return data;
+    }
+
+    private static SceneCapacity Capacity(SceneGuildData guild, ulong userId, Guid characterId) => new(
+        guild.Scenes.Count(scene => !scene.IsCompleted && scene.Participants.Any(p =>
+            p.UserId == userId && p.CharacterIds.ContainsValue(characterId))),
+        guild.Settings.ActiveLimitPerCharacter,
+        guild.Settings.ExtraSlotsByUser.GetValueOrDefault(userId));
+
+    public async Task<SceneCapacity> GetCapacityAsync(ulong guildId, ulong userId, Guid characterId)
+    {
+        await _gate.WaitAsync();
+        try { return Capacity(GetGuild(await LoadUnsafeAsync(), guildId), userId, characterId); }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<SceneSettings> GetSettingsAsync(ulong guildId)
+    {
+        await _gate.WaitAsync();
+        try { return GetGuild(await LoadUnsafeAsync(), guildId).Settings; }
+        finally { _gate.Release(); }
+    }
+
+    public async Task ConfigureAsync(ulong guildId, int? limit, string? replyName, string? acceptanceMessage)
+    {
+        if (limit is < 0 or > 1000) throw new ArgumentOutOfRangeException(nameof(limit));
+        if (replyName?.Trim().Length is 0 or > 32) throw new ArgumentException("Reply name must be 1–32 characters.");
+        if (acceptanceMessage?.Trim().Length is 0 or > 1500) throw new ArgumentException("Message must be 1–1,500 characters.");
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var settings = GetGuild(data, guildId).Settings;
+            if (limit is { } value) settings.ActiveLimitPerCharacter = value;
+            if (replyName is not null) settings.ReplyName = replyName.Trim().Equals("auto", StringComparison.OrdinalIgnoreCase) ? null : replyName.Trim();
+            if (acceptanceMessage is not null) settings.AcceptanceMessage = acceptanceMessage;
+            await SaveUnsafeAsync(data);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<int> ChangeSlotsAsync(ulong guildId, ulong userId, int amount, bool reset = false)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var settings = GetGuild(data, guildId).Settings;
+            var slots = reset ? 0 : Math.Clamp((long)settings.ExtraSlotsByUser.GetValueOrDefault(userId) + amount, 0, 1000);
+            if (slots == 0) settings.ExtraSlotsByUser.Remove(userId);
+            else settings.ExtraSlotsByUser[userId] = (int)slots;
+            await SaveUnsafeAsync(data);
+            return (int)slots;
+        }
+        finally { _gate.Release(); }
     }
 
     private async Task SaveUnsafeAsync(Dictionary<string, SceneGuildData> data)
@@ -316,5 +471,6 @@ internal enum SceneMutationStatus
     AlreadyExists,
     ParticipantNotFound,
     CharacterNotFound,
-    InvitePending
+    InvitePending,
+    AtCapacity
 }

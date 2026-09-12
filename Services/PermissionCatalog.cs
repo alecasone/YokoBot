@@ -19,6 +19,9 @@ internal static class PermissionCatalog
         new("character.view.any", "View any member's characters."),
         new("character.delete.self", "Delete your own characters."),
         new("character.delete.any", "Delete any member's characters."),
+        new("character.purge.user", "Bulk-delete one member's characters after two confirmations."),
+        new("character.purge.server", "Bulk-delete this server's characters after two confirmations."),
+        new("character.website-privacy", "Always available: hide/show your own website Discord ID."),
         new("character.configure.properties", "Configure default character properties."),
         new("character.configure.autofill", "Configure character autofill values."),
         new("character.configure.roles", "Configure character approval and OC roles."),
@@ -40,6 +43,8 @@ internal static class PermissionCatalog
         new("scenetracker.history", "View current and completed scene history."),
         new("scenetracker.manage.own", "Manage scenes in which you participate."),
         new("scenetracker.manage.any", "Manage any scene without being a participant."),
+        new("scenetracker.configure", "Configure scene limits and invitation wording."),
+        new("scenetracker.slots", "Grant, remove, reset, and view member scene-slot bonuses."),
         new("permissions.view", "View the permission catalog and assignments."),
         new("permissions.manage", "Grant and revoke permissions."),
         new("site.view", "View GitHub Pages publishing status."),
@@ -79,6 +84,8 @@ internal static class PermissionCatalog
     }
 
     public static string Normalize(string permission) => permission.Trim().ToLowerInvariant();
+
+    public static bool IsPublic(string permission) => Normalize(permission) == "character.website-privacy";
 
     public static IReadOnlyDictionary<string, PermissionGrant> CreateSeedGrants()
     {

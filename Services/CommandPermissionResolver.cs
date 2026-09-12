@@ -54,6 +54,9 @@ internal static class CommandPermissionResolver
     {
         if (subcommand is null) return [];
         if (subcommand.Name == "approve") return ["character.approve"];
+        if (subcommand.Name == "anonymize-website-discord-id") return ["character.website-privacy"];
+        if (subcommand.Name == "purge-user") return ["character.purge.user"];
+        if (subcommand.Name == "purge-server") return ["character.purge.server"];
 
         var targetId = ReadUserId(subcommand.Options);
         var scope = targetId == actorId ? "self" : "any";
@@ -93,6 +96,8 @@ internal static class CommandPermissionResolver
             "create" => ["scenetracker.create"],
             "view" => ["scenetracker.view"],
             "history" => ["scenetracker.history"],
+            "settings" => ["scenetracker.configure"],
+            "slots" => ["scenetracker.slots"],
             "invite" or "complete" or "delete" or "edit" => ["scenetracker.manage.own", "scenetracker.manage.any"],
             _ => []
         };
@@ -110,7 +115,7 @@ internal static class CommandPermissionResolver
         {
             "status" => ["site.view", "site.publish", "site.configure"],
             "publish" => ["site.publish", "site.configure"],
-            "setup" or "autopublish" => ["site.configure"],
+            "setup" or "autopublish" or "branding" => ["site.configure"],
             _ => []
         };
 

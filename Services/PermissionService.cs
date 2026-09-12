@@ -11,6 +11,7 @@ internal sealed class PermissionService
 
     public async Task<bool> HasAsync(ulong guildId, IUser user, string permission)
     {
+        if (PermissionCatalog.IsPublic(permission)) return true;
         if (user is SocketGuildUser { GuildPermissions.Administrator: true }) return true;
         var grants = await _store.GetGrantsAsync(guildId);
         return HasAny(grants, user, [permission]);
@@ -18,9 +19,11 @@ internal sealed class PermissionService
 
     public async Task<bool> HasAnyAsync(ulong guildId, IUser user, IEnumerable<string> permissions)
     {
+        var requested = permissions.ToArray();
+        if (requested.Any(PermissionCatalog.IsPublic)) return true;
         if (user is SocketGuildUser { GuildPermissions.Administrator: true }) return true;
         var grants = await _store.GetGrantsAsync(guildId);
-        return HasAny(grants, user, permissions);
+        return HasAny(grants, user, requested);
     }
 
     private static bool HasAny(

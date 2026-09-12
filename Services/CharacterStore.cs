@@ -274,6 +274,27 @@ internal sealed class CharacterStore
         finally { _gate.Release(); }
     }
 
+    // A confirmed purge only proceeds if the exact scoped roster is still the one previewed.
+    public async Task<IReadOnlyList<OwnedCharacter>?> DeleteConfirmedScopeAsync(
+        ulong guildId, ulong? ownerId, IReadOnlyCollection<Guid> expectedIds)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync(guildId);
+            if (!data.TryGetValue(guildId.ToString(), out var server)) return expectedIds.Count == 0 ? [] : null;
+            var targets = server.Where(pair => ulong.TryParse(pair.Key, out var id) && (ownerId is null || id == ownerId))
+                .SelectMany(pair => pair.Value.Characters.Select(character => new OwnedCharacter(ulong.Parse(pair.Key), character))).ToArray();
+            if (!expectedIds.ToHashSet().SetEquals(targets.Select(item => item.Character.PublicId))) return null;
+            if (targets.Length == 0) return [];
+            foreach (var id in targets.Select(item => item.OwnerId).Distinct()) server.Remove(id.ToString());
+            if (server.Count == 0) data.Remove(guildId.ToString());
+            await SaveUnsafeAsync(data);
+            return targets;
+        }
+        finally { _gate.Release(); }
+    }
+
     private async Task<Dictionary<string, Dictionary<string, UserCharacters>>> LoadUnsafeAsync(ulong migrationGuildId)
     {
         if (!File.Exists(_filePath)) return [];

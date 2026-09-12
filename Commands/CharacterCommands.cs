@@ -7,7 +7,7 @@ using Yoko.Bot.Services;
 
 namespace Yoko.Bot.Commands;
 
-internal static class CharacterCommands
+internal static partial class CharacterCommands
 {
     private static readonly ConcurrentDictionary<(ulong ChannelId, ulong AdminId), FilloutSession> FilloutSessions = new();
     private static readonly ConcurrentDictionary<(ulong ChannelId, ulong AdminId), DeleteSession> DeleteSessions = new();
@@ -70,6 +70,17 @@ internal static class CharacterCommands
                 .AddOption(view)
                 .AddOption(removeField)
                 .AddOption(delete)
+                .AddOption(new SlashCommandOptionBuilder().WithName("purge-user")
+                    .WithDescription("Permanently deletes one user's characters after two confirmations.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("user", ApplicationCommandOptionType.User, "Owner whose characters will be deleted", isRequired: true))
+                .AddOption(new SlashCommandOptionBuilder().WithName("purge-server")
+                    .WithDescription("Permanently deletes ALL characters in this server after two confirmations.")
+                    .WithType(ApplicationCommandOptionType.SubCommand))
+                .AddOption(new SlashCommandOptionBuilder().WithName("anonymize-website-discord-id")
+                    .WithDescription("Hide your Discord ID on the website. Your display name stays public. Available to everyone.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("enabled", ApplicationCommandOptionType.Boolean, "True (default): hide your ID. False: publish your ID again."))
                 .Build()
         ];
     }
@@ -148,7 +159,8 @@ internal static class CharacterCommands
         CharacterSettingsStore settings,
         CharacterRoleService characterRoles,
         RelationshipStore relationships,
-        SitePublicationService sitePublisher)
+        SitePublicationService sitePublisher,
+        PublicIdentityStore identities)
     {
         if (command.GuildId is not { } guildId)
         {
@@ -157,6 +169,28 @@ internal static class CharacterCommands
         }
 
         var subcommand = command.Data.Options.First();
+        if (subcommand.Name is "purge-user" or "purge-server")
+        {
+            await BeginPurgeAsync(command, store);
+            return;
+        }
+        PurgeSessions.TryRemove((command.Channel.Id, command.User.Id), out _);
+        if (subcommand.Name == "anonymize-website-discord-id")
+        {
+            await command.DeferAsync(ephemeral: true);
+            var hidden = subcommand.Options.FirstOrDefault(option => option.Name == "enabled")?.Value as bool? ?? true;
+            var displayName = (command.User as SocketGuildUser)?.DisplayName ?? command.User.GlobalName ?? command.User.Username;
+            var result = await sitePublisher.ChangeOwnerPrivacyAsync(guildId, command.User.Id, hidden, displayName, identities);
+            await UpdateOriginalAsync(command, !result.Saved
+                ? "Your privacy setting could not be saved. Ask staff to check the bot log; no privacy change is confirmed."
+                : $"Saved: your Discord ID is **{(hidden ? "hidden" : "public")}** in future exports for every character you own in this server. " +
+                  "Your display name remains public.\n" +
+                  (result.Publication.Success ? "The website data was published. Pages may take a little time to deploy it."
+                      : "**The live website has not been updated yet.** Staff must resolve publishing and run `/siteadmin publish`. " + result.Publication.Message) +
+                  "\nThis controls only the exported owner ID/copy button, not IDs you put in character text or links. Previously published IDs may remain in Git history, search caches, or copies. " +
+                  (hidden ? "Use `enabled:false` to make your ID public again." : "Use `enabled:true` to hide your ID again."));
+            return;
+        }
         var user = (IUser)Option(subcommand.Options, "user").Value;
         var characterInput = (string)Option(subcommand.Options, "character-name").Value;
 
@@ -334,13 +368,17 @@ internal static class CharacterCommands
         CharacterStore store,
         CharacterRoleService characterRoles,
         RelationshipStore relationships,
-        SitePublicationService sitePublisher)
+        SitePublicationService sitePublisher,
+        SceneStore scenes,
+        CharacterPurgeService purge,
+        PermissionService permissions)
     {
         if (message.Author.IsBot) return;
+        if (await HandlePurgeReplyAsync(message, purge, permissions)) return;
 
         if (DeleteSessions.TryGetValue((message.Channel.Id, message.Author.Id), out var deletion))
         {
-            await HandleDeleteConfirmationAsync(message, store, characterRoles, relationships, sitePublisher, deletion);
+            await HandleDeleteConfirmationAsync(message, store, characterRoles, relationships, sitePublisher, scenes, deletion);
             return;
         }
 
@@ -491,6 +529,7 @@ internal static class CharacterCommands
         CharacterRoleService characterRoles,
         RelationshipStore relationships,
         SitePublicationService sitePublisher,
+        SceneStore scenes,
         DeleteSession session)
     {
         var reply = message.Content.Trim();
@@ -517,6 +556,8 @@ internal static class CharacterCommands
         var removedRelationships = deleted && deletingCharacter is not null
             ? await relationships.RemoveForCharacterAsync(session.GuildId, deletingCharacter.PublicId)
             : 0;
+        if (deleted && deletingCharacter is not null)
+            await scenes.RemoveCharactersAsync(session.GuildId, [new OwnedCharacter(session.OwnerId, deletingCharacter)]);
         var roleSync = deleted
             ? await characterRoles.SyncMemberAsync(session.GuildId, session.OwnerId)
             : null;

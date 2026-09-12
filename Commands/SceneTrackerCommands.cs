@@ -1,6 +1,5 @@
 using Discord;
 using Discord.WebSocket;
-using System.Text.RegularExpressions;
 using Yoko.Bot.Models;
 using Yoko.Bot.Services;
 
@@ -24,7 +23,7 @@ internal static class SceneTrackerCommands
                 .WithMaxValue(31))
             .AddOption(new SlashCommandOptionBuilder()
                 .WithName("title")
-                .WithDescription("Optional scene name; defaults to the scene's world date")
+                .WithDescription("Optional title; defaults to Scene # — world date")
                 .WithType(ApplicationCommandOptionType.String)
                 .WithRequired(false)
                 .WithMaxLength(100));
@@ -68,6 +67,22 @@ internal static class SceneTrackerCommands
                 .WithType(ApplicationCommandOptionType.SubCommand))
             .AddOption(SceneAction("delete", "Permanently deletes an active scene."))
             .AddOption(edit)
+            .AddOption(new SlashCommandOptionBuilder()
+                .WithName("settings")
+                .WithDescription("View or configure scene limits, reply name, and acceptance message.")
+                .WithType(ApplicationCommandOptionType.SubCommand)
+                .AddOption(new SlashCommandOptionBuilder().WithName("limit").WithDescription("Ongoing scenes per character (default 4)")
+                    .WithType(ApplicationCommandOptionType.Integer).WithMinValue(0).WithMaxValue(1000))
+                .AddOption(new SlashCommandOptionBuilder().WithName("reply-name").WithDescription("Name in Accept, Helios. Defaults to the bot's server nickname")
+                    .WithType(ApplicationCommandOptionType.String).WithMinLength(1).WithMaxLength(32))
+                .AddOption(new SlashCommandOptionBuilder().WithName("acceptance-message")
+                    .WithDescription("Message after accepting: {user}, {charactername}, {scene}, {date}")
+                    .WithType(ApplicationCommandOptionType.String).WithMinLength(1).WithMaxLength(1500)))
+            .AddOption(new SlashCommandOptionBuilder().WithName("slots")
+                .WithDescription("Manage a member's extra ongoing-scene slots per character.")
+                .WithType(ApplicationCommandOptionType.SubCommandGroup)
+                .AddOption(SlotAction("add", true)).AddOption(SlotAction("remove", true))
+                .AddOption(SlotAction("reset", false)).AddOption(SlotAction("view", false)))
             .Build();
 
         return tracker;
@@ -113,12 +128,16 @@ internal static class SceneTrackerCommands
 
         var sceneDate = currentWorldDate.WithDay(day);
         var requestedTitle = OptionalString(options, "title")?.Trim();
-        var title = string.IsNullOrWhiteSpace(requestedTitle) ? sceneDate.Display : requestedTitle;
-        var scene = await scenes.CreateAsync(guildId, command.User.Id, characterName, sceneDate, title!);
-        await command.RespondAsync(
+        await command.DeferAsync(ephemeral: true);
+        var result = await scenes.CreateAsync(guildId, command.User.Id, character, sceneDate, requestedTitle);
+        if (result.Scene is not { } scene)
+        {
+            await command.ModifyOriginalResponseAsync(p => p.Content = CapacityMessage(result.Capacity));
+            return;
+        }
+        await command.ModifyOriginalResponseAsync(p => p.Content =
             $"Created scene **{scene.Title}** on **{scene.WorldDate.Display}** with **{CharacterSchema.BoundedName(characterName)}**. " +
-            $"Scene ID: `{ShortId(scene.Id)}`.",
-            ephemeral: true);
+            $"Scene ID: `{ShortId(scene.Id)}`. Ongoing scenes: **{result.Capacity.Active}/{result.Capacity.Limit}**.");
     }
 
     public static async Task HandleTrackerAsync(
@@ -135,6 +154,11 @@ internal static class SceneTrackerCommands
         }
 
         var root = command.Data.Options.First();
+        if (root.Name is "settings" or "slots")
+        {
+            await HandleSettingsAsync(command, guildId, root, scenes);
+            return;
+        }
         if (root.Name == "create")
         {
             await HandleCreateAsync(command, universes, scenes, characters);
@@ -223,10 +247,18 @@ internal static class SceneTrackerCommands
             }
 
             await command.DeferAsync(ephemeral: true);
+            var capacity = await scenes.GetCapacityAsync(guildId, user.Id, invitedCharacter.PublicId);
+            if (capacity.IsFull)
+            {
+                await command.ModifyOriginalResponseAsync(p => p.Content = CapacityMessage(capacity));
+                return;
+            }
+            var settings = await scenes.GetSettingsAsync(guildId);
+            var replyName = SceneDialogue.ReplyName(settings, (command.Channel as SocketGuildChannel)!.Guild.CurrentUser.DisplayName);
             var invitationMessage = await command.Channel.SendMessageAsync(
                 $"{user.Mention}, <@{command.User.Id}> invited your character **{characterDisplay}** to " +
                 $"scene **{scene.Title}** (`{scene.WorldDate.Display}`).\n" +
-                "Reply to this message with `Accept, Yoko.` or `Decline, Yoko.`");
+                $"Reply to this message with `Accept, {replyName}.` or `Decline, {replyName}.`");
             var inviteStatus = await scenes.AddPendingInviteAsync(guildId, new PendingSceneInvite
             {
                 InvitationMessageId = invitationMessage.Id,
@@ -234,6 +266,7 @@ internal static class SceneTrackerCommands
                 SceneId = scene.Id,
                 InvitedUserId = user.Id,
                 CharacterName = characterName,
+                CharacterId = invitedCharacter.PublicId,
                 InvitedBy = command.User.Id
             });
             if (inviteStatus != SceneMutationStatus.Success)
@@ -244,6 +277,7 @@ internal static class SceneTrackerCommands
                 {
                     SceneMutationStatus.AlreadyExists => "That character is already in the scene.",
                     SceneMutationStatus.InvitePending => "That character already has a pending invitation to this scene.",
+                    SceneMutationStatus.AtCapacity => "That character has reached its ongoing scene limit.",
                     _ => "That scene is no longer active."
                 });
                 return;
@@ -340,13 +374,16 @@ internal static class SceneTrackerCommands
             return true;
         }
 
-        var normalized = Regex.Replace(message.Content.ToLowerInvariant(), @"[\s,.!]+", " ").Trim();
-        var accepted = normalized is "accept" or "accept yoko" or "confirm" or "confirm yoko" or "yes";
-        var declined = normalized is "decline" or "decline yoko" or "cancel" or "cancel yoko" or "no";
+        var settings = await scenes.GetSettingsAsync(channel.Guild.Id);
+        var replyName = SceneDialogue.ReplyName(settings, channel.Guild.CurrentUser.DisplayName);
+        var accepted = SceneDialogue.IsReply(message.Content, "accept", replyName) ||
+                       SceneDialogue.IsReply(message.Content, "confirm", replyName) || message.Content.Trim().Equals("yes", StringComparison.OrdinalIgnoreCase);
+        var declined = SceneDialogue.IsReply(message.Content, "decline", replyName) ||
+                       SceneDialogue.IsReply(message.Content, "cancel", replyName) || message.Content.Trim().Equals("no", StringComparison.OrdinalIgnoreCase);
         if (!accepted && !declined)
         {
             await message.Channel.SendMessageAsync(
-                $"{message.Author.Mention}, reply to the invitation with `Accept, Yoko.` or `Decline, Yoko.`");
+                $"{message.Author.Mention}, reply to the invitation with `Accept, {replyName}.` or `Decline, {replyName}.`");
             return true;
         }
 
@@ -368,7 +405,9 @@ internal static class SceneTrackerCommands
             return true;
         }
 
-        if (await characters.GetAsync(channel.Guild.Id, pending.InvitedUserId, pending.CharacterName) is null)
+        var invitedCharacter = await characters.GetAsync(channel.Guild.Id, pending.InvitedUserId,
+            pending.CharacterId == Guid.Empty ? pending.CharacterName : CharacterSchema.Selector(pending.CharacterId));
+        if (invitedCharacter is null)
         {
             await scenes.RemovePendingInviteAsync(channel.Guild.Id, pending.InvitationMessageId);
             await UpdateInvitationAsync(
@@ -382,12 +421,20 @@ internal static class SceneTrackerCommands
             channel.Guild.Id,
             pending.SceneId,
             pending.InvitedUserId,
-            pending.CharacterName);
+            invitedCharacter);
+        if (status == SceneMutationStatus.AtCapacity)
+        {
+            await message.Channel.SendMessageAsync($"{message.Author.Mention}, " +
+                CapacityMessage(await scenes.GetCapacityAsync(channel.Guild.Id, pending.InvitedUserId, invitedCharacter.PublicId)) +
+                " Your invitation is still open; reply again after a slot becomes available.");
+            return true;
+        }
         await scenes.RemovePendingInviteAsync(channel.Guild.Id, pending.InvitationMessageId);
         await UpdateInvitationAsync(channel.Guild, pending, status switch
-            {
-                SceneMutationStatus.Success =>
-                $"{message.Author.Mention} accepted. **{pendingCharacterDisplay}** joined scene **{scene.Title}**.",
+        {
+            SceneMutationStatus.Success =>
+                TrimMessage(SceneDialogue.Render(settings.AcceptanceMessage, message.Author.Mention,
+                    CharacterSchema.BoundedName(invitedCharacter.Name), scene.Title, scene.WorldDate.Display)),
             SceneMutationStatus.AlreadyExists =>
                 $"{message.Author.Mention}'s **{pendingCharacterDisplay}** is already part of scene **{scene.Title}**.",
             _ => "This invitation expired because the scene is no longer active."
@@ -481,6 +528,61 @@ internal static class SceneTrackerCommands
     }
 
     private static string ShortId(string sceneId) => sceneId[..Math.Min(8, sceneId.Length)];
+
+    private static string CapacityMessage(SceneCapacity capacity) =>
+        $"This character has **{capacity.Active}/{capacity.Limit}** ongoing scenes. Complete a scene first, or ask a moderator for extra slots.";
+
+    private static SlashCommandOptionBuilder SlotAction(string name, bool amount)
+    {
+        var action = new SlashCommandOptionBuilder().WithName(name)
+            .WithDescription($"{name} a member's extra scene slots per character.")
+            .WithType(ApplicationCommandOptionType.SubCommand)
+            .AddOption("user", ApplicationCommandOptionType.User, "Member", isRequired: true);
+        if (amount) action.AddOption(new SlashCommandOptionBuilder().WithName("amount")
+            .WithDescription("Extra slots per character").WithType(ApplicationCommandOptionType.Integer)
+            .WithRequired(true).WithMinValue(1).WithMaxValue(1000));
+        return action;
+    }
+
+    private static async Task HandleSettingsAsync(SocketSlashCommand command, ulong guildId,
+        SocketSlashCommandDataOption root, SceneStore scenes)
+    {
+        await command.DeferAsync(ephemeral: true);
+        if (root.Name == "settings")
+        {
+            var limitOption = root.Options.FirstOrDefault(o => o.Name == "limit");
+            var replyName = OptionalString(root.Options, "reply-name");
+            var template = OptionalString(root.Options, "acceptance-message");
+            if ((template is not null && !SceneDialogue.IsValidTemplate(template)) ||
+                (replyName is not null && (string.IsNullOrWhiteSpace(replyName) || replyName.Any(char.IsControl) || replyName.Contains('`'))))
+            {
+                await command.ModifyOriginalResponseAsync(p => p.Content =
+                    "Use a plain reply name and a nonempty message of at most 1,500 characters. The expanded message must fit within 2,000 characters.");
+                return;
+            }
+            if (root.Options.Count > 0)
+                await scenes.ConfigureAsync(guildId, limitOption is null ? null : Convert.ToInt32(limitOption.Value), replyName, template);
+            var settings = await scenes.GetSettingsAsync(guildId);
+            var name = SceneDialogue.ReplyName(settings, ((SocketGuildChannel)command.Channel).Guild.CurrentUser.DisplayName);
+            await command.ModifyOriginalResponseAsync(p => p.Content =
+                $"**Scene settings**\nOngoing limit per character: **{settings.ActiveLimitPerCharacter}**\n" +
+                $"Invitation reply: `Accept, {name}.` (plain `Accept` also works)\n" +
+                $"Acceptance message:\n{settings.AcceptanceMessage}\n\nExisting scenes are retained when limits are lowered.");
+            return;
+        }
+        var action = root.Options.First();
+        var user = (IUser)Option(action.Options, "user").Value;
+        if (action.Name != "view")
+        {
+            var amount = action.Name == "reset" ? 0 : Convert.ToInt32(Option(action.Options, "amount").Value);
+            await scenes.ChangeSlotsAsync(guildId, user.Id, action.Name == "remove" ? -amount : amount, action.Name == "reset");
+        }
+        var current = await scenes.GetSettingsAsync(guildId);
+        var extra = current.ExtraSlotsByUser.GetValueOrDefault(user.Id);
+        await command.ModifyOriginalResponseAsync(p => p.Content =
+            $"{user.Mention} has **{extra}** extra slots: **{current.ActiveLimitPerCharacter + extra}** ongoing scenes per character " +
+            $"({current.ActiveLimitPerCharacter} default + {extra} extra). Existing scenes are retained.");
+    }
 
     private static string TrimMessage(string content) =>
         content.Length <= 2000 ? content : content[..1997] + "...";

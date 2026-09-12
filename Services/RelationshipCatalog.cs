@@ -35,7 +35,29 @@ internal static class RelationshipCatalog
         Define("biological-ancestor", "Biological ancestor", "biological-descendant",
             "ancestor", requestable: false),
         Define("biological-descendant", "Biological descendant", "biological-ancestor",
-            "descendant", requestable: false)
+            "descendant", requestable: false),
+        Social("social-friend", "Friend", "Social", "friends"),
+        Social("social-best-friend", "Best friend", "Social", "best friends", "bff"),
+        Social("social-acquaintance", "Acquaintance", "Social", "acquaintances"),
+        Social("social-confidant", "Confidant", "Social", "trusted friend"),
+        Social("social-ally", "Ally", "Social", "allies"),
+        Social("social-rival", "Rival", "Social", "rivals", "rivalry"),
+        Social("social-enemy", "Enemy", "Social", "enemies", "nemesis"),
+        Social("romantic-dating", "Dating partner", "Romantic", "dating", "boyfriend", "girlfriend", "partner"),
+        Social("romantic-engaged", "Fiancé / fiancée", "Romantic", "engaged", "fiance", "fiancee"),
+        Social("romantic-spouse", "Spouse", "Romantic", "married", "marriage", "husband", "wife"),
+        Social("romantic-former-partner", "Former partner", "Romantic", "ex", "divorced", "ex spouse"),
+        Pair("societal-mentor", "Mentor", "societal-student", "Societal", "teacher"),
+        Pair("societal-student", "Student", "societal-mentor", "Societal", "apprentice", "mentee"),
+        Pair("societal-guardian", "Guardian", "societal-ward", "Societal", "caretaker"),
+        Pair("societal-ward", "Ward", "societal-guardian", "Societal", "dependent"),
+        Pair("societal-leader", "Leader", "societal-follower", "Societal", "lord", "ruler", "commander"),
+        Pair("societal-follower", "Follower / subject", "societal-leader", "Societal", "subject", "vassal"),
+        Pair("societal-employer", "Employer", "societal-employee", "Societal", "boss"),
+        Pair("societal-employee", "Employee", "societal-employer", "Societal", "worker"),
+        Pair("adoptive-parent", "Adoptive parent", "adoptive-child", "Adoptive", "adopted parent", "adoptive mother", "adoptive father"),
+        Pair("adoptive-child", "Adoptive child", "adoptive-parent", "Adoptive", "adopted child", "adopted son", "adopted daughter"),
+        Social("adoptive-sibling", "Adoptive sibling", "Adoptive", "adopted sibling")
     ];
 
     // Every rule is a path A -> B -> ... -> Z. Adding or removing direct facts causes
@@ -92,7 +114,8 @@ internal static class RelationshipCatalog
     public static bool MatchesSearch(RelationshipDefinition definition, string typed)
     {
         if (string.IsNullOrWhiteSpace(typed)) return true;
-        return definition.DisplayName.Contains(typed, StringComparison.OrdinalIgnoreCase) ||
+        return definition.Category.Contains(typed, StringComparison.OrdinalIgnoreCase) ||
+               definition.DisplayName.Contains(typed, StringComparison.OrdinalIgnoreCase) ||
                definition.Id.Contains(typed, StringComparison.OrdinalIgnoreCase) ||
                definition.Aliases.Any(alias => alias.Contains(typed, StringComparison.OrdinalIgnoreCase));
     }
@@ -113,6 +136,12 @@ internal static class RelationshipCatalog
         bool requestable,
         params string[] aliases) =>
         new(id, displayName, inverseId, "Biological", requestable, [firstAlias, .. aliases]);
+
+    private static RelationshipDefinition Social(string id, string label, string category, params string[] aliases) =>
+        Pair(id, label, id, category, aliases);
+
+    private static RelationshipDefinition Pair(string id, string label, string inverse, string category, params string[] aliases) =>
+        new(id, label, inverse, category, true, aliases);
 
     private static RelationshipInferenceRule Rule(
         string id,

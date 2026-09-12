@@ -61,6 +61,28 @@ internal sealed class SitePublicationService
         return await PublishInternalAsync(guildId);
     }
 
+    public async Task<(bool Saved, SitePublishResult Publication)> ChangeOwnerPrivacyAsync(
+        ulong guildId, ulong userId, bool hidden, string displayName, PublicIdentityStore identities)
+    {
+        CancelScheduled(guildId);
+        var saved = false;
+        await _publishGate.WaitAsync();
+        try
+        {
+            // Wait out older snapshots before saving and publishing an opt-out.
+            await identities.SetPrivacyAsync(guildId, userId, hidden, displayName);
+            saved = true;
+            await _settings.MarkPendingAsync(guildId);
+            return (true, await PublishCoreAsync(guildId));
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine($"Website privacy update failed for server {guildId}: {exception}");
+            return (saved, new(false, "The update could not be published; ask staff to check /siteadmin status."));
+        }
+        finally { _publishGate.Release(); }
+    }
+
     public void Stop()
     {
         _stopping.Cancel();
@@ -111,6 +133,12 @@ internal sealed class SitePublicationService
             return new SitePublishResult(false, "The bot is shutting down.");
         }
 
+        try { return await PublishCoreAsync(guildId); }
+        finally { _publishGate.Release(); }
+    }
+
+    private async Task<SitePublishResult> PublishCoreAsync(ulong guildId)
+    {
         try
         {
             var settings = await _settings.GetAsync(guildId);
@@ -133,7 +161,6 @@ internal sealed class SitePublicationService
         {
             return await FailAsync(guildId, $"Site export failed: {exception.Message}");
         }
-        finally { _publishGate.Release(); }
     }
 
     private async Task<SitePublishResult> FailAsync(ulong guildId, string message)

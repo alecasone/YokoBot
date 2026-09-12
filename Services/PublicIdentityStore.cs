@@ -64,6 +64,53 @@ internal sealed class PublicIdentityStore
         finally { _gate.Release(); }
     }
 
+    public async Task SetPrivacyAsync(ulong guildId, ulong userId, bool hideDiscordId, string displayName)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var server = GetServer(data, guildId);
+            if (!server.TryGetValue(userId.ToString(), out var identity))
+                server[userId.ToString()] = identity = NewIdentity();
+            identity.HideDiscordId = hideDiscordId;
+            identity.DisplayName = displayName;
+            await SaveUnsafeAsync(data);
+        }
+        finally { _gate.Release(); }
+    }
+
+    // Refresh names and read privacy in the same lock. Missing/legacy preferences default to public IDs.
+    public async Task<IReadOnlyDictionary<ulong, PublicUserIdentity>> GetOwnersAsync(
+        ulong guildId, IReadOnlyDictionary<ulong, string?> displayNames)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync();
+            var server = GetServer(data, guildId);
+            var changed = false;
+            var result = new Dictionary<ulong, PublicUserIdentity>();
+            foreach (var (userId, displayName) in displayNames)
+            {
+                if (!server.TryGetValue(userId.ToString(), out var identity))
+                {
+                    server[userId.ToString()] = identity = NewIdentity();
+                    changed = true;
+                }
+                if (!string.IsNullOrWhiteSpace(displayName) && identity.DisplayName != displayName)
+                {
+                    identity.DisplayName = displayName;
+                    changed = true;
+                }
+                result[userId] = Clone(identity);
+            }
+            if (changed) await SaveUnsafeAsync(data);
+            return result;
+        }
+        finally { _gate.Release(); }
+    }
+
     private async Task<Dictionary<string, Dictionary<string, PublicUserIdentity>>> LoadUnsafeAsync()
     {
         if (!File.Exists(_filePath)) return [];
@@ -95,7 +142,8 @@ internal sealed class PublicIdentityStore
     {
         PublicId = identity.PublicId,
         Aliases = identity.Aliases.ToList(),
-        CreatedAt = identity.CreatedAt
+        CreatedAt = identity.CreatedAt,
+        DisplayName = identity.DisplayName,
+        HideDiscordId = identity.HideDiscordId
     };
 }
-

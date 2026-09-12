@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.18.0" />
+    <Compile Remove="tests/**/*.cs" />
+    <InternalsVisibleTo Include="Yoko.Checks" />
   </ItemGroup>
 
 </Project>

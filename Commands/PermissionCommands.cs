@@ -47,6 +47,11 @@ internal static class PermissionCommands
             {
                 var permission = ReadPermission(subcommand);
                 if (!await ValidatePermissionAsync(command, permission)) return;
+                if (PermissionCatalog.IsPublic(permission))
+                {
+                    await command.RespondAsync("This self-service privacy command is always available to everyone; its access cannot be revoked.", ephemeral: true);
+                    return;
+                }
                 var role = (IRole)Option(subcommand.Options, "role").Value;
                 var changed = subcommand.Name == "grant"
                     ? await store.GrantRoleAsync(guildId, permission, role.Id)
@@ -64,6 +69,11 @@ internal static class PermissionCommands
             {
                 var permission = ReadPermission(subcommand);
                 if (!await ValidatePermissionAsync(command, permission)) return;
+                if (PermissionCatalog.IsPublic(permission))
+                {
+                    await command.RespondAsync("This self-service privacy command is always available to everyone; its access cannot be revoked.", ephemeral: true);
+                    return;
+                }
                 var user = (IUser)Option(subcommand.Options, "user").Value;
                 var changed = subcommand.Name == "grant-user"
                     ? await store.GrantUserAsync(guildId, permission, user.Id)
@@ -86,9 +96,11 @@ internal static class PermissionCommands
                     .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
                 var lines = new List<string> { $"**Effective grants for `{permission}`**" };
+                if (PermissionCatalog.IsPublic(permission))
+                    lines.Add("Everyone always has self-service access. No grant is required, and this access cannot be revoked.");
                 if (command.User is SocketGuildUser { GuildPermissions.Administrator: true })
                     lines.Add("Discord server Administrators always bypass Yoko's permission file.");
-                if (matching.Length == 0) lines.Add("No role or user grants match this permission.");
+                if (matching.Length == 0 && !PermissionCatalog.IsPublic(permission)) lines.Add("No role or user grants match this permission.");
                 foreach (var (grantedName, grant) in matching)
                 {
                     var roles = grant.RoleIds.Select(id => guildChannel.Guild.GetRole(id)?.Mention ?? $"deleted role `{id}`");
@@ -213,6 +225,7 @@ internal static class PermissionCommands
         IReadOnlyDictionary<string, PermissionGrant> grants,
         string requestedPermission)
     {
+        if (PermissionCatalog.IsPublic(requestedPermission)) return "everyone — built-in self-service access (cannot be revoked)";
         var principals = new Dictionary<string, EffectivePrincipal>(StringComparer.Ordinal);
         foreach (var (grantedPermission, grant) in grants.Where(pair =>
                      PermissionCatalog.Matches(pair.Key, requestedPermission)))

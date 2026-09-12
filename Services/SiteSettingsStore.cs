@@ -63,6 +63,13 @@ internal sealed class SiteSettingsStore
         settings.ChangeVersion++;
     });
 
+    public Task SetBrandingAsync(ulong guildId, SiteBranding branding) => MutateAsync(guildId, settings =>
+    {
+        settings.Branding = branding;
+        settings.PendingChanges = true;
+        settings.ChangeVersion++;
+    });
+
     public Task RecordSuccessAsync(ulong guildId, DateTimeOffset timestamp, string? commitSha, long publishedVersion) =>
         MutateAsync(guildId, settings =>
         {
@@ -141,6 +148,12 @@ internal sealed class SiteSettingsStore
         LastAttemptAt = settings.LastAttemptAt,
         LastPublishedAt = settings.LastPublishedAt,
         LastCommitSha = settings.LastCommitSha,
-        LastError = settings.LastError
+        LastError = settings.LastError,
+        Branding = settings.Branding is null ? null : new SiteBranding
+        {
+            Name = settings.Branding.Name, LogoLetter = settings.Branding.LogoLetter,
+            ArchiveTitle = settings.Branding.ArchiveTitle, AtlasTitle = settings.Branding.AtlasTitle,
+            Tagline = settings.Branding.Tagline
+        }
     };
 }

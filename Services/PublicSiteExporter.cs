@@ -20,20 +20,32 @@ internal sealed class PublicSiteExporter
     private readonly CharacterStore _characters;
     private readonly RelationshipStore _relationships;
     private readonly RelationshipInferenceEngine _inference;
+    private readonly SiteSettingsStore _settings;
+    private readonly PublicIdentityStore _identities;
+    private readonly Func<ulong, ulong, string?> _displayName;
 
     public PublicSiteExporter(
         CharacterStore characters,
         RelationshipStore relationships,
-        RelationshipInferenceEngine inference)
+        RelationshipInferenceEngine inference,
+        SiteSettingsStore settings,
+        PublicIdentityStore identities,
+        Func<ulong, ulong, string?>? displayName = null)
     {
         _characters = characters;
         _relationships = relationships;
         _inference = inference;
+        _settings = settings;
+        _identities = identities;
+        _displayName = displayName ?? ((_, _) => null);
     }
 
     public async Task<string> BuildJsonAsync(ulong guildId)
     {
-        var characters = await _characters.GetAllAsync(guildId);
+        var owned = await _characters.GetAllOwnedAsync(guildId);
+        var characters = owned.Select(item => item.Character).ToArray();
+        var owners = await _identities.GetOwnersAsync(guildId, owned.Select(item => item.OwnerId).Distinct()
+            .ToDictionary(id => id, id => _displayName(guildId, id)));
         var characterIds = characters.Select(character => character.PublicId).ToHashSet();
         var relationships = _inference.Build(await _relationships.GetDirectAsync(guildId))
             .Where(edge => characterIds.Contains(edge.SourceCharacterId) &&
@@ -49,16 +61,22 @@ internal sealed class PublicSiteExporter
         var snapshot = new PublicCharacterSnapshot
         {
             GeneratedAt = DateTimeOffset.UtcNow,
-            Characters = characters
-                .OrderBy(character => character.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(ToPublicRecord)
+            Branding = (await _settings.GetAsync(guildId)).Branding,
+            Characters = owned
+                .OrderBy(item => item.Character.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(item => ToPublicRecord(item.Character, new PublicCharacterOwner
+                {
+                    DisplayName = owners[item.OwnerId].DisplayName ?? "Unknown member",
+                    DiscordId = owners[item.OwnerId].HideDiscordId ? null : item.OwnerId.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                }))
                 .ToList(),
-            RelationshipTypes = relationships
+            RelationshipTypes = RelationshipCatalog.Definitions
                 .Select(record => new PublicRelationshipTypeRecord
                 {
-                    Id = record.TypeId,
+                    Id = record.Id,
                     DisplayName = record.DisplayName,
-                    Category = record.Category
+                    Category = record.Category,
+                    InverseId = record.InverseId
                 })
                 .DistinctBy(record => record.Id, StringComparer.OrdinalIgnoreCase)
                 .OrderBy(record => record.Category, StringComparer.OrdinalIgnoreCase)
@@ -85,7 +103,7 @@ internal sealed class PublicSiteExporter
         };
     }
 
-    private static PublicCharacterRecord ToPublicRecord(Character character)
+    private static PublicCharacterRecord ToPublicRecord(Character character, PublicCharacterOwner owner)
     {
         var properties = character.AdditionalProperties
             .Where(pair => !IsPrivateProperty(pair.Key))
@@ -94,6 +112,7 @@ internal sealed class PublicSiteExporter
         {
             PublicId = character.PublicId,
             Name = character.Name,
+            Owner = owner,
             Aliases = character.Aliases
                 .Where(alias => !string.IsNullOrWhiteSpace(alias))
                 .Distinct(StringComparer.OrdinalIgnoreCase)

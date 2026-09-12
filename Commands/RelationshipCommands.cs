@@ -18,7 +18,8 @@ internal static class RelationshipCommands
             .AddOption(CharacterOption("my-character", "Your character"))
             .AddOption("user", ApplicationCommandOptionType.User, "Owner of the other character", isRequired: true)
             .AddOption(CharacterOption("their-character", "Their character"))
-            .AddOption(AutocompleteOption("relation", "Relationship from your character's perspective"));
+            .AddOption(AutocompleteOption("relation", "Search friend, spouse, rival, mentor, parent… from your character's perspective"))
+            .AddOption(CategoryOption());
 
         var requests = new SlashCommandOptionBuilder()
             .WithName("requests")
@@ -40,7 +41,8 @@ internal static class RelationshipCommands
             .WithDescription("Shows direct and inferred relationships for a character.")
             .WithType(ApplicationCommandOptionType.SubCommand)
             .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
-            .AddOption(CharacterOption("character", "Character to inspect"));
+            .AddOption(CharacterOption("character", "Character to inspect"))
+            .AddOption(CategoryOption());
 
         return new SlashCommandBuilder()
             .WithName("relationship")
@@ -189,7 +191,8 @@ internal static class RelationshipCommands
         CharacterStore characters,
         RelationshipStore relationships,
         PermissionService permissions,
-        SitePublicationService sitePublisher)
+        SitePublicationService sitePublisher,
+        SceneStore scenes)
     {
         if (message.Author.IsBot ||
             message.Channel is not SocketGuildChannel channel ||
@@ -214,8 +217,9 @@ internal static class RelationshipCommands
         }
 
         var reply = NormalizeReply(message.Content);
-        var accepted = reply is "accept" or "accept yoko" or "approve" or "yes";
-        var declined = reply is "decline" or "decline yoko" or "reject" or "no" or "cancel";
+        var replyName = SceneDialogue.ReplyName(await scenes.GetSettingsAsync(channel.Guild.Id), channel.Guild.CurrentUser.DisplayName);
+        var accepted = SceneDialogue.IsReply(message.Content, "accept", replyName) || reply is "approve" or "yes";
+        var declined = SceneDialogue.IsReply(message.Content, "decline", replyName) || reply is "reject" or "no" or "cancel";
         if (!accepted && !declined)
         {
             await message.Channel.SendMessageAsync(
@@ -261,7 +265,7 @@ internal static class RelationshipCommands
         var definition = RelationshipCatalog.Resolve(requestedType);
         if (definition is not { Requestable: true })
         {
-            await command.RespondAsync("Choose one of the requestable biological relationships from autocomplete.", ephemeral: true);
+            await command.RespondAsync("Choose a relationship from autocomplete. Search a name or category, such as friend, married, rival, social, or biological.", ephemeral: true);
             return;
         }
         if (targetUser.IsBot)
@@ -284,7 +288,7 @@ internal static class RelationshipCommands
         }
         if (source.PublicId == target.PublicId)
         {
-            await command.RespondAsync("A character cannot have a biological relationship with itself.", ephemeral: true);
+            await command.RespondAsync("A character cannot have a relationship with itself.", ephemeral: true);
             return;
         }
 
@@ -293,7 +297,7 @@ internal static class RelationshipCommands
         var sourceDisplay = CharacterSchema.BoundedName(source.Name);
         var targetDisplay = CharacterSchema.BoundedName(target.Name);
         var invitation = await command.Channel.SendMessageAsync(
-            $"{targetUser.Mention}, **{sourceDisplay}** is requesting a biological relationship with **{targetDisplay}**.\n" +
+            $"{targetUser.Mention}, **{sourceDisplay}** is requesting a {definition.Category.ToLowerInvariant()} relationship with **{targetDisplay}**.\n" +
             $"- **{sourceDisplay}** → **{definition.DisplayName}** of **{targetDisplay}**\n" +
             $"- **{targetDisplay}** → **{inverse.DisplayName}** of **{sourceDisplay}**\n\n" +
             "Reply directly to this message with `Accept` or `Decline`.");
@@ -450,9 +454,11 @@ internal static class RelationshipCommands
             return;
         }
 
+        var category = subcommand.Options.FirstOrDefault(option => option.Name == "category")?.Value?.ToString();
         var owned = (await characters.GetAllOwnedAsync(guildId)).ToDictionary(item => item.Character.PublicId);
         var edges = inference.Build(await relationships.GetDirectAsync(guildId))
             .Where(edge => edge.SourceCharacterId == character.PublicId)
+            .Where(edge => category is null || RelationshipCatalog.Get(edge.TypeId)?.Category == category)
             .Where(edge => owned.ContainsKey(edge.TargetCharacterId))
             .OrderBy(edge => edge.IsInferred)
             .ThenBy(edge => RelationshipCatalog.Get(edge.TypeId)?.DisplayName, StringComparer.OrdinalIgnoreCase)
@@ -461,13 +467,13 @@ internal static class RelationshipCommands
 
         if (edges.Length == 0)
         {
-            await command.RespondAsync($"**{CharacterSchema.BoundedName(character.Name)}** has no direct or inferred biological relationships.");
+            await command.RespondAsync($"**{CharacterSchema.BoundedName(character.Name)}** has no relationships matching this view.");
             return;
         }
 
         var direct = edges.Where(edge => !edge.IsInferred).ToArray();
         var inferred = edges.Where(edge => edge.IsInferred).ToArray();
-        var builder = new StringBuilder($"## Biological relationships: {character.Name}\n");
+        var builder = new StringBuilder($"## Relationships: {CharacterSchema.BoundedName(character.Name)}\n");
         AppendEdges(builder, "Direct and approved", direct, owned);
         AppendEdges(builder, "Inferred in the background", inferred, owned);
         await command.RespondAsync(TrimMessage(builder.ToString()), allowedMentions: AllowedMentions.None);
@@ -485,6 +491,7 @@ internal static class RelationshipCommands
         var sourceName = options.FirstOrDefault(option => option.Name == "my-character")?.Value?.ToString();
         var targetName = options.FirstOrDefault(option => option.Name == "their-character")?.Value?.ToString();
         var targetUserId = ReadUserId(options);
+        var category = options.FirstOrDefault(option => option.Name == "category")?.Value?.ToString();
         Character? source = null;
         Character? target = null;
         if (!string.IsNullOrWhiteSpace(sourceName))
@@ -502,12 +509,12 @@ internal static class RelationshipCommands
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var choices = RelationshipCatalog.Definitions
-            .Where(definition => definition.Requestable && RelationshipCatalog.MatchesSearch(definition, typed))
+            .Where(definition => definition.Requestable && (category is null || definition.Category == category) && RelationshipCatalog.MatchesSearch(definition, typed))
             .OrderByDescending(definition => suggested.Contains(definition.Id))
             .ThenBy(definition => definition.DisplayName, StringComparer.OrdinalIgnoreCase)
             .Take(25)
             .Select(definition => new AutocompleteResult(
-                TrimChoice(definition.DisplayName + (suggested.Contains(definition.Id) ? " — inferred from family graph" : string.Empty)),
+                TrimChoice($"[{definition.Category}] {definition.DisplayName}" + (suggested.Contains(definition.Id) ? " — inferred from family graph" : string.Empty)),
                 definition.Id));
         await interaction.RespondAsync(choices);
     }
@@ -620,6 +627,12 @@ internal static class RelationshipCommands
     private static SlashCommandOptionBuilder CharacterOption(string name, string description) =>
         AutocompleteOption(name, $"{description} ({CharacterSchema.NameMaxLength} characters maximum)")
             .WithMaxLength(CharacterSchema.NameMaxLength);
+
+    private static SlashCommandOptionBuilder CategoryOption() => new SlashCommandOptionBuilder()
+        .WithName("category").WithDescription("Filter by biological, adoptive, social, romantic, or societal ties")
+        .WithType(ApplicationCommandOptionType.String)
+        .AddChoice("Biological", "Biological").AddChoice("Adoptive", "Adoptive").AddChoice("Social", "Social")
+        .AddChoice("Romantic", "Romantic").AddChoice("Societal", "Societal");
 
     private static SlashCommandOptionBuilder AutocompleteOption(string name, string description) =>
         new SlashCommandOptionBuilder()

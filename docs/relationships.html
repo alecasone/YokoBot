@@ -4,20 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11100f">
-  <meta name="description" content="Explore the direct and inferred connections between Yoko roleplay characters.">
+  <meta name="description" content="Explore the lives and connections of roleplay characters." data-site-content="Explore the direct and inferred connections between {name} roleplay characters.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Yoko Relationship Atlas">
+  <meta property="og:title" content="Relationship Atlas" data-site-content="{name} · {atlasTitle}">
   <meta property="og:description" content="An interactive map of approved and inferred character relationships.">
   <meta property="og:url" content="https://alecasone.github.io/YokoBot/relationships.html">
   <meta property="og:image" content="https://alecasone.github.io/YokoBot/og.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Yoko Relationship Atlas">
+  <meta name="twitter:title" content="Relationship Atlas" data-site-content="{name} · {atlasTitle}">
   <meta name="twitter:description" content="An interactive map of approved and inferred character relationships.">
   <meta name="twitter:image" content="https://alecasone.github.io/YokoBot/og.png">
-  <title>Relationship Atlas · Yoko Character Archive</title>
-  <link rel="stylesheet" href="./styles.css?v=family-islands-1">
+  <title>Relationship Atlas</title>
+  <link rel="stylesheet" href="./styles.css?v=owners-1">
 </head>
-<body class="relationship-page">
+<body class="relationship-page" data-site-title="{atlasTitle} · {name}">
   <header class="atlas-header">
     <nav class="site-nav" aria-label="Archive sections">
       <a href="./">Character directory</a>
@@ -25,9 +25,9 @@
     </nav>
     <div class="atlas-heading">
       <div>
-        <p class="masthead__eyebrow">Yoko / Lines of relation</p>
-        <h1>Relationship Atlas</h1>
-        <p>Follow the threads between characters. Direct ties are solid; relationships Yoko infers from the family graph are traced in gold.</p>
+        <p class="masthead__eyebrow" data-site-text="{name} / Lines of relation">Lines of relation</p>
+        <h1 data-site-text="{atlasTitle}">Relationship Atlas</h1>
+        <p>Family, friendship, love, and loyalties. Explore the ties that shape each character’s world.</p>
       </div>
       <dl class="archive-stats atlas-stats" aria-label="Relationship statistics">
         <div><dt>Characters</dt><dd id="atlas-character-count">—</dd></div>
@@ -38,6 +38,14 @@
   </header>
 
   <main class="atlas-main">
+    <nav class="relationship-tabs" aria-label="Relationship categories">
+      <button type="button" data-category="" aria-pressed="true">All ties</button>
+      <button type="button" data-category="Biological" aria-pressed="false">Bloodlines</button>
+      <button type="button" data-category="Adoptive" aria-pressed="false">Adoptive family</button>
+      <button type="button" data-category="Social" aria-pressed="false">Social</button>
+      <button type="button" data-category="Romantic" aria-pressed="false">Romance</button>
+      <button type="button" data-category="Societal" aria-pressed="false">Roles & loyalties</button>
+    </nav>
     <section class="atlas-toolbar" aria-label="Relationship map controls">
       <div class="focus-search">
         <label for="focus-search">Find a character</label>
@@ -49,13 +57,18 @@
         <div>
           <button type="button" data-layout="network" aria-pressed="true">Map</button>
           <button type="button" data-layout="tree" aria-pressed="false">Family tree</button>
+          <button type="button" data-layout="circles" aria-pressed="false">Social circles</button>
         </div>
       </fieldset>
       <label>
-        <span>Relationship family</span>
+        <span>Category</span>
         <select id="category-filter">
-          <option value="">All relationship families</option>
+          <option value="">All categories</option>
         </select>
+      </label>
+      <label>
+        <span>Relationship status</span>
+        <select id="type-filter"><option value="">Every status</option></select>
       </label>
       <label class="toggle-control">
         <input id="show-inferred" type="checkbox" checked>
@@ -96,6 +109,7 @@
       <aside class="relationship-inspector" aria-labelledby="inspector-title">
         <p class="section-label">Character in focus</p>
         <h2 id="inspector-title">Choose a character</h2>
+        <div id="inspector-owner"></div>
         <p id="inspector-meta" class="inspector-meta">Select a node to read its connections.</p>
         <div id="inspector-actions" class="inspector-actions" hidden>
           <button id="center-selected" class="utility-button" type="button">Center on map</button>
@@ -148,11 +162,13 @@
   </div>
 
   <footer>
-    <span>Generated from sanitized Yoko character records.</span>
-    <span>Pending requests and Discord identities remain private.</span>
+    <span data-site-text="Generated from sanitized {name} character records.">Generated from sanitized character records.</span>
+    <span>Owner display names and Discord IDs are public unless the owner hides their ID with <code>/character anonymize-website-discord-id</code>. Names stay visible; previous versions may remain in Git history or caches. Pending requests stay private.</span>
   </footer>
 
   <noscript>The relationship atlas requires JavaScript to draw its map.</noscript>
-  <script src="./relationships.js?v=family-islands-1" defer></script>
+  <script src="./branding.js?v=social-scenes-1" defer></script>
+  <script src="./owner.js?v=owners-1" defer></script>
+  <script src="./relationships.js?v=owners-1" defer></script>
 </body>
 </html>

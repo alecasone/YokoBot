@@ -38,6 +38,16 @@ body::before {
 
 button, input, select { font: inherit; }
 
+.character-attribution { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem .7rem; margin: .6rem 0 1rem; font: .875rem/1.5 system-ui, sans-serif; color: var(--muted); }
+.owner-name { color: var(--ink); overflow-wrap: anywhere; }
+.owner-copy { min-height: 2.2rem; border: 1px solid var(--line); border-radius: .3rem; padding: .3rem .55rem; color: var(--accent); background: transparent; cursor: pointer; }
+.owner-copy:hover, .owner-copy:focus-visible { color: var(--ink); border-color: var(--accent); }
+.owner-copy-status { flex-basis: 100%; overflow-wrap: anywhere; color: var(--accent); user-select: text; }
+.owner-copy-status:empty { display: none; }
+.owner-private { font-size: .8125rem; }
+footer > span { max-width: 48rem; line-height: 1.7; }
+footer code { overflow-wrap: anywhere; }
+
 .site-nav {
   display: flex;
   gap: 0.45rem;
@@ -98,6 +108,7 @@ h1 {
 }
 
 .archive-mark {
+  position: relative;
   display: grid;
   width: clamp(5rem, 11vw, 8rem);
   aspect-ratio: 1;
@@ -106,9 +117,23 @@ h1 {
   border: 1px solid var(--accent);
   border-radius: 50%;
   color: var(--accent);
-  box-shadow: inset 0 0 0 0.55rem #11100f, inset 0 0 0 calc(0.55rem + 1px) var(--line);
+  background: transparent;
   font-size: clamp(2rem, 5vw, 4rem);
 }
+
+.archive-mark::before { content: ""; position: absolute; inset: .55rem; border: 1px solid var(--line); border-radius: 50%; }
+.archive-mark svg { position: relative; width: 100%; height: 100%; background: transparent; fill: currentColor; font-size: 52px; }
+.relationship-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.4rem; }
+.relationship-tabs button { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 99px; padding: .6rem 1rem; cursor: pointer; }
+.relationship-tabs button:hover, .relationship-tabs button[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); background: var(--accent-soft); }
+.relationship-tabs button[data-category="Social"] { --accent: #82c7b1; --accent-soft: #82c7b11a; }
+.relationship-tabs button[data-category="Romantic"] { --accent: #e59aac; --accent-soft: #e59aac1a; }
+.relationship-tabs button[data-category="Societal"] { --accent: #a6a0df; --accent-soft: #a6a0df1a; }
+.relationship-tabs button[data-category="Adoptive"] { --accent: #87b9d2; --accent-soft: #87b9d21a; }
+.social-ring { fill: none; stroke: #665d4e; stroke-dasharray: 3 9; opacity: .6; vector-effect: non-scaling-stroke; }
+.social-ring-label { fill: var(--muted); font: 16px ui-monospace, monospace; letter-spacing: .15em; }
+.relationship-page .layout-switcher > div { flex-wrap: wrap; }
+.connection-kind { color: var(--relationship-color, var(--accent)); }
 
 main {
   width: min(1180px, calc(100% - 2.5rem));
@@ -290,7 +315,7 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
   position: relative;
   z-index: 8;
   display: grid;
-  grid-template-columns: minmax(15rem, 1fr) auto minmax(12rem, 0.42fr) auto auto;
+  grid-template-columns: minmax(14rem, 1fr) minmax(18rem, 1.2fr) minmax(10rem, .7fr) minmax(12rem, .9fr);
   align-items: end;
   gap: 0.85rem;
   padding: 0.85rem;
@@ -644,6 +669,10 @@ footer {
   color: var(--muted);
   font-family: ui-monospace, monospace;
   font-size: 0.7rem;
+}
+
+@media (max-width: 1100px) {
+  .atlas-toolbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 
 @media (max-width: 820px) {

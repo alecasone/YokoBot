@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using Yoko.Bot.Models;
 using Yoko.Bot.Services;
 
 namespace Yoko.Bot.Commands;
@@ -32,7 +33,19 @@ internal static partial class SiteAdminCommands
                 .WithName("status")
                 .WithDescription("Shows site configuration and synchronization status.")
                 .WithType(ApplicationCommandOptionType.SubCommand))
+            .AddOption(new SlashCommandOptionBuilder().WithName("branding")
+                .WithDescription("View or change the site's name, logo letter, titles, and tagline.")
+                .WithType(ApplicationCommandOptionType.SubCommand)
+                .AddOption(BrandOption("name", "Public name, such as Helios", 60))
+                .AddOption(BrandOption("logo-letter", "One letter overlaid on a transparent logo", 2))
+                .AddOption(BrandOption("archive-title", "Directory heading", 80))
+                .AddOption(BrandOption("atlas-title", "Relationship map heading", 80))
+                .AddOption(BrandOption("tagline", "Directory introduction", 240)))
             .Build();
+
+    private static SlashCommandOptionBuilder BrandOption(string name, string description, int max) =>
+        new SlashCommandOptionBuilder().WithName(name).WithDescription(description)
+            .WithType(ApplicationCommandOptionType.String).WithMinLength(1).WithMaxLength(max);
 
     public static async Task HandleAsync(
         SocketSlashCommand command,
@@ -48,6 +61,37 @@ internal static partial class SiteAdminCommands
         var subcommand = command.Data.Options.First();
         switch (subcommand.Name)
         {
+            case "branding":
+                await command.DeferAsync(ephemeral: true);
+                var branding = (await settingsStore.GetAsync(guildId)).Branding ?? new SiteBranding();
+                var name = OptionalString(subcommand.Options, "name")?.Trim();
+                var letter = OptionalString(subcommand.Options, "logo-letter")?.Trim();
+                if (subcommand.Options.Any(o => string.IsNullOrWhiteSpace(o.Value?.ToString())) ||
+                    (letter is not null && (letter.EnumerateRunes().Count() != 1 || !System.Text.Rune.IsLetter(letter.EnumerateRunes().First()))))
+                {
+                    await command.ModifyOriginalResponseAsync(p => p.Content = "Use nonempty text and a single letter for the logo.");
+                    break;
+                }
+                if (name is not null) branding.Name = name;
+                if (letter is not null) branding.LogoLetter = letter;
+                else if (name is not null)
+                {
+                    var initial = name.EnumerateRunes().FirstOrDefault(System.Text.Rune.IsLetter);
+                    if (initial.Value != 0) branding.LogoLetter = System.Text.Rune.ToUpperInvariant(initial).ToString();
+                }
+                branding.ArchiveTitle = OptionalString(subcommand.Options, "archive-title")?.Trim() ?? branding.ArchiveTitle;
+                branding.AtlasTitle = OptionalString(subcommand.Options, "atlas-title")?.Trim() ?? branding.AtlasTitle;
+                branding.Tagline = OptionalString(subcommand.Options, "tagline")?.Trim() ?? branding.Tagline;
+                if (subcommand.Options.Count > 0)
+                {
+                    await settingsStore.SetBrandingAsync(guildId, branding);
+                    await publisher.QueueAsync(guildId);
+                }
+                await command.ModifyOriginalResponseAsync(p => p.Content =
+                    $"**Site branding**\nName: {branding.Name}\nLogo: {branding.LogoLetter}\nDirectory: {branding.ArchiveTitle}\n" +
+                    $"Atlas: {branding.AtlasTitle}\nTagline: {branding.Tagline}\n\n" +
+                    "Changes use automatic publishing when enabled; otherwise run `/siteadmin publish`. The updated website assets must be on the Pages branch.");
+                break;
             case "setup":
                 await SetupAsync(command, guildId, subcommand, settingsStore, publisher);
                 break;

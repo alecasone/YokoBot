@@ -14,6 +14,7 @@ const elements = {
   updated: document.querySelector("#last-updated"),
   dialog: document.querySelector("#character-dialog"),
   dialogTitle: document.querySelector("#dialog-title"),
+  dialogOwner: document.querySelector("#dialog-owner"),
   dialogAliases: document.querySelector("#dialog-aliases"),
   dialogDetails: document.querySelector("#dialog-details"),
   dialogProperties: document.querySelector("#dialog-properties"),
@@ -32,6 +33,7 @@ async function initialize() {
   if (!response.ok) throw new Error(`Character data returned ${response.status}.`);
 
   const payload = await response.json();
+  await window.ArchiveBranding.apply(payload.branding);
   state.characters = Array.isArray(payload.characters) ? payload.characters.filter(isCharacter) : [];
   elements.count.textContent = state.characters.length.toLocaleString();
   elements.regionCount.textContent = new Set(state.characters.map(item => item.region).filter(Boolean)).size.toLocaleString();
@@ -93,7 +95,7 @@ function createCard(character, index) {
   button.textContent = "Open record";
   button.addEventListener("click", () => openCharacter(character, true));
 
-  article.append(recordNumber, name, aliases, facts, button);
+  article.append(recordNumber, name, window.CharacterAttribution.create(character.owner), aliases, facts, button);
   return article;
 }
 
@@ -111,6 +113,7 @@ function addCardFact(container, label, value) {
 
 function openCharacter(character, updateHistory) {
   elements.dialogTitle.textContent = character.name;
+  elements.dialogOwner.replaceChildren(window.CharacterAttribution.create(character.owner));
   elements.dialogAliases.textContent = character.aliases?.length
     ? `Aliases: ${character.aliases.join(", ")}`
     : "No aliases recorded.";
@@ -189,6 +192,7 @@ function characterSorter(order) {
 function searchableText(character) {
   return normalize([
     character.name,
+    character.owner?.displayName,
     ...(character.aliases ?? []),
     character.age,
     character.gender,

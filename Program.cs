@@ -14,14 +14,15 @@ internal static class Program
     private static readonly MemberAlertStore MemberAlertSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "member-alerts.json"));
     private static readonly VerificationSettingsStore VerificationSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "verification-settings.json"));
     private static readonly UniverseStore Universes = new(Path.Combine(Environment.CurrentDirectory, "data", "universe.json"));
-    private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"));
+    private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"), Characters);
     private static readonly RelationshipStore Relationships = new(Path.Combine(Environment.CurrentDirectory, "data", "relationships.json"));
     private static readonly RelationshipInferenceEngine RelationshipInference = new();
     private static readonly PermissionStore PermissionSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "permissions.json"));
     private static readonly PermissionService Permissions = new(PermissionSettings);
     private static readonly PublicIdentityStore PublicIdentities = new(Path.Combine(Environment.CurrentDirectory, "data", "public-identities.json"));
     private static readonly SiteSettingsStore SiteSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "site-settings.json"));
-    private static readonly PublicSiteExporter SiteExporter = new(Characters, Relationships, RelationshipInference);
+    private static readonly PublicSiteExporter SiteExporter = new(Characters, Relationships, RelationshipInference, SiteSettings,
+        PublicIdentities, ResolveOwnerDisplayName);
     private static readonly GitHubContentsClient GitHubPages = new();
     private static readonly SitePublicationService SitePublisher = new(SiteSettings, SiteExporter, GitHubPages);
     private static readonly string[] Rooms =
@@ -45,11 +46,16 @@ internal static class Program
         LogGatewayIntentWarnings = false
     });
     private static readonly CharacterRoleService CharacterRoles = new(Client, Characters, CharacterSettings);
+    private static readonly CharacterPurgeService CharacterPurger = new(Characters, Relationships, Scenes,
+        CharacterRoles.SyncMemberAsync, SitePublisher.QueueAsync);
     private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules, Permissions, PublicIdentities);
     private static readonly MemberAlertService MemberAlerts = new(Client, MemberAlertSettings);
     private static readonly VerificationService Verification = new(Client, VerificationSettings, AutoModerator);
 
     private static bool _commandsRegistered;
+
+    private static string? ResolveOwnerDisplayName(ulong guildId, ulong userId) =>
+        Client.GetGuild(guildId)?.GetUser(userId)?.DisplayName ?? Client.GetUser(userId)?.GlobalName ?? Client.GetUser(userId)?.Username;
 
     public static async Task Main()
     {
@@ -83,6 +89,13 @@ internal static class Program
         Client.UserJoined += MemberAlerts.HandleUserJoinedAsync;
         Client.UserLeft += MemberAlerts.HandleUserLeftAsync;
         Client.GuildMemberUpdated += MemberAlerts.HandleGuildMemberUpdatedAsync;
+        Client.GuildMemberUpdated += async (before, after) =>
+        {
+            if (before.HasValue && before.Value.DisplayName == after.DisplayName) return;
+            if (await Characters.GetCharacterCountAsync(after.Guild.Id, after.Id) == 0) return;
+            await PublicIdentities.GetOwnersAsync(after.Guild.Id, new Dictionary<ulong, string?> { [after.Id] = after.DisplayName });
+            await SitePublisher.QueueAsync(after.Guild.Id);
+        };
         Client.SlashCommandExecuted += HandleSlashCommandAsync;
         Client.AutocompleteExecuted += HandleAutocompleteAsync;
         Client.MessageReceived += HandleMessageReceivedAsync;
@@ -144,7 +157,7 @@ internal static class Program
                 await PerformShutdownAsync(command);
                 break;
             case "character":
-                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings, CharacterRoles, Relationships, SitePublisher);
+                await CharacterCommands.HandleAsync(command, Characters, CharacterSettings, CharacterRoles, Relationships, SitePublisher, PublicIdentities);
                 break;
             case "charadmin":
                 await CharacterAdminCommands.HandleAsync(command, CharacterSettings, CharacterRoles);
@@ -286,12 +299,12 @@ internal static class Program
         await AutoModerator.RecordMessageAsync(message);
         if (await AutoModerator.HandleApprovalMessageAsync(message)) return;
         if (await RelationshipCommands.HandleReplyAsync(
-                message, Characters, Relationships, Permissions, SitePublisher)) return;
+                message, Characters, Relationships, Permissions, SitePublisher, Scenes)) return;
         if (await SceneTrackerCommands.HandleInviteReplyAsync(message, Scenes, Characters)) return;
         if (await AutoModerationCommands.HandleWizardMessageAsync(message, AutoModerationRules)) return;
         if (await MemberAlertCommands.HandleWizardMessageAsync(message, MemberAlertSettings)) return;
         if (await VerificationCommands.HandleWizardMessageAsync(message, VerificationSettings)) return;
         if (await CharacterAdminCommands.HandleWizardMessageAsync(message, CharacterSettings, CharacterRoles)) return;
-        await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles, Relationships, SitePublisher);
+        await CharacterCommands.HandleFilloutMessageAsync(message, Characters, CharacterRoles, Relationships, SitePublisher, Scenes, CharacterPurger, Permissions);
     }
 }
