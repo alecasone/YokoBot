@@ -1,10 +1,21 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-09-11T04:39:20.7963298+00:00",
+  "schemaVersion": 4,
+  "branding": {
+    "name": "The Obelian Empire",
+    "logoLetter": "H",
+    "archiveTitle": "Character Archive",
+    "atlasTitle": "Relationship Atlas",
+    "tagline": "An index of approved lives, legends, and questionable alibis."
+  },
+  "generatedAt": "2026-09-12T02:25:14.7451298+00:00",
   "characters": [
     {
       "publicId": "6976f0d6-f916-46f7-8ff5-a9fedb690753",
       "name": "Aldric Ashbourne",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [
         "Alder"
       ],
@@ -22,6 +33,10 @@
     {
       "publicId": "d4b69a3f-f36f-43ac-9d87-a6c778988a39",
       "name": "Cassian Vale",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "22",
       "gender": "Man",
@@ -37,6 +52,10 @@
     {
       "publicId": "3e47d024-9115-4b4d-ac0b-9d0fe376e3b5",
       "name": "child",
+      "owner": {
+        "displayName": "Captainwomanrespecter",
+        "discordId": "719274333708484741"
+      },
       "aliases": [],
       "age": null,
       "gender": null,
@@ -49,6 +68,10 @@
     {
       "publicId": "97726b34-c6ae-4ead-ae05-6ac686a248d3",
       "name": "Corin Ashbourne",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "21",
       "gender": "Man",
@@ -64,6 +87,10 @@
     {
       "publicId": "569dfcba-16fa-4267-8005-bd94fa999767",
       "name": "emm",
+      "owner": {
+        "displayName": "Unknown member",
+        "discordId": "1542993672793096272"
+      },
       "aliases": [],
       "age": null,
       "gender": null,
@@ -76,6 +103,10 @@
     {
       "publicId": "ade782c9-25e5-4c4a-872b-0e69cb400954",
       "name": "Garrick Fenwick",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [
         "Old Fen"
       ],
@@ -93,6 +124,10 @@
     {
       "publicId": "c0b66444-4e10-41df-ac23-7ed39187b559",
       "name": "Goldfish Imposter",
+      "owner": {
+        "displayName": "Rad",
+        "discordId": "326748127652478987"
+      },
       "aliases": [
         "https://www.google.com/search?q=goldfish\u002Bphoto\u0026oq=goldfish\u0026gs_lcrp=EgZjaHJvbWUqCAgAEEUYJxg7MggIABBFGCcYOzIPCAEQLhhDGLEDGIAEGIoFMgwIAhAAGEMYgAQYigUyDwgDEAAYQxixAxiABBiKBTIMCAQQABhDGIAEGIoFMgwIBRAAGEMYgAQYigUyDAgGEAAYQxiABBiKBTISCAcQABhDGIMBGLEDGIAEGIoFMgcICBAAGI8CMgcICRAAGI8C0gEHOTA4ajBqN6gCALACAA\u0026sourceid=chrome\u0026source=chrome.ob\u0026ie=UTF-8"
       ],
@@ -107,6 +142,10 @@
     {
       "publicId": "69ff7438-05c3-4303-b9ef-5908d1904db2",
       "name": "Lucan Thorne",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [
         "Deepwake"
       ],
@@ -124,6 +163,10 @@
     {
       "publicId": "85532834-e2ee-4dbe-9807-107314a321ab",
       "name": "Maeve Fenwick",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
       "aliases": [],
       "age": "38",
       "gender": "Woman",
@@ -139,6 +182,10 @@
     {
       "publicId": "d68fae85-8995-4d82-9103-7801e012ae6d",
       "name": "Nia Vale",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "4",
       "gender": "Girl",
@@ -154,6 +201,10 @@
     {
       "publicId": "ec3bea2e-f97e-4015-a0d7-1705bfc8b34a",
       "name": "Nolen Fenwick",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "38",
       "gender": "Man",
@@ -169,6 +220,10 @@
     {
       "publicId": "164de7d5-c794-4539-ac06-1506dfd35860",
       "name": "Oren Mirewood",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "58",
       "gender": "Man",
@@ -184,6 +239,10 @@
     {
       "publicId": "ce415986-9d55-476d-a980-ad1c2ae732ab",
       "name": "Orla Fenwick",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
       "aliases": [],
       "age": "15",
       "gender": "Girl",
@@ -199,6 +258,10 @@
     {
       "publicId": "caac34ef-e3ec-4810-b035-191af11f0d89",
       "name": "Radicus",
+      "owner": {
+        "displayName": "Rad",
+        "discordId": "326748127652478987"
+      },
       "aliases": [],
       "age": null,
       "gender": null,
@@ -211,6 +274,10 @@
     {
       "publicId": "8963c0fd-6ebd-4362-940a-4c77231b364e",
       "name": "Rhea Thorne",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
       "aliases": [],
       "age": "31",
       "gender": "Woman",
@@ -226,6 +293,10 @@
     {
       "publicId": "11a7efc2-c7af-4965-b0b8-10619c8c3f6c",
       "name": "Rowan Vale",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "43",
       "gender": "Man",
@@ -241,6 +312,10 @@
     {
       "publicId": "186ef8e7-ca6a-4cf6-8d7c-22abd111b53f",
       "name": "sandwiches",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
       "aliases": [],
       "age": null,
       "gender": null,
@@ -253,6 +328,10 @@
     {
       "publicId": "59c0eb95-52e4-4b97-b3ba-eea6310998c6",
       "name": "Silas Thorne",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "8",
       "gender": "Boy",
@@ -268,6 +347,10 @@
     {
       "publicId": "88caf68c-3499-4e4d-a23a-ca6fed5a5a03",
       "name": "Stonks",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "72",
       "gender": "It",
@@ -280,6 +363,10 @@
     {
       "publicId": "a246e23b-f927-44a0-b73f-d2e845879065",
       "name": "Talia Mirewood",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
       "aliases": [],
       "age": "34",
       "gender": "Woman",
@@ -295,6 +382,10 @@
     {
       "publicId": "28d7305d-016b-47b9-af20-e67faa5ed34a",
       "name": "Tarin Vale",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [],
       "age": "20",
       "gender": "Man",
@@ -310,6 +401,10 @@
     {
       "publicId": "cbc2993a-4c9a-4182-9452-3149b2a70ec4",
       "name": "The skies of Coruscant blaze with war.  The artificial daylight spread by the capital\u0027s orbital mirrors is sliced by intersecting flames of ion drives and punctuated by starburst explosions; contrails of debris raining into the atmosphere become tangled ribbons of cloud. The nightside sky is an infinite lattice of shining hairlines that interlock planetoids and track erratic spirals of glowing gnats. Beings watching from rooftops of Coruscant\u0027s endless cityscape can find it beautiful.  From the inside, it\u0027s different.  The gnats are drive-glows of starfighters. The shining hairlines are light-scatter from turbolaser bolts powerful enough to vaporize a small town. The planetoids are capital ships.  The battle from the inside is a storm of confusion and panic, of galvened particle beams flashing past your starfighter so close that your cockpit rings like a broken annunciator, of the boot-sole shock of concussion missiles that blast into your cruiser, killing beings you have trained with and eaten with and played and laughed and bickered with. From the inside, the battle is desperation and terror and the stomach-churning certainty that the whole galaxy is trying to kill you.",
+      "owner": {
+        "displayName": "Rad",
+        "discordId": "326748127652478987"
+      },
       "aliases": [],
       "age": "1234567890",
       "gender": "Across the remnants of the Republic, stunned beings watch in horror as the battle unfolds live on the HoloNet. Everyone knows the war has been going badly. Everyone knows that more Jedi are killed or captured every day, that the Grand Army of the Republic has been pushed out of system after system, but this\u2014  A strike at the very heart of the Republic?  An invasion of Coruscant itself?  How can this happen?  It\u0027s a nightmare, and no one can wake up.  Live via HoloNet, beings watch the Separatist droid army flood the government district. The coverage is filled with images of overmatched clone troopers cut down by remorselessly powerful destroyer droids in the halls of the Galactic Senate itself.  A gasp of relief: the troopers seem to beat back the attack. There are hugs and even some quiet cheers in living rooms across the galaxy as the Separatist forces retreat to their landers and streak for orbit\u2014  We won! beings tell each other. We held them off!  But then new reports trickle in\u2014only rumors at first\u2014that the attack wasn\u0027t an invasion at all. That the Separatists weren\u0027t trying to take the planet. That this was a lightning raid on the Senate itself.  The nightmare gets worse: the Supreme Chancellor is missing.",
@@ -329,6 +424,10 @@
     {
       "publicId": "06890420-d1f1-4fb0-bc9e-a59e195ceb15",
       "name": "Vesna Mirewood",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
       "aliases": [
         "Ves"
       ],
@@ -346,6 +445,10 @@
     {
       "publicId": "21c864ff-3f75-4d21-924b-403e24cc7b86",
       "name": "Ysabel Thorne",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
       "aliases": [
         "Mother Current"
       ],
@@ -363,69 +466,226 @@
   ],
   "relationshipTypes": [
     {
+      "id": "adoptive-child",
+      "displayName": "Adoptive child",
+      "category": "Adoptive",
+      "inverseId": "adoptive-parent"
+    },
+    {
+      "id": "adoptive-parent",
+      "displayName": "Adoptive parent",
+      "category": "Adoptive",
+      "inverseId": "adoptive-child"
+    },
+    {
+      "id": "adoptive-sibling",
+      "displayName": "Adoptive sibling",
+      "category": "Adoptive",
+      "inverseId": "adoptive-sibling"
+    },
+    {
       "id": "biological-ancestor",
       "displayName": "Biological ancestor",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-descendant"
     },
     {
       "id": "biological-pibling",
       "displayName": "Biological aunt/uncle (pibling)",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-nibling"
     },
     {
       "id": "biological-child",
       "displayName": "Biological child",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-parent"
+    },
+    {
+      "id": "biological-cousin",
+      "displayName": "Biological cousin",
+      "category": "Biological",
+      "inverseId": "biological-cousin"
     },
     {
       "id": "biological-descendant",
       "displayName": "Biological descendant",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-ancestor"
     },
     {
       "id": "biological-grandchild",
       "displayName": "Biological grandchild",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-grandparent"
     },
     {
       "id": "biological-grandparent",
       "displayName": "Biological grandparent",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-grandchild"
     },
     {
       "id": "biological-great-grandchild",
       "displayName": "Biological great-grandchild",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-great-grandparent"
     },
     {
       "id": "biological-great-grandparent",
       "displayName": "Biological great-grandparent",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-great-grandchild"
     },
     {
       "id": "biological-nibling",
       "displayName": "Biological niece/nephew (nibling)",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-pibling"
     },
     {
       "id": "biological-parent",
       "displayName": "Biological parent",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-child"
     },
     {
       "id": "biological-sibling",
       "displayName": "Biological sibling",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-sibling"
     },
     {
       "id": "biological-twin",
       "displayName": "Biological twin",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-twin"
+    },
+    {
+      "id": "biological-full-sibling",
+      "displayName": "Full biological sibling",
+      "category": "Biological",
+      "inverseId": "biological-full-sibling"
     },
     {
       "id": "biological-half-sibling",
       "displayName": "Half biological sibling",
-      "category": "Biological"
+      "category": "Biological",
+      "inverseId": "biological-half-sibling"
+    },
+    {
+      "id": "romantic-dating",
+      "displayName": "Dating partner",
+      "category": "Romantic",
+      "inverseId": "romantic-dating"
+    },
+    {
+      "id": "romantic-engaged",
+      "displayName": "Fianc\u00E9 / fianc\u00E9e",
+      "category": "Romantic",
+      "inverseId": "romantic-engaged"
+    },
+    {
+      "id": "romantic-former-partner",
+      "displayName": "Former partner",
+      "category": "Romantic",
+      "inverseId": "romantic-former-partner"
+    },
+    {
+      "id": "romantic-spouse",
+      "displayName": "Spouse",
+      "category": "Romantic",
+      "inverseId": "romantic-spouse"
+    },
+    {
+      "id": "social-acquaintance",
+      "displayName": "Acquaintance",
+      "category": "Social",
+      "inverseId": "social-acquaintance"
+    },
+    {
+      "id": "social-ally",
+      "displayName": "Ally",
+      "category": "Social",
+      "inverseId": "social-ally"
+    },
+    {
+      "id": "social-best-friend",
+      "displayName": "Best friend",
+      "category": "Social",
+      "inverseId": "social-best-friend"
+    },
+    {
+      "id": "social-confidant",
+      "displayName": "Confidant",
+      "category": "Social",
+      "inverseId": "social-confidant"
+    },
+    {
+      "id": "social-enemy",
+      "displayName": "Enemy",
+      "category": "Social",
+      "inverseId": "social-enemy"
+    },
+    {
+      "id": "social-friend",
+      "displayName": "Friend",
+      "category": "Social",
+      "inverseId": "social-friend"
+    },
+    {
+      "id": "social-rival",
+      "displayName": "Rival",
+      "category": "Social",
+      "inverseId": "social-rival"
+    },
+    {
+      "id": "societal-employee",
+      "displayName": "Employee",
+      "category": "Societal",
+      "inverseId": "societal-employer"
+    },
+    {
+      "id": "societal-employer",
+      "displayName": "Employer",
+      "category": "Societal",
+      "inverseId": "societal-employee"
+    },
+    {
+      "id": "societal-follower",
+      "displayName": "Follower / subject",
+      "category": "Societal",
+      "inverseId": "societal-leader"
+    },
+    {
+      "id": "societal-guardian",
+      "displayName": "Guardian",
+      "category": "Societal",
+      "inverseId": "societal-ward"
+    },
+    {
+      "id": "societal-leader",
+      "displayName": "Leader",
+      "category": "Societal",
+      "inverseId": "societal-follower"
+    },
+    {
+      "id": "societal-mentor",
+      "displayName": "Mentor",
+      "category": "Societal",
+      "inverseId": "societal-student"
+    },
+    {
+      "id": "societal-student",
+      "displayName": "Student",
+      "category": "Societal",
+      "inverseId": "societal-mentor"
+    },
+    {
+      "id": "societal-ward",
+      "displayName": "Ward",
+      "category": "Societal",
+      "inverseId": "societal-guardian"
     }
   ],
   "relationships": [
