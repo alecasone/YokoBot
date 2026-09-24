@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-24T22:04:19.1356989+00:00",
+  "generatedAt": "2026-09-24T22:16:53.8017221+00:00",
   "characters": [
     {
       "publicId": "04ff6779-ef48-47d8-9d0b-c408feadfb69",
@@ -16,7 +16,9 @@
         "displayName": "Sammi",
         "discordId": "297548030163288065"
       },
-      "aliases": [],
+      "aliases": [
+        "Smelly"
+      ],
       "age": null,
       "gender": null,
       "region": null,
