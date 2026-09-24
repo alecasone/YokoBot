@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-24T22:16:53.8017221+00:00",
+  "generatedAt": "2026-09-24T22:18:42.0034588+00:00",
   "characters": [
     {
       "publicId": "04ff6779-ef48-47d8-9d0b-c408feadfb69",
@@ -19,13 +19,15 @@
       "aliases": [
         "Smelly"
       ],
-      "age": null,
+      "age": "22",
       "gender": null,
       "region": null,
       "occupation": null,
       "approvedAt": "2026-09-24T22:03:57.8373273+00:00",
       "reference": null,
-      "properties": {}
+      "properties": {
+        "quote": "Alec Smells"
+      }
     }
   ],
   "relationshipTypes": [
