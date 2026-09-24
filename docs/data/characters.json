@@ -7,8 +7,25 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-24T18:46:26.0341722+00:00",
-  "characters": [],
+  "generatedAt": "2026-09-24T22:04:19.1356989+00:00",
+  "characters": [
+    {
+      "publicId": "04ff6779-ef48-47d8-9d0b-c408feadfb69",
+      "name": "Sammi",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
+      "aliases": [],
+      "age": null,
+      "gender": null,
+      "region": null,
+      "occupation": null,
+      "approvedAt": "2026-09-24T22:03:57.8373273+00:00",
+      "reference": null,
+      "properties": {}
+    }
+  ],
   "relationshipTypes": [
     {
       "id": "adoptive-child",
