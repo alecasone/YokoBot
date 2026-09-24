@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-24T22:21:52.1188803+00:00",
+  "generatedAt": "2026-09-24T22:25:31.6006059+00:00",
   "characters": [
     {
       "publicId": "1ed99fce-e699-4a9d-9c6c-a57a68d5b9c4",
@@ -26,7 +26,7 @@
       "approvedAt": "2026-09-24T22:18:59.0151957+00:00",
       "reference": {
         "kind": "sheet",
-        "format": "link",
+        "format": "https://bakerbynature.com/mussels-with-white-wine-garlic-sauce/",
         "value": "https://docs.google.com/document/d/1j3FSmTA86Cvd7LJdGCDV4B2aaFgWjspOP7M-wLsgliw/edit?tab=t.63nf13tlhy3z"
       },
       "properties": {
