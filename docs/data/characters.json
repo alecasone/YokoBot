@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-24T22:19:40.9504826+00:00",
+  "generatedAt": "2026-09-24T22:20:03.3397778+00:00",
   "characters": [
     {
       "publicId": "1ed99fce-e699-4a9d-9c6c-a57a68d5b9c4",
@@ -29,7 +29,8 @@
       },
       "properties": {
         "eyecolor": "Red",
-        "hair-colour": "Blue"
+        "hair-colour": "Blue",
+        "quote": "\u0022Let Captain die painfully.\u0022"
       }
     },
     {
