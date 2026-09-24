@@ -7,8 +7,31 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-24T22:18:42.0034588+00:00",
+  "generatedAt": "2026-09-24T22:19:40.9504826+00:00",
   "characters": [
+    {
+      "publicId": "1ed99fce-e699-4a9d-9c6c-a57a68d5b9c4",
+      "name": "Captain",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
+      "aliases": [],
+      "age": "56",
+      "gender": "Male",
+      "region": "Obelia",
+      "occupation": "Fisher",
+      "approvedAt": "2026-09-24T22:18:59.0151957+00:00",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1j3FSmTA86Cvd7LJdGCDV4B2aaFgWjspOP7M-wLsgliw/edit?tab=t.63nf13tlhy3z"
+      },
+      "properties": {
+        "eyecolor": "Red",
+        "hair-colour": "Blue"
+      }
+    },
     {
       "publicId": "04ff6779-ef48-47d8-9d0b-c408feadfb69",
       "name": "Sammi",
