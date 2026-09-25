@@ -7,55 +7,8 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-24T22:34:23.4733256+00:00",
-  "characters": [
-    {
-      "publicId": "1ed99fce-e699-4a9d-9c6c-a57a68d5b9c4",
-      "name": "Captain",
-      "owner": {
-        "displayName": "Sammi",
-        "discordId": "297548030163288065"
-      },
-      "aliases": [
-        "Captain my Captain"
-      ],
-      "age": "56",
-      "gender": "Male",
-      "region": "Obelia",
-      "occupation": "Fisher",
-      "approvedAt": "2026-09-24T22:18:59.0151957+00:00",
-      "reference": {
-        "kind": "sheet",
-        "format": "https://bakerbynature.com/mussels-with-white-wine-garlic-sauce/",
-        "value": "https://docs.google.com/document/d/1j3FSmTA86Cvd7LJdGCDV4B2aaFgWjspOP7M-wLsgliw/edit?tab=t.63nf13tlhy3z%20https://bakerbynature.com/mussels-with-white-wine-garlic-sauce/"
-      },
-      "properties": {
-        "eyecolor": "Red",
-        "hair-colour": "Blue",
-        "quote": "\u0022Let Captain die painfully.\u0022"
-      }
-    },
-    {
-      "publicId": "04ff6779-ef48-47d8-9d0b-c408feadfb69",
-      "name": "Sammi",
-      "owner": {
-        "displayName": "Sammi",
-        "discordId": "297548030163288065"
-      },
-      "aliases": [
-        "Smelly"
-      ],
-      "age": "22",
-      "gender": null,
-      "region": null,
-      "occupation": null,
-      "approvedAt": "2026-09-24T22:03:57.8373273+00:00",
-      "reference": null,
-      "properties": {
-        "quote": "Alec Smells"
-      }
-    }
-  ],
+  "generatedAt": "2026-09-25T19:55:52.9721771+00:00",
+  "characters": [],
   "relationshipTypes": [
     {
       "id": "adoptive-child",
