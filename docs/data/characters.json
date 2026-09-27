@@ -7,8 +7,29 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-25T19:55:52.9721771+00:00",
-  "characters": [],
+  "generatedAt": "2026-09-27T15:10:45.3490223+00:00",
+  "characters": [
+    {
+      "publicId": "8891e088-077b-47f9-9476-e0d4040ecdc0",
+      "name": "Nicanoneus Lanyrinthos",
+      "owner": {
+        "displayName": "Captainwomanrespecter",
+        "discordId": "719274333708484741"
+      },
+      "aliases": [],
+      "age": "31",
+      "gender": "Male",
+      "region": "Obelia",
+      "occupation": "Sun Commander",
+      "approvedAt": "2026-09-27T15:09:59.3222292+00:00",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/14q89c6zosLDHZAhtwMlnB23t9QL0BMeJ6MUxiaALGWc/edit?usp=drivesdk"
+      },
+      "properties": {}
+    }
+  ],
   "relationshipTypes": [
     {
       "id": "adoptive-child",
