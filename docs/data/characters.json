@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-27T15:11:28.2538267+00:00",
+  "generatedAt": "2026-09-29T18:25:49.5238466+00:00",
   "characters": [
     {
       "publicId": "8891e088-077b-47f9-9476-e0d4040ecdc0",
@@ -17,7 +17,7 @@
         "discordId": "719274333708484741"
       },
       "aliases": [],
-      "age": "31",
+      "age": "30",
       "gender": "Male",
       "region": "Obelia",
       "occupation": "Sun Commander",
