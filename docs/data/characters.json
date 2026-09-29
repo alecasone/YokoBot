@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-29T23:15:31.2125315+00:00",
+  "generatedAt": "2026-09-29T23:18:26.5563011+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -22,7 +22,7 @@
       "age": "28",
       "gender": "male",
       "region": "Obelia",
-      "occupation": "Emperor of Obelia",
+      "occupation": "The Emperor",
       "approvedAt": "2026-09-29T23:12:15.0488616+00:00",
       "reference": {
         "kind": "sheet",
