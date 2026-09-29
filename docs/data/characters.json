@@ -7,8 +7,24 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-29T18:25:49.5238466+00:00",
+  "generatedAt": "2026-09-29T23:12:36.1970717+00:00",
   "characters": [
+    {
+      "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
+      "name": "Helion Altur",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
+      "aliases": [],
+      "age": "28",
+      "gender": "male",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-09-29T23:12:15.0488616+00:00",
+      "reference": null,
+      "properties": {}
+    },
     {
       "publicId": "8891e088-077b-47f9-9476-e0d4040ecdc0",
       "name": "Nicanoneus Lanyrinthos",
