@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T04:17:06.2273038+00:00",
+  "generatedAt": "2026-09-30T04:26:53.9313936+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -49,6 +49,22 @@
         "format": "link",
         "value": "https://docs.google.com/document/d/1GZYPCsWAKQ_rCwxrCGjJ-tyE2EOWIoUbdB2Gx2s8TEM/edit?tab=t.0"
       },
+      "properties": {}
+    },
+    {
+      "publicId": "2a0675b6-0123-41cc-bb94-c64f046a6cf1",
+      "name": "Marcelline Dravaryn",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
+      "aliases": [],
+      "age": "21",
+      "gender": "female",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-09-30T04:26:33.1684229+00:00",
+      "reference": null,
       "properties": {}
     },
     {
