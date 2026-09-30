@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T16:32:49.7015668+00:00",
+  "generatedAt": "2026-09-30T16:33:34.5267609+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -55,7 +55,9 @@
         "value": "https://docs.google.com/document/d/1GZYPCsWAKQ_rCwxrCGjJ-tyE2EOWIoUbdB2Gx2s8TEM/edit?tab=t.0"
       },
       "properties": {
-        "quote": "\u201CWhat gives me the right? Nothing. \nOnly that I can.\u201D"
+        "quote": "\u201CWhat gives me the right? Nothing. \nOnly that I can.\u201D",
+        "eyecolor": "Green",
+        "hair-colour": "Dark brown"
       }
     },
     {
