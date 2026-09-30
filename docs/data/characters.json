@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-29T23:18:26.5563011+00:00",
+  "generatedAt": "2026-09-30T04:07:46.2473455+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -29,6 +29,22 @@
         "format": "link",
         "value": "https://docs.google.com/document/d/1lsYjzEGJIjAnGjyxIXznY0Y0moonSv6YnXGVrJ32DgE/edit?tab=t.0"
       },
+      "properties": {}
+    },
+    {
+      "publicId": "1be662e5-613f-42ba-bb95-6461d5dab806",
+      "name": "Maelor",
+      "owner": {
+        "displayName": "Bignate",
+        "discordId": "351894220866453504"
+      },
+      "aliases": [],
+      "age": "31",
+      "gender": "Male",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-09-30T04:07:24.7635646+00:00",
+      "reference": null,
       "properties": {}
     },
     {
