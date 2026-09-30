@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T04:30:11.3748888+00:00",
+  "generatedAt": "2026-09-30T16:03:24.2078095+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -94,6 +94,22 @@
       "properties": {
         "eyecolor": "Blue"
       }
+    },
+    {
+      "publicId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "name": "Rene Ashborne",
+      "owner": {
+        "displayName": "y\u03B1m\u03B1o",
+        "discordId": "191035252137787392"
+      },
+      "aliases": [],
+      "age": "50",
+      "gender": "Male",
+      "region": "Solie",
+      "occupation": null,
+      "approvedAt": "2026-09-30T16:03:02.6998579+00:00",
+      "reference": null,
+      "properties": {}
     }
   ],
   "relationshipTypes": [
