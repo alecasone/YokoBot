@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T16:22:39.0510963+00:00",
+  "generatedAt": "2026-09-30T16:23:07.2634274+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -118,7 +118,11 @@
       "region": "Solie",
       "occupation": "Lord Paramount of Solie",
       "approvedAt": "2026-09-30T16:03:02.6998579+00:00",
-      "reference": null,
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1rVK6_TuHoca4FwLuXkNs1RlydShJ_mkKE9HokkBWnZw/edit?usp=sharing"
+      },
       "properties": {}
     }
   ],
