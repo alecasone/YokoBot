@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T04:16:04.242922+00:00",
+  "generatedAt": "2026-09-30T04:16:28.9284497+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -44,7 +44,11 @@
       "region": "Obelia",
       "occupation": "Heir of Dravaryn",
       "approvedAt": "2026-09-30T04:07:24.7635646+00:00",
-      "reference": null,
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1GZYPCsWAKQ_rCwxrCGjJ-tyE2EOWIoUbdB2Gx2s8TEM/edit?tab=t.0"
+      },
       "properties": {}
     },
     {
