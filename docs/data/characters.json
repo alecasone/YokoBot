@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T04:07:46.2473455+00:00",
+  "generatedAt": "2026-09-30T04:08:44.3682941+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -33,12 +33,14 @@
     },
     {
       "publicId": "1be662e5-613f-42ba-bb95-6461d5dab806",
-      "name": "Maelor",
+      "name": "Maelor Dravaryn",
       "owner": {
         "displayName": "Bignate",
         "discordId": "351894220866453504"
       },
-      "aliases": [],
+      "aliases": [
+        "Maelor"
+      ],
       "age": "31",
       "gender": "Male",
       "region": "Obelia",
