@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T16:18:47.7523438+00:00",
+  "generatedAt": "2026-09-30T16:20:05.0121517+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -74,7 +74,10 @@
         "format": "link",
         "value": "https://docs.google.com/document/d/1Gnm5RoRJfR-52xh1Jg3gI_cnsjHAw92sxxw_an-4tq0/edit?tab=t.0"
       },
-      "properties": {}
+      "properties": {
+        "eyecolor": "Light green",
+        "hair-colour": "Dark brown"
+      }
     },
     {
       "publicId": "8891e088-077b-47f9-9476-e0d4040ecdc0",
