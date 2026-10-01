@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-01T02:36:07.3147344+00:00",
+  "generatedAt": "2026-10-01T02:37:18.9841989+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -94,8 +94,7 @@
         "discordId": "719274333708484741"
       },
       "aliases": [
-        "The Black Sun",
-        "Nicanoneus Lanyrinthos"
+        "The Black Sun"
       ],
       "age": "30",
       "gender": "Male",
