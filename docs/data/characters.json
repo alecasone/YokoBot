@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-01T02:32:38.7048039+00:00",
+  "generatedAt": "2026-10-01T02:36:07.3147344+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -136,30 +136,6 @@
         "eyecolor": "Blue",
         "hair-colour": "Grey"
       }
-    },
-    {
-      "publicId": "b74cdc34-bc2b-44ae-a44f-7b4ce4aa7a5d",
-      "name": "testing",
-      "owner": {
-        "displayName": "Alec",
-        "discordId": "398279446618177536"
-      },
-      "aliases": [
-        "Smelly",
-        "Stinky",
-        "Smelly Again"
-      ],
-      "age": "18",
-      "gender": "Female",
-      "region": "Atlantis",
-      "occupation": "Soup Maker",
-      "approvedAt": "2026-10-01T01:52:47.4389154+00:00",
-      "reference": {
-        "kind": "sheet",
-        "format": "link",
-        "value": "https://i.natgeofe.com/n/18708334-6fce-40b5-ade6-a7e2db7035f2/01-goldfish-nationalgeographic_1567132_16x9.jpg?w=1200"
-      },
-      "properties": {}
     }
   ],
   "relationshipTypes": [
