@@ -50,9 +50,13 @@ internal static class CommandPermissionResolver
         };
     }
 
+    internal static IReadOnlyList<string> CharacterEditPermissions(ulong actorId, ulong ownerId) =>
+        actorId == ownerId ? ["character.edit.self", "character.edit.any"] : ["character.edit.any"];
+
     private static IReadOnlyList<string> ResolveCharacter(ulong actorId, SocketSlashCommandDataOption? subcommand)
     {
         if (subcommand is null) return [];
+        if (subcommand.Name == "manual-edit") return CharacterEditPermissions(actorId, ReadUserId(subcommand.Options) ?? 0);
         if (subcommand.Name == "approve") return ["character.approve"];
         if (subcommand.Name == "anonymize-website-discord-id") return ["character.website-privacy"];
         if (subcommand.Name == "purge-user") return ["character.purge.user"];

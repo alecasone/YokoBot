@@ -41,7 +41,7 @@ internal static class Program
 
     private static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
     {
-        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.MessageContent | GatewayIntents.GuildMessages,
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.MessageContent | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages,
         AlwaysDownloadUsers = true,
         LogGatewayIntentWarnings = false
     });
@@ -296,6 +296,7 @@ internal static class Program
 
     private static async Task HandleMessageReceivedAsync(SocketMessage message)
     {
+        if (await CharacterCommands.HandleManualEditReplyAsync(message, Characters, Permissions, SitePublisher)) return;
         await AutoModerator.RecordMessageAsync(message);
         if (await AutoModerator.HandleApprovalMessageAsync(message)) return;
         if (await RelationshipCommands.HandleReplyAsync(

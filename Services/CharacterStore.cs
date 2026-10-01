@@ -253,6 +253,33 @@ internal sealed class CharacterStore
         finally { _gate.Release(); }
     }
 
+    public async Task<ManualEditResult> ApplyManualEditAsync(
+        ulong guildId, ulong ownerId, Character expected, IReadOnlyList<ManualFieldEdit> edits, bool commit)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var data = await LoadUnsafeAsync(guildId);
+            if (!TryGetUser(data, guildId, ownerId, out var user) ||
+                Find(user!, CharacterSchema.Selector(expected.PublicId)) is not { } current)
+                return new(null, [], "This character no longer exists. Start a new manual edit.");
+            if (CharacterManualEdit.Snapshot(current) != CharacterManualEdit.Snapshot(expected))
+                return new(null, [], "This character changed since your template was created. Start a new manual edit to avoid overwriting newer changes.");
+            var result = CharacterManualEdit.Prepare(current, edits);
+            if (result.Character is not { } updated) return result;
+            if (user!.Characters.Any(other => other.PublicId != current.PublicId &&
+                other.Name.Equals(updated.Name, StringComparison.OrdinalIgnoreCase)))
+                return new(null, [], "That owner already has a character with this Full Name. Nothing was saved.");
+            if (commit && result.Changes.Count > 0)
+            {
+                user.Characters[user.Characters.IndexOf(current)] = updated;
+                await SaveUnsafeAsync(data);
+            }
+            return result;
+        }
+        finally { _gate.Release(); }
+    }
+
     public async Task<bool> DeleteAsync(ulong guildId, ulong userId, string name)
     {
         await _gate.WaitAsync();

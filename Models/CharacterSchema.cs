@@ -17,6 +17,8 @@ internal static class CharacterSchema
         ["name", "public-id", "approved-at", "approved-by", "oc-role-index", "reference-kind", "reference-format"];
 
     public static string Label(string property) =>
+        Normalize(property) == "name" ? "Full Name" :
+        Normalize(property) == "reference" ? "Link" :
         string.Join(' ', property.Split(['-', '_'], StringSplitOptions.RemoveEmptyEntries)
             .Select(word => char.ToUpperInvariant(word[0]) + word[1..]));
 

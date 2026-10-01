@@ -229,6 +229,37 @@ Check(serverPurge.Deleted.Count == 1 && serverPurge.Warnings.Count == 1 && sites
 Check((await characters.GetAllAsync(50)).Count == 0 && (await store.GetAllAsync(50)).Count == 0, "Server purge left character/scene data.");
 Check((await store.GetSettingsAsync(50)).ActiveLimitPerCharacter == 8, "Purge erased server configuration.");
 
+// Aborting targets the approval's stable ID even after a rename and name reuse.
+var abortKeep = (await characters.AddAsync(60, 301, "Existing", 99))!;
+var abortTarget = (await characters.AddAsync(60, 301, "Approval draft", 99))!;
+await characters.SetFieldAsync(60, 301, CharacterSchema.Selector(abortTarget.PublicId), "name", "Renamed draft");
+var reusedName = (await characters.AddAsync(60, 301, "Approval draft", 99))!;
+var abortScene = (await store.CreateAsync(60, 301, abortTarget, date, "Shared during approval")).Scene!;
+await store.AddCharacterAsync(60, abortScene.Id, 301, abortKeep);
+var abortRelationship = new PendingRelationshipRequest { SourceOwnerId = 301, SourceCharacterId = abortTarget.PublicId,
+    TargetOwnerId = 301, TargetCharacterId = abortKeep.PublicId, TypeId = "social-friend" };
+await relationships.AddPendingAsync(60, abortRelationship);
+var abortQueues = 0;
+var abortRoles = 0;
+var abortService = new CharacterApprovalCancellation(characters, relationships, store,
+    (guild, owner) =>
+    {
+        Check(guild == 60 && owner == 301, "Abort reconciled the wrong member.");
+        abortRoles++;
+        return Task.FromResult(new CharacterRoleSyncResult(false, null, 2, 7, "Missing Permissions"));
+    },
+    guild => { Check(guild == 60, "Abort published the wrong guild."); abortQueues++; return Task.CompletedTask; });
+var abortWarnings = await abortService.AbortAsync(60, 301, abortTarget.PublicId);
+Check(await characters.GetAsync(60, 301, CharacterSchema.Selector(abortTarget.PublicId)) is null, "Abort retained renamed draft.");
+Check(await characters.GetAsync(60, 301, CharacterSchema.Selector(reusedName.PublicId)) is not null, "Abort deleted a reused name.");
+Check(await characters.GetCharacterCountAsync(60, 301) == 2, "Abort deleted other characters.");
+Check((await characters.GetAsync(60, 301, CharacterSchema.Selector(reusedName.PublicId)))!.OcRoleIndex == 2, "Abort left a role index gap.");
+Check((await store.GetAsync(60, abortScene.Id))!.Participants.Single().Characters.SequenceEqual(["Existing"]), "Abort damaged shared scene cleanup.");
+Check((await relationships.GetRequestsForUserAsync(60, 301)).Count == 0, "Abort retained a pending relationship.");
+Check(abortWarnings.Count == 1 && abortQueues == 1 && abortRoles == 1, "Role failure blocked abort publication or was not reported.");
+
+await ManualEditChecks.RunAsync(testDirectory, Check);
+
 Console.WriteLine($"Passed {assertions} checks. Isolated fixture files: {testDirectory}");
 
 public class TestMember : System.Reflection.DispatchProxy

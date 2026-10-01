@@ -19,8 +19,8 @@ internal static partial class CharacterCommands
                 .WithType(ApplicationCommandOptionType.SubCommand)
                 .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
                 .AddOption(new SlashCommandOptionBuilder()
-                    .WithName("character-name")
-                    .WithDescription($"Character name ({CharacterSchema.NameMaxLength} characters maximum)")
+                    .WithName("full-name")
+                    .WithDescription($"Full Name ({CharacterSchema.NameMaxLength} characters maximum)")
                     .WithType(ApplicationCommandOptionType.String)
                     .WithRequired(true)
                     .WithMinLength(1)
@@ -67,6 +67,12 @@ internal static partial class CharacterCommands
                 .WithDescription("Manages roleplay characters.")
                 .AddOption(approve)
                 .AddOption(edit)
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName("manual-edit")
+                    .WithDescription("Edit all character fields in a DM template, then preview and confirm.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("user", ApplicationCommandOptionType.User, "Character owner", isRequired: true)
+                    .AddOption(CharacterOption("character-name", "Character name")))
                 .AddOption(view)
                 .AddOption(removeField)
                 .AddOption(delete)
@@ -192,7 +198,7 @@ internal static partial class CharacterCommands
             return;
         }
         var user = (IUser)Option(subcommand.Options, "user").Value;
-        var characterInput = (string)Option(subcommand.Options, "character-name").Value;
+        var characterInput = (string)Option(subcommand.Options, subcommand.Name == "approve" ? "full-name" : "character-name").Value;
 
         switch (subcommand.Name)
         {
@@ -224,8 +230,6 @@ internal static partial class CharacterCommands
 
                 var roleSync = await characterRoles.SyncMemberAsync(guildId, user.Id);
                 var roleNotice = RoleNotice(roleSync);
-                var approvalDelivery = await SendApprovalMessagesAsync(command, settings, user, created.Name);
-                var approvalMessageNotice = ApprovalMessageNotice(approvalDelivery);
 
                 var suppliedFields = new Dictionary<string, string>();
                 foreach (var prefillField in new[] { "age", "gender", "region" })
@@ -248,16 +252,21 @@ internal static partial class CharacterCommands
 
                 if (remainingFields.Count == 0)
                 {
+                    var approvalMessageNotice = ApprovalMessageNotice(await SendApprovalMessagesAsync(command, settings, user, created.Name));
                     await UpdateOriginalAsync(command,
                         $"Approved **{created.Name}** for {user.Mention}.{roleNotice}{approvalMessageNotice} No additional default fields are configured.");
                     break;
                 }
 
-                var session = new FilloutSession(guildId, user.Id, created.Name, remainingFields.ToArray(), command);
+                var session = new FilloutSession(guildId, user.Id, created.Name, created.PublicId, remainingFields.ToArray(), command,
+                    () => SendApprovalMessagesAsync(command, settings, user, created.Name));
                 DeleteSessions.TryRemove((command.Channel.Id, command.User.Id), out _);
                 FilloutSessions[(command.Channel.Id, command.User.Id)] = session;
                 await UpdateOriginalAsync(command,
-                    $"Approved **{created.Name}** for {user.Mention}.{roleNotice}{approvalMessageNotice}\n\n{PromptFor(session)}");
+                    $"Completing approval for **{created.Name}** for {user.Mention}.{roleNotice}\n\n{PromptFor(session)}");
+                break;
+            case "manual-edit":
+                await BeginManualEditAsync(command, store, user, characterInput);
                 break;
             case "edit":
                 var field = (string)Option(subcommand.Options, "field").Value;
@@ -385,34 +394,54 @@ internal static partial class CharacterCommands
         if (!FilloutSessions.TryGetValue((message.Channel.Id, message.Author.Id), out var session))
             return;
 
-        var reply = message.Content.Trim();
-        if (reply.Equals("stop", StringComparison.OrdinalIgnoreCase) ||
-            reply.Equals("end", StringComparison.OrdinalIgnoreCase))
+        await session.Gate.WaitAsync();
+        try
         {
-            FilloutSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
+            if (!FilloutSessions.TryGetValue((message.Channel.Id, message.Author.Id), out var current) ||
+                !ReferenceEquals(current, session)) return;
+
+            var reply = message.Content.Trim();
             await DeleteReplyAsync(message);
-            await UpdatePromptAsync(session, $"Fillout ended. **{session.CharacterName}** was saved with the values entered so far.");
-            return;
+            if (reply.Equals("abort", StringComparison.OrdinalIgnoreCase))
+            {
+                var cancellation = new CharacterApprovalCancellation(store, relationships, scenes,
+                    characterRoles.SyncMemberAsync, sitePublisher.QueueAsync);
+                var warnings = await cancellation.AbortAsync(session.GuildId, session.OwnerId, session.CharacterId);
+                FilloutSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
+                await UpdatePromptAsync(session, $"Approval aborted. **{session.CharacterName}** was removed." +
+                    (warnings.Count == 0 ? string.Empty : "\n" + string.Join("\n", warnings)));
+                return;
+            }
+
+            if (reply.Equals("stop", StringComparison.OrdinalIgnoreCase) ||
+                reply.Equals("end", StringComparison.OrdinalIgnoreCase))
+            {
+                FilloutSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
+                var notice = ApprovalMessageNotice(await session.SendApprovalMessages());
+                await UpdatePromptAsync(session, $"Fillout ended. **{session.CharacterName}** was saved with the values entered so far.{notice}");
+                return;
+            }
+
+            var field = session.Fields[session.FieldIndex].Field;
+            if (!string.IsNullOrWhiteSpace(reply) && !reply.Equals("skip", StringComparison.OrdinalIgnoreCase))
+            {
+                var changed = await store.SetFieldAsync(session.GuildId, session.OwnerId,
+                    CharacterSchema.Selector(session.CharacterId), field, reply);
+                if (changed) await sitePublisher.QueueAsync(session.GuildId);
+            }
+
+            session.FieldIndex++;
+            if (session.FieldIndex >= session.Fields.Length)
+            {
+                FilloutSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
+                var notice = ApprovalMessageNotice(await session.SendApprovalMessages());
+                await UpdatePromptAsync(session, $"Fillout complete. **{session.CharacterName}** is ready. Use `/character view` to review it.{notice}");
+                return;
+            }
+
+            await UpdatePromptAsync(session, PromptFor(session));
         }
-
-        await DeleteReplyAsync(message);
-
-        var field = session.Fields[session.FieldIndex].Field;
-        if (!string.IsNullOrWhiteSpace(reply) && !reply.Equals("skip", StringComparison.OrdinalIgnoreCase))
-        {
-            var changed = await store.SetFieldAsync(session.GuildId, session.OwnerId, session.CharacterName, field, reply);
-            if (changed) await sitePublisher.QueueAsync(session.GuildId);
-        }
-
-        session.FieldIndex++;
-        if (session.FieldIndex >= session.Fields.Length)
-        {
-            FilloutSessions.TryRemove((message.Channel.Id, message.Author.Id), out _);
-            await UpdatePromptAsync(session, $"Fillout complete. **{session.CharacterName}** is ready. Use `/character view` to review it.");
-            return;
-        }
-
-        await UpdatePromptAsync(session, PromptFor(session));
+        finally { session.Gate.Release(); }
     }
 
     private static SocketSlashCommandDataOption Option(
@@ -506,7 +535,7 @@ internal static partial class CharacterCommands
         (session.Fields[session.FieldIndex].Suggestions.Count > 0
             ? $" Suggestions: {string.Join(", ", session.Fields[session.FieldIndex].Suggestions.Select(value => $"`{value}`"))}."
             : string.Empty) +
-        " Reply in this channel with a value, `skip` to leave it empty, or `stop`/`end` to finish now. Your reply will be deleted immediately.";
+        " Reply in this channel with a value, `skip` to leave it empty, `stop`/`end` to save and finish now, or `Abort` to cancel approval and remove this character. Your reply will be deleted immediately.";
 
     private static async Task UpdatePromptAsync(FilloutSession session, string content) =>
         await session.Interaction.ModifyOriginalResponseAsync(message => message.Content = content);
@@ -652,9 +681,12 @@ internal static partial class CharacterCommands
         ulong GuildId,
         ulong OwnerId,
         string CharacterName,
+        Guid CharacterId,
         FilloutField[] Fields,
-        SocketSlashCommand Interaction)
+        SocketSlashCommand Interaction,
+        Func<Task<ApprovalMessageDelivery>> SendApprovalMessages)
     {
+        public SemaphoreSlim Gate { get; } = new(1, 1);
         public int FieldIndex { get; set; }
     }
 
