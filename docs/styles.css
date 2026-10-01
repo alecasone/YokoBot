@@ -269,6 +269,17 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
 .record-dialog h2 { margin-bottom: 0.4rem; font-size: clamp(2.4rem, 8vw, 4.5rem); font-weight: 400; line-height: 0.95; }
 .dialog-close { position: absolute; top: 0.8rem; right: 1rem; border: 0; color: var(--muted); background: transparent; font-size: 2rem; cursor: pointer; }
 .dialog-aliases { color: var(--muted); font-style: italic; }
+.dialog-quote {
+  margin: 1.5rem 0 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 2px solid var(--accent);
+  color: var(--ink);
+  font-size: 1.15rem;
+  font-style: italic;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.record-properties:empty { display: none; }
 .record-details, .record-properties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem 1.5rem; margin-top: 2rem; }
 .record-properties { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 .record-row { min-width: 0; }
