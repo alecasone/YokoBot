@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-09-30T21:26:39.2567514+00:00",
+  "generatedAt": "2026-10-01T01:53:29.6457422+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -136,6 +136,22 @@
         "eyecolor": "Blue",
         "hair-colour": "Grey"
       }
+    },
+    {
+      "publicId": "b74cdc34-bc2b-44ae-a44f-7b4ce4aa7a5d",
+      "name": "test",
+      "owner": {
+        "displayName": "Alec",
+        "discordId": "398279446618177536"
+      },
+      "aliases": [],
+      "age": "16",
+      "gender": "male",
+      "region": "Atlantis",
+      "occupation": "barber",
+      "approvedAt": "2026-10-01T01:52:47.4389154+00:00",
+      "reference": null,
+      "properties": {}
     }
   ],
   "relationshipTypes": [
