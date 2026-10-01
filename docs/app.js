@@ -16,6 +16,7 @@ const elements = {
   dialogTitle: document.querySelector("#dialog-title"),
   dialogOwner: document.querySelector("#dialog-owner"),
   dialogAliases: document.querySelector("#dialog-aliases"),
+  dialogQuote: document.querySelector("#dialog-quote"),
   dialogDetails: document.querySelector("#dialog-details"),
   dialogProperties: document.querySelector("#dialog-properties"),
   dialogReference: document.querySelector("#dialog-reference"),
@@ -117,6 +118,10 @@ function openCharacter(character, updateHistory) {
   elements.dialogAliases.textContent = character.aliases?.length
     ? `Aliases: ${character.aliases.join(", ")}`
     : "No aliases recorded.";
+  const properties = Object.entries(character.properties ?? {});
+  const quote = properties.find(([field]) => field.trim().toLowerCase() === "quote");
+  elements.dialogQuote.textContent = quote && quote[1] != null ? displayValue(quote[1]) : "";
+  elements.dialogQuote.hidden = !elements.dialogQuote.textContent.trim();
   elements.dialogDetails.replaceChildren();
   elements.dialogProperties.replaceChildren();
 
@@ -124,7 +129,7 @@ function openCharacter(character, updateHistory) {
   addDetail(elements.dialogDetails, "Gender", character.gender);
   addDetail(elements.dialogDetails, "Region", character.region);
   addDetail(elements.dialogDetails, "Occupation", character.occupation);
-  for (const [field, value] of Object.entries(character.properties ?? {}))
+  for (const [field, value] of properties.filter(([field]) => field.trim().toLowerCase() !== "quote"))
     addDetail(elements.dialogProperties, humanize(field), displayValue(value));
 
   const reference = safeWebUrl(character.reference?.value);
