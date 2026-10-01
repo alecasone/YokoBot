@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-01T02:24:05.2018359+00:00",
+  "generatedAt": "2026-10-01T02:32:38.7048039+00:00",
   "characters": [
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
@@ -146,7 +146,8 @@
       },
       "aliases": [
         "Smelly",
-        "Stinky"
+        "Stinky",
+        "Smelly Again"
       ],
       "age": "18",
       "gender": "Female",
