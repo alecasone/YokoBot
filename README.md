@@ -133,7 +133,7 @@ Every new character reference defaults to `link/sheet`; set its URL with the `re
 
 Start `/character manual-edit user:@Member character-name:Helion Altur` in the character's server. The existing `character.edit.self` / `character.edit.any` permissions apply, and permissions are checked again for DM submissions and confirmation.
 
-The bot sends both a `.txt` template and, when short enough, a copyable code block. Every saved custom field is included, including fields outside the default approval questions. Full Name and Link map to the existing name and reference fields. Internal IDs, approval metadata, and OC role indexes are not editable.
+The bot sends both a `.txt` template and, when short enough, a copyable code block. Every saved custom field is included, including fields outside the default approval questions. All configured server fields also appear when unfilled, with blank values ready to complete. Full Name and Link map to the existing name and reference fields. Internal IDs, approval metadata, and OC role indexes are not editable.
 
 ```text
 BEGIN CHARACTER EDIT

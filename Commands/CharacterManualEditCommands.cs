@@ -24,7 +24,8 @@ internal static partial class CharacterCommands
         public IReadOnlyList<ManualFieldEdit>? Pending { get; set; }
     }
 
-    private static async Task BeginManualEditAsync(SocketSlashCommand command, CharacterStore store, IUser owner, string selector)
+    private static async Task BeginManualEditAsync(SocketSlashCommand command, CharacterStore store,
+        CharacterSettingsStore settings, IUser owner, string selector)
     {
         await command.DeferAsync(ephemeral: true);
         var character = await store.GetAsync(command.GuildId!.Value, owner.Id, selector);
@@ -37,7 +38,8 @@ internal static partial class CharacterCommands
             RemoveManualEdit(entry.Key, entry.Value);
 
         var editId = Guid.NewGuid().ToString("N");
-        var template = CharacterManualEdit.Template(character, editId);
+        var defaultProperties = await settings.GetDefaultPropertiesAsync(command.GuildId.Value);
+        var template = CharacterManualEdit.Template(character, editId, defaultProperties);
         if (Encoding.UTF8.GetByteCount(template) > CharacterManualEdit.MaxBytes)
         {
             await UpdateOriginalAsync(command, "This character exceeds the 256 KiB manual-edit limit. Use individual field edits.");

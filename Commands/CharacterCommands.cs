@@ -266,7 +266,7 @@ internal static partial class CharacterCommands
                     $"Completing approval for **{created.Name}** for {user.Mention}.{roleNotice}\n\n{PromptFor(session)}");
                 break;
             case "manual-edit":
-                await BeginManualEditAsync(command, store, user, characterInput);
+                await BeginManualEditAsync(command, store, settings, user, characterInput);
                 break;
             case "edit":
                 var field = (string)Option(subcommand.Options, "field").Value;

@@ -75,7 +75,7 @@ internal static class CharacterManualEdit
         value.StartsWith('"') || value.Equals("[clear]", StringComparison.OrdinalIgnoreCase)
             ? JsonSerializer.Serialize(value) : value;
 
-    public static string Template(Character character, string editId)
+    public static string Template(Character character, string editId, IEnumerable<string> defaultProperties)
     {
         var text = new StringBuilder($"BEGIN CHARACTER EDIT\nEdit ID: {editId}\n\n");
         foreach (var key in BuiltIns)
@@ -87,6 +87,15 @@ internal static class CharacterManualEdit
         {
             var field = new ManualFieldEdit(key, true, null);
             text.AppendLine($"{field.Label}: {Encode(Value(character, field))}");
+        }
+        var includedCustomFields = character.AdditionalProperties.Keys
+            .Select(CharacterSchema.Normalize).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in defaultProperties)
+        {
+            if (BuiltIn(key) is not null || Protected.Contains(Compact(key)) ||
+                !includedCustomFields.Add(CharacterSchema.Normalize(key))) continue;
+            var field = new ManualFieldEdit(key, true, null);
+            text.AppendLine($"{field.Label}: ");
         }
         text.Append("END CHARACTER EDIT");
         return text.ToString();

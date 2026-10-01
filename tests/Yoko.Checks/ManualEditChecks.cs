@@ -32,7 +32,38 @@ internal static class ManualEditChecks
             }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
         target = (await characters.GetAsync(70, 700, selector))!;
         const string id = "test-edit-id";
-        var template = CharacterManualEdit.Template(target, id);
+        var settings = new CharacterSettingsStore(Path.Combine(directory, "manual-settings.json"));
+        await settings.AddPropertyAsync(70, "eyecolor");
+        await settings.AddPropertyAsync(70, "hair-colour");
+        await settings.AddPropertyAsync(70, "quote");
+        await settings.AddPropertyAsync(70, "EYE COLOR");
+        await settings.AddPropertyAsync(71, "other-server-field");
+        var defaultProperties = await settings.GetDefaultPropertiesAsync(70);
+        var template = CharacterManualEdit.Template(target, id, defaultProperties);
+        var emptyCharacter = new Character { Name = "Empty profile" };
+        var emptyTemplate = CharacterManualEdit.Template(emptyCharacter, id, defaultProperties);
+        foreach (var key in new[] { "eyecolor", "hair-colour", "quote" })
+            check(emptyTemplate.Split('\n').Any(line => line.TrimEnd() == JsonSerializer.Serialize(key) + ":"),
+                $"Unfilled configured field {key} was omitted.");
+        check(!template.Contains("other-server-field"), "Template included another server's fields.");
+        check(!template.Contains("\"eye-color\": \n") &&
+            template.Split('\n').Count(line => line.StartsWith("\"eye-color\":")) == 1,
+            "Configured field duplicated its stored value.");
+        check(template.Split('\n').Count(line => line.StartsWith("Age:")) == 1,
+            "Configured baseline field was duplicated.");
+        var emptyEdits = CharacterManualEdit.Parse(emptyTemplate, id);
+        check(CharacterManualEdit.Prepare(emptyCharacter, emptyEdits).Changes.Count == 0,
+            "Blank configured fields produced saved changes.");
+        var filledTemplate = emptyTemplate.Replace("\"hair-colour\": ", "\"hair-colour\": Silver");
+        var filled = CharacterManualEdit.Prepare(emptyCharacter, CharacterManualEdit.Parse(filledTemplate, id));
+        check(filled.Changes.Count == 1 && filled.Character!.AdditionalProperties["hair-colour"].GetString() == "Silver",
+            "An unfilled configured field could not be filled.");
+        var duplicateTemplate = CharacterManualEdit.Template(emptyCharacter, id,
+            ["quote", "QUOTE", "Age", "reference", "Link", "public-id"]);
+        check(duplicateTemplate.Split('\n').Count(line => line.StartsWith("\"quote\":")) == 1 &&
+            !duplicateTemplate.Contains("public-id") &&
+            CharacterManualEdit.Parse(duplicateTemplate, id).Count > 0,
+            "Configured duplicates or protected fields made the template invalid.");
         foreach (var field in target.AdditionalProperties.Keys)
             check(template.Contains(JsonSerializer.Serialize(field) + ":"), $"Template omitted custom field {field}.");
         check(template.Contains("Full Name: Helion Altur") && template.Contains("Link: https://"), "Friendly field labels missing.");
