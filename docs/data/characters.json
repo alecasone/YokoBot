@@ -7,8 +7,24 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-01T02:49:04.2322098+00:00",
+  "generatedAt": "2026-10-02T02:31:21.5784+00:00",
   "characters": [
+    {
+      "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
+      "name": "Celestine Altur",
+      "owner": {
+        "displayName": "june !",
+        "discordId": "588112665000411291"
+      },
+      "aliases": [],
+      "age": "26",
+      "gender": "female",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-10-02T02:31:00.7509329+00:00",
+      "reference": null,
+      "properties": {}
+    },
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
       "name": "Helion Altur",
