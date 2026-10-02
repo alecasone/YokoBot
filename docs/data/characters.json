@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-02T02:32:30.6082379+00:00",
+  "generatedAt": "2026-10-02T02:33:16.4002408+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -29,7 +29,8 @@
       },
       "properties": {
         "eyecolor": "steel blue",
-        "hair-colour": "Dark blonde"
+        "hair-colour": "Dark blonde",
+        "quote": "\u0022Diplomacy is much like sailing. Those who lack talent shy away.\u0022"
       }
     },
     {
