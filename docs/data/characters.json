@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-02T02:31:21.5784+00:00",
+  "generatedAt": "2026-10-02T02:32:30.6082379+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -20,10 +20,17 @@
       "age": "26",
       "gender": "female",
       "region": "Obelia",
-      "occupation": null,
+      "occupation": "Princess of Obelia",
       "approvedAt": "2026-10-02T02:31:00.7509329+00:00",
-      "reference": null,
-      "properties": {}
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1A9I7YdbziUy9LJEZ7MqlqgM7ujs0hc7LfVuJp0cyV_g/edit?usp=sharing"
+      },
+      "properties": {
+        "eyecolor": "steel blue",
+        "hair-colour": "Dark blonde"
+      }
     },
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
