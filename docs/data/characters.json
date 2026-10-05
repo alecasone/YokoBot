@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-05T21:36:18.9191291+00:00",
+  "generatedAt": "2026-10-05T21:37:03.7123213+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -431,24 +431,6 @@
       "targetCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
       "typeId": "biological-sibling",
       "displayName": "Biological sibling",
-      "category": "Biological",
-      "isInferred": false,
-      "explanation": null
-    },
-    {
-      "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
-      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
-      "typeId": "biological-child",
-      "displayName": "Biological child",
-      "category": "Biological",
-      "isInferred": false,
-      "explanation": null
-    },
-    {
-      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
-      "targetCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
-      "typeId": "biological-parent",
-      "displayName": "Biological parent",
       "category": "Biological",
       "isInferred": false,
       "explanation": null
