@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-05T16:09:20.545978+00:00",
+  "generatedAt": "2026-10-05T16:09:54.9348534+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -130,7 +130,8 @@
       },
       "properties": {
         "eyecolor": "Sky blue",
-        "hair-colour": "Ginger"
+        "hair-colour": "Ginger",
+        "quote": "\u201CThee dusk of an era is the dawn of another.\u201D"
       }
     },
     {
