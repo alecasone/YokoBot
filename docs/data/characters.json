@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-05T21:37:39.1073629+00:00",
+  "generatedAt": "2026-10-05T21:44:05.493727+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -40,14 +40,24 @@
         "displayName": "Rad",
         "discordId": "326748127652478987"
       },
-      "aliases": [],
+      "aliases": [
+        "Lord Paramount of Florence"
+      ],
       "age": "44",
       "gender": "Male",
       "region": "Florence",
-      "occupation": null,
+      "occupation": "Lord Paramount of Florence",
       "approvedAt": "2026-10-05T21:33:13.7703248+00:00",
-      "reference": null,
-      "properties": {}
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1Flua3foXZ7ovdb-QiO9QniL8Y2cf62x9hfvOxeFJAX4/edit?tab=t.0"
+      },
+      "properties": {
+        "eyecolor": "Blueish Green",
+        "hair-colour": "Orange",
+        "quote": "\u201CA true leader never begs for respect, he commands it.\u201D"
+      }
     },
     {
       "publicId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
