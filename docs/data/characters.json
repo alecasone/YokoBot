@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-02T04:23:47.834582+00:00",
+  "generatedAt": "2026-10-05T16:08:52.9457405+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -109,6 +109,26 @@
         "hair-colour": "Dark brown",
         "quote": "\u201CHe\u2019s more myself than I am. \nWhatever our souls are made of, \nhis and mine are the same.\u201D"
       }
+    },
+    {
+      "publicId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "name": "Maribelle Delvarra",
+      "owner": {
+        "displayName": "Sammi",
+        "discordId": "297548030163288065"
+      },
+      "aliases": [],
+      "age": "24",
+      "gender": "Female",
+      "region": "Obelia",
+      "occupation": "Lady of Delvarra",
+      "approvedAt": "2026-10-05T16:08:05.3045756+00:00",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1ffuE0i1n5iCNLj0SiVmgvVcpP4dUpLMAoreC5P_7PNI/edit?usp=drivesdk"
+      },
+      "properties": {}
     },
     {
       "publicId": "8891e088-077b-47f9-9476-e0d4040ecdc0",
