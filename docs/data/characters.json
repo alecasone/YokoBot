@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-06T18:52:39.048783+00:00",
+  "generatedAt": "2026-10-06T18:59:02.6193435+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -479,6 +479,24 @@
       "explanation": null
     },
     {
+      "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "typeId": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "targetCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "typeId": "biological-child",
+      "displayName": "Biological child",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
       "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
       "targetCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
       "typeId": "biological-child",
@@ -489,12 +507,39 @@
     },
     {
       "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "targetCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "typeId": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "biological sibling of a parent"
+    },
+    {
+      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
       "targetCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
       "typeId": "biological-sibling",
       "displayName": "Biological sibling",
       "category": "Biological",
       "isInferred": false,
       "explanation": null
+    },
+    {
+      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "targetCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "typeId": "biological-descendant",
+      "displayName": "Biological descendant",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "targetCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "typeId": "biological-grandchild",
+      "displayName": "Biological grandchild",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
     },
     {
       "sourceCharacterId": "1be662e5-613f-42ba-bb95-6461d5dab806",
@@ -561,12 +606,39 @@
     },
     {
       "sourceCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "targetCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "typeId": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
       "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
       "typeId": "biological-sibling",
       "displayName": "Biological sibling",
       "category": "Biological",
       "isInferred": false,
       "explanation": null
+    },
+    {
+      "sourceCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "typeId": "biological-ancestor",
+      "displayName": "Biological ancestor",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "a biological grandparent is an ancestor"
+    },
+    {
+      "sourceCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "typeId": "biological-grandparent",
+      "displayName": "Biological grandparent",
+      "category": "Biological",
+      "isInferred": true,
+      "explanation": "parent of a biological parent"
     }
   ]
 }
