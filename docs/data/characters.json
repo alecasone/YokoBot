@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-06T01:00:12.1593131+00:00",
+  "generatedAt": "2026-10-06T18:39:48.2644224+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -185,6 +185,22 @@
         "hair-colour": "Black",
         "quote": "\u201C I will not cross an ocean to come back empty handed. \u201D"
       }
+    },
+    {
+      "publicId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "name": "Piers Delvarra",
+      "owner": {
+        "displayName": "Dr. Quack",
+        "discordId": "705799370452500490"
+      },
+      "aliases": [],
+      "age": "26",
+      "gender": "Male",
+      "region": "Florence",
+      "occupation": null,
+      "approvedAt": "2026-10-06T18:39:27.4013124+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "4dfc0700-806d-4187-83c6-daec05562cf1",
