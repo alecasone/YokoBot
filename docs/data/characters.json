@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-05T21:44:05.493727+00:00",
+  "generatedAt": "2026-10-06T01:00:12.1593131+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -146,7 +146,7 @@
       "aliases": [],
       "age": "24",
       "gender": "Female",
-      "region": "Obelia",
+      "region": "Florence",
       "occupation": "Lady of Delvarra",
       "approvedAt": "2026-10-05T16:08:05.3045756+00:00",
       "reference": {
