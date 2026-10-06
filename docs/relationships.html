@@ -15,7 +15,7 @@
   <meta name="twitter:description" content="An interactive map of approved and inferred character relationships.">
   <meta name="twitter:image" content="https://alecasone.github.io/YokoBot/og.png">
   <title>Relationship Atlas</title>
-  <link rel="stylesheet" href="./styles.css?v=owners-1">
+  <link rel="stylesheet" href="./styles.css?v=relationship-clarity-2">
 </head>
 <body class="relationship-page" data-site-title="{atlasTitle} · {name}">
   <header class="atlas-header">
@@ -86,6 +86,15 @@
     <section class="atlas-workspace" aria-label="Interactive relationship explorer">
       <div id="map-stage" class="map-stage">
         <svg id="relationship-map" role="img" aria-label="Interactive character relationship map" tabindex="0">
+          <defs>
+            <marker id="relationship-arrow" viewBox="0 0 10 10" refX="10" refY="5"
+              markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 Z" fill="context-stroke"></path>
+            </marker>
+            <marker id="parent-child-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            </marker>
+          </defs>
           <g id="map-viewport">
             <g id="map-guides"></g>
             <g id="map-edges"></g>
@@ -101,6 +110,7 @@
         <div class="map-legend" aria-label="Relationship map legend">
           <span><i class="legend-line legend-line--direct"></i><b id="legend-direct">Direct</b></span>
           <span><i class="legend-line legend-line--inferred"></i><b id="legend-inferred">Inferred</b></span>
+          <span id="legend-parent" hidden><i class="legend-line legend-line--arrow" aria-hidden="true"></i><b>Parent arrows: parent → child</b></span>
           <span class="heat-scale"><b>Near</b><i aria-hidden="true"></i><b>Far</b></span>
         </div>
         <p class="map-hint">Click empty space for map settings · Drag to pan · Scroll to zoom</p>
@@ -169,6 +179,6 @@
   <noscript>The relationship atlas requires JavaScript to draw its map.</noscript>
   <script src="./branding.js?v=social-scenes-1" defer></script>
   <script src="./owner.js?v=owners-1" defer></script>
-  <script src="./relationships.js?v=owners-1" defer></script>
+  <script src="./relationships.js?v=relationship-clarity-2" defer></script>
 </body>
 </html>
