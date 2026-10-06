@@ -86,6 +86,12 @@
     <section class="atlas-workspace" aria-label="Interactive relationship explorer">
       <div id="map-stage" class="map-stage">
         <svg id="relationship-map" role="img" aria-label="Interactive character relationship map" tabindex="0">
+          <defs>
+            <marker id="relationship-arrow" viewBox="0 0 10 10" refX="10" refY="5"
+              markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 Z" fill="context-stroke"></path>
+            </marker>
+          </defs>
           <g id="map-viewport">
             <g id="map-guides"></g>
             <g id="map-edges"></g>
@@ -169,6 +175,6 @@
   <noscript>The relationship atlas requires JavaScript to draw its map.</noscript>
   <script src="./branding.js?v=social-scenes-1" defer></script>
   <script src="./owner.js?v=owners-1" defer></script>
-  <script src="./relationships.js?v=owners-1" defer></script>
+  <script src="./relationships.js?v=relationship-direction-1" defer></script>
 </body>
 </html>

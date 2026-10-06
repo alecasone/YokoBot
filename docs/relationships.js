@@ -669,8 +669,11 @@ function renderGraph() {
   }
   for (const pair of state.graphPairs) {
     if (state.layoutMode === "network" && !shouldRenderNetworkPair(pair)) continue;
-    const source = state.positions.get(pair.a);
-    const target = state.positions.get(pair.b);
+    const direction = relationshipDirection(pair);
+    const sourceId = direction?.sourceCharacterId ?? pair.a;
+    const targetId = direction?.targetCharacterId ?? pair.b;
+    const source = state.positions.get(sourceId);
+    const target = state.positions.get(targetId);
     if (!source || !target) continue;
     const selected = pair.a === state.selectedId || pair.b === state.selectedId;
     const focused = pair.a === state.focusId || pair.b === state.focusId;
@@ -685,6 +688,16 @@ function renderGraph() {
       y2: target.y,
       class: `map-edge ${relationshipClass}${bridge ? " map-edge--bridge" : ""}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
     };
+    if (direction) {
+      // Stop at the target circle so its node does not cover the arrowhead.
+      const distance = Math.hypot(target.x - source.x, target.y - source.y);
+      const radius = targetId === state.focusId ? 35 : targetId === state.selectedId ? 31 : 27;
+      if (distance > radius + 12) {
+        attributes.x2 -= (target.x - source.x) / distance * (radius + 6);
+        attributes.y2 -= (target.y - source.y) / distance * (radius + 6);
+        attributes["marker-end"] = "url(#relationship-arrow)";
+      }
+    }
     const heatColor = heatColorForPair(pair) || categoryColors[pair.records[0]?.category];
     if (heatColor) attributes.style = `--heat-color: ${heatColor}`;
     const line = svgElement("line", attributes);
@@ -698,7 +711,7 @@ function renderGraph() {
         class: "map-edge-label",
         "text-anchor": "middle"
       });
-      label.textContent = relationshipLabel(pair, state.selectedId);
+      label.textContent = direction ? relationshipText(direction) : relationshipLabel(pair, state.selectedId);
       elements.edgeLabels.append(label);
     }
   }
@@ -875,7 +888,7 @@ function createConnectionItem(connection) {
   kind.style.setProperty("--relationship-color", categoryColors[connection.category] || "var(--accent)");
   kind.textContent = `${connection.category} · ${connection.isInferred ? "Inferred" : "Approved"}`;
   const relation = document.createElement("strong");
-  relation.textContent = connection.displayName;
+  relation.textContent = relationshipText(connection);
   const name = document.createElement("span");
   name.className = "connection-target";
   name.textContent = target?.name ?? "Unknown character";
@@ -922,7 +935,7 @@ function createLedgerRow(pair) {
   for (const record of perspective) {
     const badge = document.createElement("span");
     badge.className = record.isInferred ? "relation-badge is-inferred" : "relation-badge is-direct";
-    badge.textContent = record.displayName;
+    badge.textContent = relationshipText(record);
     labels.append(badge);
   }
 
@@ -1004,7 +1017,7 @@ function updateLayoutUi() {
   elements.inferred.disabled = isTree || (state.category && state.category !== "Biological");
   document.querySelector(".heat-scale").hidden = Boolean(state.category && state.category !== "Biological");
   elements.stage.classList.toggle("is-tree", isTree);
-  elements.legendDirect.textContent = isTree ? "Parent → child" : "Direct";
+  elements.legendDirect.textContent = isTree ? "Child → parent" : "Direct";
   elements.legendInferred.textContent = isTree ? "Sibling / twin" : "Inferred";
   elements.legendInferred.parentElement.hidden = !isTree && Boolean(state.category && state.category !== "Biological");
 }
@@ -1308,11 +1321,44 @@ function mostConnectedCharacter() {
     left.name.localeCompare(right.name))[0].publicId;
 }
 
+// A record describes its source character's role relative to its target.
+function relationshipText(record) {
+  const label = record.displayName.replace(/^Biological /i, "").replace(/^./, letter => letter.toUpperCase());
+  if (record.category === "Biological" || record.category === "Adoptive")
+    return `${label} of`;
+  const labels = {
+    "societal-mentor": "Mentor of", "societal-student": "Student of",
+    "societal-guardian": "Guardian of", "societal-ward": "Ward of",
+    "societal-leader": "Leader of", "societal-follower": "Follower of",
+    "societal-employer": "Employer of", "societal-employee": "Employee of"
+  };
+  return labels[record.typeId] ?? label;
+}
+
+function relationshipDirection(pair) {
+  // Keep arrows stable when selection changes. Child -> parent reads "Child of".
+  const preferred = new Set([
+    "biological-child", "biological-grandchild", "biological-great-grandchild",
+    "biological-descendant", "biological-nibling", "adoptive-child",
+    "societal-student", "societal-ward", "societal-follower", "societal-employee"
+  ]);
+  const directional = new Set([...preferred,
+    "biological-parent", "biological-grandparent", "biological-great-grandparent",
+    "biological-ancestor", "biological-pibling", "adoptive-parent",
+    "societal-mentor", "societal-guardian", "societal-leader", "societal-employer"
+  ]);
+  const records = pair.records.filter(record => directional.has(record.typeId))
+    .sort((left, right) => Number(left.isInferred) - Number(right.isInferred) ||
+      Number(preferred.has(right.typeId)) - Number(preferred.has(left.typeId)) ||
+      left.typeId.localeCompare(right.typeId) || left.sourceCharacterId.localeCompare(right.sourceCharacterId));
+  return records[0] ?? null;
+}
+
 function relationshipLabel(pair, perspectiveId) {
   const records = dedupeBy(
     pair.records.filter(record => record.sourceCharacterId === perspectiveId),
     record => record.typeId);
-  const labels = records.map(record => record.displayName.replace(/^Biological /i, ""));
+  const labels = records.map(record => relationshipText(record));
   if (labels.length === 0) return pair.isInferred ? "Inferred tie" : "Direct tie";
   if (labels.length <= 2) return labels.join(" · ");
   return `${labels.slice(0, 2).join(" · ")} +${labels.length - 2}`;
