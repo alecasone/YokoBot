@@ -541,6 +541,8 @@ input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 2px 
 .map-legend b { font-weight: 400; }
 .legend-line { display: block; width: 1.8rem; border-top: 2px solid #b9c1bd; }
 .legend-line--inferred { border-color: var(--accent); border-top-style: dashed; }
+.legend-line--arrow { position: relative; }
+.legend-line--arrow::after { position: absolute; top: -4px; right: 0; width: 6px; height: 6px; border-top: 2px solid #b9c1bd; border-right: 2px solid #b9c1bd; transform: rotate(45deg); content: ""; }
 .map-stage.is-tree .legend-line--direct { border-color: #d3dad6; }
 .map-stage.is-tree .legend-line--inferred { border-color: var(--accent); border-top-style: dashed; }
 .heat-scale { flex-basis: 100%; }

@@ -74,6 +74,7 @@ const elements = {
   relationshipList: document.querySelector("#relationship-list"),
   legendDirect: document.querySelector("#legend-direct"),
   legendInferred: document.querySelector("#legend-inferred"),
+  legendParent: document.querySelector("#legend-parent"),
   menu: document.querySelector("#node-menu"),
   menuTitle: document.querySelector("#node-menu-title"),
   mapMenu: document.querySelector("#map-menu"),
@@ -646,9 +647,9 @@ function layoutFamilyTree(pairs) {
 function parentChildForPair(pair) {
   for (const record of pair.records.filter(record => !record.isInferred)) {
     if (record.typeId === "biological-parent" || record.typeId === "adoptive-parent")
-      return { parent: record.sourceCharacterId, child: record.targetCharacterId };
+      return { parent: record.sourceCharacterId, child: record.targetCharacterId, adoptive: record.typeId === "adoptive-parent" };
     if (record.typeId === "biological-child" || record.typeId === "adoptive-child")
-      return { parent: record.targetCharacterId, child: record.sourceCharacterId };
+      return { parent: record.targetCharacterId, child: record.sourceCharacterId, adoptive: record.typeId === "adoptive-child" };
   }
   return null;
 }
@@ -658,6 +659,7 @@ function renderGraph() {
   elements.edges.replaceChildren();
   elements.edgeLabels.replaceChildren();
   elements.nodes.replaceChildren();
+  const parentLabels = [];
 
   renderGenerationGuides();
   renderFamilyIslands();
@@ -669,9 +671,10 @@ function renderGraph() {
   }
   for (const pair of state.graphPairs) {
     if (state.layoutMode === "network" && !shouldRenderNetworkPair(pair)) continue;
+    const parentChild = parentChildForPair(pair);
     const direction = relationshipDirection(pair);
-    const sourceId = direction?.sourceCharacterId ?? pair.a;
-    const targetId = direction?.targetCharacterId ?? pair.b;
+    const sourceId = parentChild?.parent ?? direction?.sourceCharacterId ?? pair.a;
+    const targetId = parentChild?.child ?? direction?.targetCharacterId ?? pair.b;
     const source = state.positions.get(sourceId);
     const target = state.positions.get(targetId);
     if (!source || !target) continue;
@@ -688,10 +691,26 @@ function renderGraph() {
       y2: target.y,
       class: `map-edge ${relationshipClass}${bridge ? " map-edge--bridge" : ""}${selected ? " is-selected" : ""}${focused ? " is-focused" : ""}`
     };
-    if (direction) {
-      // Stop at the target circle so its node does not cover the arrowhead.
+    if (parentChild) {
+      const parent = state.positions.get(parentChild.parent);
+      const child = state.positions.get(parentChild.child);
+      const dx = child.x - parent.x;
+      const dy = child.y - parent.y;
+      const length = Math.hypot(dx, dy);
+      const clearance = nodeRadius(parentChild.child) + 6;
+      if (length > clearance) {
+        Object.assign(attributes, {
+          x1: parent.x,
+          y1: parent.y,
+          x2: child.x - dx / length * clearance,
+          y2: child.y - dy / length * clearance,
+          "marker-end": "url(#parent-child-arrow)"
+        });
+      }
+    }
+    if (!parentChild && direction) {
       const distance = Math.hypot(target.x - source.x, target.y - source.y);
-      const radius = targetId === state.focusId ? 35 : targetId === state.selectedId ? 31 : 27;
+      const radius = nodeRadius(targetId);
       if (distance > radius + 12) {
         attributes.x2 -= (target.x - source.x) / distance * (radius + 6);
         attributes.y2 -= (target.y - source.y) / distance * (radius + 6);
@@ -704,15 +723,23 @@ function renderGraph() {
     elements.edges.append(line);
 
     if (selected) {
-      const labelPoint = edgeLabelPoint(pair, source, target);
+      const labelPoint = edgeLabelPoint(pair, state.positions.get(pair.a), state.positions.get(pair.b));
       const label = svgElement("text", {
         x: labelPoint.x,
         y: labelPoint.y,
         class: "map-edge-label",
         "text-anchor": "middle"
       });
-      label.textContent = direction ? relationshipText(direction) : relationshipLabel(pair, state.selectedId);
+      const text = parentChild || !direction ? relationshipLabel(pair, state.selectedId) : relationshipText(direction);
+      const lines = text.split("\n");
+      label.setAttribute("aria-label", lines.join(" "));
+      lines.forEach((text, index) => {
+        const span = svgElement("tspan", { x: labelPoint.x, dy: index ? "1.3em" : "0" });
+        span.textContent = text;
+        label.append(span);
+      });
       elements.edgeLabels.append(label);
+      if (parentChild) parentLabels.push({ label, parentChild });
     }
   }
 
@@ -721,7 +748,39 @@ function renderGraph() {
     if (!position) continue;
     elements.nodes.append(createNode(character, position));
   }
+  positionParentLabels(parentLabels);
   applyTransform();
+}
+
+function positionParentLabels(parentLabels) {
+  if (parentLabels.length === 0) return;
+  const occupied = [...elements.nodes.children].map(node => {
+    const bounds = node.getBBox();
+    const position = state.positions.get(node.getAttribute("data-character-id"));
+    return { x: bounds.x + position.x, y: bounds.y + position.y, width: bounds.width, height: bounds.height };
+  });
+  const namedLabels = new Set(parentLabels.map(item => item.label));
+  occupied.push(...[...elements.edgeLabels.children].filter(label => !namedLabels.has(label)).map(label => label.getBBox()));
+  for (const { label, parentChild } of parentLabels) {
+    const bounds = label.getBBox();
+    let positionedBounds = bounds;
+    const parent = state.positions.get(parentChild.parent);
+    const child = state.positions.get(parentChild.child);
+    const length = Math.max(1, Math.hypot(child.x - parent.x, child.y - parent.y));
+    const normal = { x: -(child.y - parent.y) / length, y: (child.x - parent.x) / length };
+    for (const offset of [0, ...Array.from({ length: 12 }, (_, index) => [(index + 1) * 16, -(index + 1) * 16]).flat()]) {
+      const dx = normal.x * offset;
+      const dy = normal.y * offset;
+      const candidate = { x: bounds.x + dx, y: bounds.y + dy, width: bounds.width, height: bounds.height };
+      if (occupied.some(other => candidate.x < other.x + other.width + 8 && candidate.x + candidate.width + 8 > other.x &&
+        candidate.y < other.y + other.height + 8 && candidate.y + candidate.height + 8 > other.y)) continue;
+      label.setAttribute("y", Number(label.getAttribute("y")) + dy);
+      for (const span of label.children) span.setAttribute("x", Number(span.getAttribute("x")) + dx);
+      positionedBounds = candidate;
+      break;
+    }
+    occupied.push(positionedBounds);
+  }
 }
 
 function renderGenerationGuides() {
@@ -778,9 +837,10 @@ function shouldRenderNetworkPair(pair) {
 
 function edgeLabelPoint(pair, source, target) {
   const selectedIsSource = pair.a === state.selectedId;
-  const origin = selectedIsSource ? source : target;
-  const destination = selectedIsSource ? target : source;
-  const ratio = state.layoutMode === "tree" ? 0.5 : 0.64;
+  const parentChild = parentChildForPair(pair);
+  const origin = parentChild ? state.positions.get(parentChild.parent) : selectedIsSource ? source : target;
+  const destination = parentChild ? state.positions.get(parentChild.child) : selectedIsSource ? target : source;
+  const ratio = parentChild || state.layoutMode === "tree" ? 0.5 : 0.64;
   const dx = destination.x - origin.x;
   const dy = destination.y - origin.y;
   const length = Math.max(1, Math.hypot(dx, dy));
@@ -803,7 +863,7 @@ function createNode(character, position) {
     "data-character-id": character.publicId,
     style: `--node-color: ${colorForRegion(character.region)}`
   });
-  const circle = svgElement("circle", { r: focused ? 35 : selected ? 31 : 27 });
+  const circle = svgElement("circle", { r: nodeRadius(character.publicId) });
   const initials = svgElement("text", { class: "map-node-initials", "text-anchor": "middle", y: "5" });
   initials.textContent = initialsFor(character.name);
   const label = svgElement("text", { class: "map-node-name", "text-anchor": "middle", y: focused ? "55" : "48" });
@@ -841,6 +901,10 @@ function createNode(character, position) {
     }
   });
   return group;
+}
+
+function nodeRadius(characterId) {
+  return characterId === state.focusId ? 35 : characterId === state.selectedId ? 31 : 27;
 }
 
 function renderInspector(visible) {
@@ -1017,9 +1081,10 @@ function updateLayoutUi() {
   elements.inferred.disabled = isTree || (state.category && state.category !== "Biological");
   document.querySelector(".heat-scale").hidden = Boolean(state.category && state.category !== "Biological");
   elements.stage.classList.toggle("is-tree", isTree);
-  elements.legendDirect.textContent = isTree ? "Child → parent" : "Direct";
+  elements.legendDirect.textContent = isTree ? "Parent → child" : "Direct";
   elements.legendInferred.textContent = isTree ? "Sibling / twin" : "Inferred";
   elements.legendInferred.parentElement.hidden = !isTree && Boolean(state.category && state.category !== "Biological");
+  elements.legendParent.hidden = !state.graphPairs.some(pair => parentChildForPair(pair));
 }
 
 function setFocus(characterId, updateHistory = true) {
@@ -1165,6 +1230,10 @@ function fitMap() {
   if (state.socialRings.length) {
     const radius = Math.max(...state.socialRings.map(ring => ring.radius));
     points.push({ x: -radius, y: -radius }, { x: radius, y: radius });
+  }
+  if (elements.edgeLabels.childElementCount) {
+    const bounds = elements.edgeLabels.getBBox();
+    points.push({ x: bounds.x, y: bounds.y }, { x: bounds.x + bounds.width, y: bounds.y + bounds.height });
   }
   const horizontalMargin = state.layoutMode === "tree" ? 155 : 70;
   const topMargin = state.layoutMode === "tree" ? 140 : 80;
@@ -1358,7 +1427,18 @@ function relationshipLabel(pair, perspectiveId) {
   const records = dedupeBy(
     pair.records.filter(record => record.sourceCharacterId === perspectiveId),
     record => record.typeId);
-  const labels = records.map(record => relationshipText(record));
+  const parentChild = parentChildForPair(pair);
+  const labels = records
+    .filter(record => !parentChild || !parentTypeIds.has(record.typeId))
+    .map(record => relationshipText(record));
+  if (parentChild) {
+    const parentKinds = new Set(pair.records
+      .filter(record => !record.isInferred && parentTypeIds.has(record.typeId))
+      .map(record => record.typeId.startsWith("adoptive-") ? "adoptive" : "biological"));
+    const role = parentKinds.size > 1 ? "biological and adoptive parent" : parentChild.adoptive ? "adoptive parent" : "parent";
+    const otherTies = labels.length ? ` · ${labels.slice(0, 2).join(" · ")}${labels.length > 2 ? ` +${labels.length - 2}` : ""}` : "";
+    return `${characterName(parentChild.parent)} is ${role} of\n${characterName(parentChild.child)}${otherTies}`;
+  }
   if (labels.length === 0) return pair.isInferred ? "Inferred tie" : "Direct tie";
   if (labels.length <= 2) return labels.join(" · ");
   return `${labels.slice(0, 2).join(" · ")} +${labels.length - 2}`;

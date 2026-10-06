@@ -7,6 +7,8 @@ class Element {
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.children = children; }
   setAttribute(key, value) { this.attributes[key] = value; }
+  getAttribute(key) { return this.attributes[key]; }
+  getBBox() { return { x: Number(this.attributes.x ?? 0), y: Number(this.attributes.y ?? 0), width: 0, height: 0 }; }
   addEventListener() {}
 }
 const elements = new Map();
@@ -29,6 +31,7 @@ const sibling = { ...child, typeId: "biological-sibling", displayName: "Biologic
 assert.equal(atlas.relationshipDirection({ records: [sibling] }), null);
 assert.equal(atlas.relationshipDirection({ records: [parent] }), parent);
 atlas.state.charactersById.set("godfrey", { name: "Godfrey" });
+atlas.state.charactersById.set("maribelle", { name: "Maribelle" });
 const card = atlas.createConnectionItem(child).children[0];
 assert.equal(card.children[1].textContent, "Child of");
 assert.equal(card.children[2].textContent, "Godfrey");
@@ -39,9 +42,19 @@ for (const selected of ["maribelle", "godfrey"]) {
   atlas.state.selectedId = selected;
   atlas.renderGraph();
   const line = elements.get("#map-edges").children[0];
-  assert.equal(line.attributes.y1, 200);
-  assert.ok(line.attributes.y2 > 27 && line.attributes.y2 < 50);
-  assert.equal(line.attributes["marker-end"], "url(#relationship-arrow)");
-  assert.equal(elements.get("#map-edge-labels").children[0].textContent, "Child of");
+  assert.equal(line.attributes.y1, 0);
+  assert.ok(line.attributes.y2 > 150 && line.attributes.y2 < 180);
+  assert.equal(line.attributes["marker-end"], "url(#parent-child-arrow)");
+  assert.equal(elements.get("#map-edge-labels").children[0].attributes["aria-label"], "Godfrey is parent of Maribelle");
 }
-console.log("Relationship cards and stable child-to-parent arrows passed.");
+// The remote update's other directed roles continue to point from student to mentor.
+const mentor = { ...parent, typeId: "societal-mentor", displayName: "Mentor", category: "Societal" };
+const student = { ...child, typeId: "societal-student", displayName: "Student", category: "Societal" };
+atlas.state.graphPairs = atlas.buildPairs([mentor, student]);
+atlas.renderGraph();
+const roleLine = elements.get("#map-edges").children[0];
+assert.equal(roleLine.attributes.y1, 200);
+assert.ok(roleLine.attributes.y2 > 27 && roleLine.attributes.y2 < 50);
+assert.equal(roleLine.attributes["marker-end"], "url(#relationship-arrow)");
+assert.equal(elements.get("#map-edge-labels").children[0].attributes["aria-label"], "Student of");
+console.log("Relationship cards, named parent-to-child arrows, and societal arrows passed.");
