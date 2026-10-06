@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-06T18:40:47.4417981+00:00",
+  "generatedAt": "2026-10-06T18:41:26.6089088+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -205,7 +205,9 @@
         "value": "https://docs.google.com/document/d/1Quaq1zJL1onLRkJABn5SfoqoD9l_JgEFz2B1f92j4Kg/edit?usp=sharing"
       },
       "properties": {
-        "eyecolor": "Blue"
+        "eyecolor": "Blue",
+        "hair-colour": "Ginger",
+        "quote": "\u201CEnjoy the fruit. I shall reap for you.\u201D"
       }
     },
     {
