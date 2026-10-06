@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-06T18:39:48.2644224+00:00",
+  "generatedAt": "2026-10-06T18:40:47.4417981+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -197,10 +197,16 @@
       "age": "26",
       "gender": "Male",
       "region": "Florence",
-      "occupation": null,
+      "occupation": "Heir of Delvarra",
       "approvedAt": "2026-10-06T18:39:27.4013124+00:00",
-      "reference": null,
-      "properties": {}
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1Quaq1zJL1onLRkJABn5SfoqoD9l_JgEFz2B1f92j4Kg/edit?usp=sharing"
+      },
+      "properties": {
+        "eyecolor": "Blue"
+      }
     },
     {
       "publicId": "4dfc0700-806d-4187-83c6-daec05562cf1",
