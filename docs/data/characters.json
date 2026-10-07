@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-06T20:27:54.3500472+00:00",
+  "generatedAt": "2026-10-07T03:32:39.6652647+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -31,6 +31,29 @@
         "eyecolor": "steel blue",
         "hair-colour": "Dark blonde",
         "quote": "\u0022Diplomacy is much like sailing. Those who lack talent shy away.\u0022"
+      }
+    },
+    {
+      "publicId": "23f29cc8-72d6-415f-a21e-416fe14cdf1f",
+      "name": "Christopher Bosch",
+      "owner": {
+        "displayName": "Sir Mouse",
+        "discordId": "702251357171744848"
+      },
+      "aliases": [],
+      "age": "28",
+      "gender": "Male",
+      "region": "Solie",
+      "occupation": "Mercenary",
+      "approvedAt": "2026-10-07T03:31:34.9255694+00:00",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1aLN-UGPOBHVBdgX4jpyPO9O8LXnNJTxMAztQjiTgYLk/edit?usp=sharing"
+      },
+      "properties": {
+        "eyecolor": "Brown",
+        "hair-colour": "Dark brown"
       }
     },
     {
