@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-08T22:05:50.1099883+00:00",
+  "generatedAt": "2026-10-08T22:06:35.3170093+00:00",
   "characters": [
     {
       "publicId": "88ab168e-0d3c-4925-b892-b09bb6d9226b",
@@ -29,7 +29,8 @@
       },
       "properties": {
         "eyecolor": "Pale blue-green",
-        "hair-colour": "Dark brown"
+        "hair-colour": "Dark brown",
+        "quote": "\u201CA blade does not need to be loud to be feared.\u201D"
       }
     },
     {
