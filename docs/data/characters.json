@@ -7,8 +7,24 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-08T17:11:36.2917601+00:00",
+  "generatedAt": "2026-10-08T22:04:36.0741714+00:00",
   "characters": [
+    {
+      "publicId": "88ab168e-0d3c-4925-b892-b09bb6d9226b",
+      "name": "Avyra Delvarra",
+      "owner": {
+        "displayName": ". \u0741\u208A   \u22B9    . \u0741 Sel  \u02D1 \u05B4 \u0597 \u05B4 \u06EB",
+        "discordId": "1010807832490295297"
+      },
+      "aliases": [],
+      "age": "27",
+      "gender": "Female",
+      "region": "Florence",
+      "occupation": null,
+      "approvedAt": "2026-10-08T22:04:15.0885483+00:00",
+      "reference": null,
+      "properties": {}
+    },
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
       "name": "Celestine Altur",
