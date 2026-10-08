@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-08T22:04:36.0741714+00:00",
+  "generatedAt": "2026-10-08T22:05:50.1099883+00:00",
   "characters": [
     {
       "publicId": "88ab168e-0d3c-4925-b892-b09bb6d9226b",
@@ -20,10 +20,17 @@
       "age": "27",
       "gender": "Female",
       "region": "Florence",
-      "occupation": null,
+      "occupation": "Lady of House Bellacorte \u0026 Lady Delvarra by marriage",
       "approvedAt": "2026-10-08T22:04:15.0885483+00:00",
-      "reference": null,
-      "properties": {}
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/15AO58t-tbnkrLnso3ig0CUwSn8CwTPWA92MocYUSRHs/edit?usp=sharing"
+      },
+      "properties": {
+        "eyecolor": "Pale blue-green",
+        "hair-colour": "Dark brown"
+      }
     },
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
