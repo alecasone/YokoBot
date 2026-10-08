@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-07T06:23:56.0875726+00:00",
+  "generatedAt": "2026-10-08T17:11:36.2917601+00:00",
   "characters": [
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
@@ -107,30 +107,6 @@
         "eyecolor": "Dark Blue",
         "hair-colour": "Light Brown",
         "quote": "Golden child, Lion boy; Tell me what it\u2019s like to conquer."
-      }
-    },
-    {
-      "publicId": "9e226408-3742-4bd0-b127-b854c4b0b2b6",
-      "name": "Hyacinth Beurwood",
-      "owner": {
-        "displayName": ".\u141F.\u141F007",
-        "discordId": "1556865741167534112"
-      },
-      "aliases": [],
-      "age": "20",
-      "gender": "Female",
-      "region": "Obelia",
-      "occupation": "Medicinal Alchemist",
-      "approvedAt": "2026-10-07T06:22:41.7287536+00:00",
-      "reference": {
-        "kind": "sheet",
-        "format": "link",
-        "value": "https://docs.google.com/document/d/1ZVpuE9D6_-fAeWI64JRDqjUH-guuj1n9/edit?usp=drivesdk\u0026ouid=109652754559994763865\u0026rtpof=true\u0026sd=true"
-      },
-      "properties": {
-        "eyecolor": "Blue",
-        "hair-colour": "Silver blonde",
-        "quote": "\u201CI know when to stop, I simply rarely do.\u201D"
       }
     },
     {
