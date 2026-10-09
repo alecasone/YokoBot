@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-08T22:06:35.3170093+00:00",
+  "generatedAt": "2026-10-09T04:17:40.2248729+00:00",
   "characters": [
     {
       "publicId": "88ab168e-0d3c-4925-b892-b09bb6d9226b",
@@ -131,6 +131,30 @@
         "eyecolor": "Dark Blue",
         "hair-colour": "Light Brown",
         "quote": "Golden child, Lion boy; Tell me what it\u2019s like to conquer."
+      }
+    },
+    {
+      "publicId": "c8a8e6b1-9281-46fc-92ba-8a579fd62d96",
+      "name": "Isidora  Ashborne",
+      "owner": {
+        "displayName": "Cricket",
+        "discordId": "721663957450096680"
+      },
+      "aliases": [],
+      "age": "24",
+      "gender": "Female",
+      "region": "Solie",
+      "occupation": "Admiral of the Ashborne Fleet",
+      "approvedAt": "2026-10-09T04:16:17.8713003+00:00",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1Bdur8jTQvGWrE8rCGEcoE9IPkev6p49uvTUkGCuncBM/edit?usp=sharing"
+      },
+      "properties": {
+        "eyecolor": "Blue green",
+        "hair-colour": "Dark brown",
+        "quote": "\u201CI am no bird. No net ensnares me.\u201D"
       }
     },
     {
