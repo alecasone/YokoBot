@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-09T15:21:10.33708+00:00",
+  "generatedAt": "2026-10-09T20:43:59.6416602+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -180,6 +180,22 @@
         "hair-colour": "Dark brown",
         "quote": "\u201CI am no bird. No net ensnares me.\u201D"
       }
+    },
+    {
+      "publicId": "f2a3ab2d-2c54-43fc-94fb-58195339dba6",
+      "name": "Lysander Altur",
+      "owner": {
+        "displayName": ". \u0741\u208A   \u22B9    . \u0741 Sel  \u02D1 \u05B4 \u0597 \u05B4 \u06EB",
+        "discordId": "1010807832490295297"
+      },
+      "aliases": [],
+      "age": null,
+      "gender": null,
+      "region": null,
+      "occupation": null,
+      "approvedAt": "2026-10-09T20:43:39.3367346+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "1be662e5-613f-42ba-bb95-6461d5dab806",
