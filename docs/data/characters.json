@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-10T06:16:04.9454876+00:00",
+  "generatedAt": "2026-10-10T06:17:17.6585138+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -645,6 +645,15 @@
       "explanation": null
     },
     {
+      "sourceCharacterId": "197772ed-5b84-4a9e-9e02-3db9e5f60363",
+      "targetCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
       "sourceCharacterId": "1be662e5-613f-42ba-bb95-6461d5dab806",
       "targetCharacterId": "2a0675b6-0123-41cc-bb94-c64f046a6cf1",
       "typeId": "biological-twin",
@@ -683,6 +692,15 @@
     {
       "sourceCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
       "targetCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
+      "typeId": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
+      "targetCharacterId": "197772ed-5b84-4a9e-9e02-3db9e5f60363",
       "typeId": "biological-sibling",
       "displayName": "Biological sibling",
       "category": "Biological",
