@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-14T01:53:33.7641804+00:00",
+  "generatedAt": "2026-10-14T01:54:20.2405717+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -122,7 +122,11 @@
         "format": "link",
         "value": "https://docs.google.com/document/d/1jAuPqci0afY-vm2zvoJeyGi6LYgF0V-89msvdT5myoI/edit?usp=sharing"
       },
-      "properties": {}
+      "properties": {
+        "eyecolor": "Brown",
+        "hair-colour": "Blonde",
+        "quote": "\u201CWanna hear something funny?\u201D"
+      }
     },
     {
       "publicId": "12b688d3-7482-4713-819a-7a8364146654",
