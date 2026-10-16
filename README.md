@@ -9,8 +9,8 @@ Yoko uses an internal, per-server PEX-style permission system stored in `data/pe
 The first time a server checks permissions, Yoko seeds these role assignments:
 
 - **Admin** (`1541979162242195466`) receives `*`.
-- **Moderator** (`1541979611754135643`) receives character approval/edit/view/delete access, verification, auto-moderation viewing and approvals, member-alert viewing, the verification recheck, every scene-tracker permission (including limits and slot grants), relationship access, and permission viewing.
-- **Verified** (`1542018931894521887`) receives `/ping`, self-scoped character edit/view/delete, scene creation/view/history, management of scenes in which they participate, and relationship access.
+- **Moderator** (`1541979611754135643`) receives character approval/edit/view/delete access, verification, auto-moderation viewing and approvals, member-alert viewing, reusable reminder activation, the verification recheck, every scene-tracker permission (including limits and slot grants), relationship access, and permission viewing.
+- **Verified** (`1542018931894521887`) receives `/ping`, self-scoped character edit/view/delete, scene creation/view/history, management of scenes in which they participate, relationship access, and reusable reminder activation.
 
 Use `/permissions list` to see every recognized permission together with the roles and direct users that currently receive it, including inherited wildcard grants. `/permissions view permission` focuses on one permission, and `/permissions role role` inspects a role. Members with `permissions.manage` can use `/permissions grant`, `/permissions revoke`, `/permissions grant-user`, and `/permissions revoke-user`. Removing a seeded grant is persistent; restarting Yoko does not add it back. Keep at least one Discord Administrator available because that bypass cannot be removed from the JSON file.
 
@@ -46,6 +46,9 @@ Discord only controls visibility at the top-level slash-command name, not separa
 | `alerts.view` | `/alertadmin view` |
 | `alerts.configure.leave` | `/alertadmin leave add`, `/alertadmin leave edit`, and `/alertadmin leave delete` |
 | `alerts.configure.new-account` | `/alertadmin newaccount set` and `/alertadmin newaccount delete` |
+| `automessage.manage` | Every `/automessage` command, including the interactive message editor |
+| `reminder.manage` | Create, cancel, or delete reusable reminders; also activate and view them |
+| `reminder.activate` | `/reminder name:<name>` and `action:view` for an existing reminder |
 | `debug.recheck-verified` | `/debug recheck-verified` |
 | `overworld.worlddate` | `/overworld worlddate` |
 | `scenetracker.create` | `/scenetracker create` |
@@ -293,6 +296,46 @@ Add, edit, and set commands use private wizards whose channel replies are delete
 
 All templates support `{user}`, `{username}`, `{displayname}`, `{userid}`, and `{server}`. Leave alerts additionally support `{role}`, `{rolename}`, and `{joinedat}`. New-account alerts support `{accountage}`, `{accountagedays}`, `{threshold}`, and `{createdat}`. Yoko keeps an in-memory role snapshot for each member so leave alerts remain accurate after Discord removes the departed member from the server cache.
 
+## Recurring messages and reusable reminders
+
+Both features use slash commands and keep server-specific configuration, message selection, and pending countdowns in the ignored local file `data/scheduled-messages.json`. Include this file when moving or backing up the bot. Destinations may be `here`, a channel mention, a user mention for a fixed DM recipient, or `dm me`. The destination must belong to the current server; channel delivery requires Yoko to be able to view and send there. A user destination receives a DM, rather than a ping in the command channel. Names are case-insensitive and can contain up to 100 letters, digits, hyphens, or underscores. Timespans accept combined units such as `30m`, `2h`, `1h30m`, or `1d`, from one minute to 365 days. Messages may contain up to 2,000 characters.
+
+### Automessages
+
+```text
+/automessage create name:prompts destination:#general timespan:2h mode:pseudorandom
+/automessage edit name:prompts
+/automessage mode name:prompts mode:incremental
+/automessage pause name:prompts
+/automessage resume name:prompts
+/automessage list
+/automessage delete name:prompts
+```
+
+Creation opens the same private editor as `edit`. It displays a numbered list and accepts channel replies: `add Hello there, everyone!`, `edit 1` followed by the replacement message, `delete 3`, and `done` to close. Changes save immediately; the bot deletes replies when permitted. Editing sessions expire after ten minutes and recheck the editor's permission before changing anything. The first message starts the countdown; an empty list sends nothing. Paused schedules retain their messages.
+
+Modes are `pseudorandom` (a shuffled cycle through every message, avoiding consecutive repeats between cycles when multiple messages exist), `incremental` (list order, looping back to the start), and `random` (independent choices that can repeat). Mode and message-list changes reset selection progress.
+
+### Bump reminders
+
+Create and start the first countdown by supplying all settings:
+
+```text
+/reminder name:bump timespan:2h destination:#bump message:Time to bump the server!
+```
+
+The reminder sends once and becomes idle. Whenever someone bumps the server, they can start another countdown using only its saved name:
+
+```text
+/reminder name:bump
+```
+
+Activating a pending reminder reports its existing due time without resetting or stacking countdowns. The command does not detect bumps automatically. Use `/reminder name:bump action:view` to inspect settings and delivery errors, `action:cancel` to stop the pending countdown while keeping its settings, or `action:delete` to remove it. To replace the settings, delete the reminder and create it again. Creation requires all three configuration options together; a name-only invocation never creates a blank reminder.
+
+Admins can configure both features through their normal wildcard grant. Verified members and moderators receive `reminder.activate`, including a one-time migration for existing servers. `automessage.manage` and `reminder.manage` can be granted separately through `/permissions`; for example, `/permissions grant role:@Moderator permission:reminder.manage`.
+
+The scheduler resumes persisted countdowns at startup and delivers at most one overdue automessage per schedule, rather than replaying every missed interval. Due state is saved before delivery to avoid duplicate reminders after an uncertain send. If Discord rejects a delivery, Yoko records the error; reminders remain idle until someone activates them again. There is no automatic retry, and a process interruption between saving the due state and sending can lose that delivery. View the saved state to investigate missing permissions or closed DMs.
+
 ## Verification profiles
 
 `/verify user type` marks a member verified and applies exactly the added/removed role lists stored in that profile. No roles are implicit: include **Verified** in the added list and **Unverified** in the removed list when that is the desired workflow. The built-in profile names are `writer` and `spectator`, ready to be configured. Character approval does not verify a member implicitly because staff must choose the verification type.
@@ -309,7 +352,7 @@ Use `/verifyadmin successmessage channel:#general` to start a private setup prom
 
 ## Development checks
 
-Run `dotnet run --project tests/Yoko.Checks/Yoko.Checks.csproj` for isolated scene-cap, migration, relationship-consent, owner-privacy/export, bulk-deletion safety, permission, and command-registration checks. The checks write only to a fresh system temporary directory; they do not connect to Discord or publish to GitHub. Simulated publishing uses an in-memory HTTP handler. Run `node tests/owner-ui.test.mjs` for attribution rendering and clipboard checks. Run `node tests/preview.mjs` to preview the site with fabricated social/family ties, public/hidden example owners, and Helios branding at `http://127.0.0.1:4188/`; this does not modify stored or published characters.
+Run `dotnet run --project tests/Yoko.Checks/Yoko.Checks.csproj` for isolated scene-cap, migration, relationship-consent, owner-privacy/export, bulk-deletion safety, permission, command-registration, automessage-selection, restart-recovery, and one-shot-reminder checks. The checks write only to a fresh system temporary directory; they do not connect to Discord or publish to GitHub. Simulated publishing uses an in-memory HTTP handler, and scheduled message checks use an injected sender and clock. Run `node tests/owner-ui.test.mjs` for attribution rendering and clipboard checks. Run `node tests/preview.mjs` to preview the site with fabricated social/family ties, public/hidden example owners, and Helios branding at `http://127.0.0.1:4188/`; this does not modify stored or published characters.
 
 ## Run in VS Code
 

@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using Yoko.Bot.Commands;
 
 namespace Yoko.Bot.Services;
 
@@ -24,6 +25,8 @@ internal static class CommandPermissionResolver
             "siteadmin" => ResolveSiteAdmin(root),
             "relationship" => ResolveRelationship(root),
             "alertadmin" => ResolveMemberAlertAdmin(root),
+            "automessage" => ["automessage.manage"],
+            "reminder" => ResolveReminder(command),
             _ => []
         };
     }
@@ -46,12 +49,21 @@ internal static class CommandPermissionResolver
                 ["scenetracker.create", "scenetracker.view", "scenetracker.history", "scenetracker.manage.own", "scenetracker.manage.any"],
             "permissions" => ["permissions.view", "permissions.manage"],
             "relationship" => ["relationship.request", "relationship.respond", "relationship.remove", "relationship.view"],
+            "automessage" => ["automessage.manage"],
+            "reminder" => ["reminder.activate", "reminder.manage"],
             _ => []
         };
     }
 
     internal static IReadOnlyList<string> CharacterEditPermissions(ulong actorId, ulong ownerId) =>
         actorId == ownerId ? ["character.edit.self", "character.edit.any"] : ["character.edit.any"];
+
+    private static IReadOnlyList<string> ResolveReminder(SocketSlashCommand command)
+    {
+        var action = command.Data.Options.FirstOrDefault(option => option.Name == "action")?.Value?.ToString();
+        return ReminderCommands.HasConfiguration(command) || action is "cancel" or "delete"
+            ? ["reminder.manage"] : ["reminder.activate", "reminder.manage"];
+    }
 
     private static IReadOnlyList<string> ResolveCharacter(ulong actorId, SocketSlashCommandDataOption? subcommand)
     {

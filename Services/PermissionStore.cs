@@ -5,7 +5,7 @@ namespace Yoko.Bot.Services;
 
 internal sealed class PermissionStore
 {
-    private const int CurrentSeedVersion = 3;
+    private const int CurrentSeedVersion = 4;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -113,6 +113,13 @@ internal sealed class PermissionStore
         {
             if (!settings.Grants.TryGetValue("alerts.view", out var grant))
                 settings.Grants["alerts.view"] = grant = new PermissionGrant();
+            AddUnique(grant.RoleIds, PermissionCatalog.ModeratorRoleId);
+        }
+        if (settings.SeedVersion < 4)
+        {
+            if (!settings.Grants.TryGetValue("reminder.activate", out var grant))
+                settings.Grants["reminder.activate"] = grant = new PermissionGrant();
+            AddUnique(grant.RoleIds, PermissionCatalog.VerifiedRoleId);
             AddUnique(grant.RoleIds, PermissionCatalog.ModeratorRoleId);
         }
         settings.SeedVersion = CurrentSeedVersion;

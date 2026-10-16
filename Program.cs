@@ -12,6 +12,7 @@ internal static class Program
     private static readonly UserStore Users = new(Path.Combine(Environment.CurrentDirectory, "data", "users.json"));
     private static readonly AutoModerationRuleStore AutoModerationRules = new(Path.Combine(Environment.CurrentDirectory, "data", "automod-rules.json"));
     private static readonly MemberAlertStore MemberAlertSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "member-alerts.json"));
+    private static readonly ScheduledMessageStore ScheduledMessages = new(Path.Combine(Environment.CurrentDirectory, "data", "scheduled-messages.json"));
     private static readonly VerificationSettingsStore VerificationSettings = new(Path.Combine(Environment.CurrentDirectory, "data", "verification-settings.json"));
     private static readonly UniverseStore Universes = new(Path.Combine(Environment.CurrentDirectory, "data", "universe.json"));
     private static readonly SceneStore Scenes = new(Path.Combine(Environment.CurrentDirectory, "data", "scenes.json"), Characters);
@@ -50,6 +51,7 @@ internal static class Program
         CharacterRoles.SyncMemberAsync, SitePublisher.QueueAsync);
     private static readonly AutoModerationService AutoModerator = new(Client, Users, AutoModerationRules, Permissions, PublicIdentities);
     private static readonly MemberAlertService MemberAlerts = new(Client, MemberAlertSettings);
+    private static readonly ScheduledMessageService MessageScheduler = new(Client, ScheduledMessages);
     private static readonly VerificationService Verification = new(Client, VerificationSettings, AutoModerator);
 
     private static bool _commandsRegistered;
@@ -84,6 +86,7 @@ internal static class Program
         Client.Ready += CharacterRoles.StartAsync;
         Client.Ready += AutoModerator.StartAsync;
         Client.Ready += MemberAlerts.StartAsync;
+        Client.Ready += MessageScheduler.StartAsync;
         Client.Ready += SitePublisher.StartAsync;
         Client.UserJoined += AutoModerator.HandleUserJoinedAsync;
         Client.UserJoined += MemberAlerts.HandleUserJoinedAsync;
@@ -104,6 +107,7 @@ internal static class Program
         await Client.StartAsync();
         await ShutdownSignal.Task;
         AutoModerator.Stop();
+        MessageScheduler.Stop();
         SitePublisher.Stop();
         await Client.StopAsync();
         await Client.LogoutAsync();
@@ -127,7 +131,8 @@ internal static class Program
             [pingCommand, shutdownCommand, .. CharacterCommands.Build(), CharacterAdminCommands.Build(),
              AutoModerationCommands.Build(), VerificationCommands.VerifyCommand(), VerificationCommands.AdminCommand(),
              DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build(), PermissionCommands.Build(),
-             SiteAdminCommands.Build(), RelationshipCommands.Build(), MemberAlertCommands.Build()];
+             SiteAdminCommands.Build(), RelationshipCommands.Build(), MemberAlertCommands.Build(),
+             AutoMessageCommands.Build(), ReminderCommands.Build()];
 
         var testGuildIdText = Environment.GetEnvironmentVariable("DISCORD_TEST_GUILD_ID");
         if (ulong.TryParse(testGuildIdText, out var testGuildId))
@@ -192,6 +197,12 @@ internal static class Program
                 break;
             case "alertadmin":
                 await MemberAlertCommands.HandleAsync(command, MemberAlertSettings);
+                break;
+            case "automessage":
+                await AutoMessageCommands.HandleAsync(command, ScheduledMessages);
+                break;
+            case "reminder":
+                await ReminderCommands.HandleAsync(command, ScheduledMessages, Permissions);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -272,6 +283,8 @@ internal static class Program
             "scenetracker" => SceneTrackerCommands.HandleAutocompleteAsync(interaction, Scenes, Characters),
             "permissions" => PermissionCommands.HandleAutocompleteAsync(interaction),
             "relationship" => RelationshipCommands.HandleAutocompleteAsync(interaction, Characters, Relationships, RelationshipInference),
+            "automessage" => AutoMessageCommands.HandleAutocompleteAsync(interaction, ScheduledMessages),
+            "reminder" => ReminderCommands.HandleAutocompleteAsync(interaction, ScheduledMessages),
             _ => interaction.RespondAsync([])
         });
     }
@@ -299,6 +312,7 @@ internal static class Program
         if (await CharacterCommands.HandleManualEditReplyAsync(message, Characters, Permissions, SitePublisher)) return;
         await AutoModerator.RecordMessageAsync(message);
         if (await AutoModerator.HandleApprovalMessageAsync(message)) return;
+        if (await AutoMessageCommands.HandleWizardMessageAsync(message, ScheduledMessages, Permissions)) return;
         if (await RelationshipCommands.HandleReplyAsync(
                 message, Characters, Relationships, Permissions, SitePublisher, Scenes)) return;
         if (await SceneTrackerCommands.HandleInviteReplyAsync(message, Scenes, Characters)) return;

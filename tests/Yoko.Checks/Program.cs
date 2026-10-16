@@ -259,6 +259,7 @@ Check((await relationships.GetRequestsForUserAsync(60, 301)).Count == 0, "Abort 
 Check(abortWarnings.Count == 1 && abortQueues == 1 && abortRoles == 1, "Role failure blocked abort publication or was not reported.");
 
 await ManualEditChecks.RunAsync(testDirectory, Check);
+await ScheduledMessageChecks.RunAsync(testDirectory, Check);
 
 Console.WriteLine($"Passed {assertions} checks. Isolated fixture files: {testDirectory}");
 
