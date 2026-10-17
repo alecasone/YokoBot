@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-17T23:07:44.0199995+00:00",
+  "generatedAt": "2026-10-17T23:12:11.899237+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -1534,6 +1534,15 @@
     },
     {
       "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "targetCharacterId": "a01914e1-35f9-4d1e-9d44-5c67e248a201",
+      "typeId": "societal-employer",
+      "displayName": "Employer",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
       "targetCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
       "typeId": "biological-parent",
       "displayName": "Biological parent",
@@ -1556,6 +1565,15 @@
       "typeId": "biological-child",
       "displayName": "Biological child",
       "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "targetCharacterId": "a01914e1-35f9-4d1e-9d44-5c67e248a201",
+      "typeId": "social-friend",
+      "displayName": "Friend",
+      "category": "Social",
       "isInferred": false,
       "explanation": null
     },
@@ -1690,6 +1708,24 @@
       "targetCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
       "typeId": "social-chosen-family",
       "displayName": "Chosen family",
+      "category": "Social",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "a01914e1-35f9-4d1e-9d44-5c67e248a201",
+      "targetCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "typeId": "societal-employee",
+      "displayName": "Employee",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "a01914e1-35f9-4d1e-9d44-5c67e248a201",
+      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "typeId": "social-friend",
+      "displayName": "Friend",
       "category": "Social",
       "isInferred": false,
       "explanation": null
