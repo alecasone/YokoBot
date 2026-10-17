@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-17T15:20:33.7487616+00:00",
+  "generatedAt": "2026-10-17T21:49:45.6874687+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -433,235 +433,1060 @@
       "id": "adoptive-child",
       "displayName": "Adoptive child",
       "category": "Adoptive",
-      "inverseId": "adoptive-parent"
+      "inverseId": "adoptive-parent",
+      "perspectiveLabel": "Adoptive child of",
+      "preferDirection": true
     },
     {
       "id": "adoptive-parent",
       "displayName": "Adoptive parent",
       "category": "Adoptive",
-      "inverseId": "adoptive-child"
+      "inverseId": "adoptive-child",
+      "perspectiveLabel": "Adoptive parent of",
+      "preferDirection": false
     },
     {
       "id": "adoptive-sibling",
       "displayName": "Adoptive sibling",
       "category": "Adoptive",
-      "inverseId": "adoptive-sibling"
+      "inverseId": "adoptive-sibling",
+      "perspectiveLabel": "Adoptive sibling of",
+      "preferDirection": false
     },
     {
       "id": "biological-ancestor",
       "displayName": "Biological ancestor",
       "category": "Biological",
-      "inverseId": "biological-descendant"
-    },
-    {
-      "id": "biological-pibling",
-      "displayName": "Biological aunt/uncle (pibling)",
-      "category": "Biological",
-      "inverseId": "biological-nibling"
+      "inverseId": "biological-descendant",
+      "perspectiveLabel": "Ancestor of",
+      "preferDirection": false
     },
     {
       "id": "biological-child",
       "displayName": "Biological child",
       "category": "Biological",
-      "inverseId": "biological-parent"
+      "inverseId": "biological-parent",
+      "perspectiveLabel": "Child of",
+      "preferDirection": true
     },
     {
       "id": "biological-cousin",
       "displayName": "Biological cousin",
       "category": "Biological",
-      "inverseId": "biological-cousin"
+      "inverseId": "biological-cousin",
+      "perspectiveLabel": "Cousin of",
+      "preferDirection": false
     },
     {
       "id": "biological-descendant",
       "displayName": "Biological descendant",
       "category": "Biological",
-      "inverseId": "biological-ancestor"
-    },
-    {
-      "id": "biological-grandchild",
-      "displayName": "Biological grandchild",
-      "category": "Biological",
-      "inverseId": "biological-grandparent"
-    },
-    {
-      "id": "biological-grandparent",
-      "displayName": "Biological grandparent",
-      "category": "Biological",
-      "inverseId": "biological-grandchild"
-    },
-    {
-      "id": "biological-great-grandchild",
-      "displayName": "Biological great-grandchild",
-      "category": "Biological",
-      "inverseId": "biological-great-grandparent"
-    },
-    {
-      "id": "biological-great-grandparent",
-      "displayName": "Biological great-grandparent",
-      "category": "Biological",
-      "inverseId": "biological-great-grandchild"
-    },
-    {
-      "id": "biological-nibling",
-      "displayName": "Biological niece/nephew (nibling)",
-      "category": "Biological",
-      "inverseId": "biological-pibling"
-    },
-    {
-      "id": "biological-parent",
-      "displayName": "Biological parent",
-      "category": "Biological",
-      "inverseId": "biological-child"
-    },
-    {
-      "id": "biological-sibling",
-      "displayName": "Biological sibling",
-      "category": "Biological",
-      "inverseId": "biological-sibling"
-    },
-    {
-      "id": "biological-twin",
-      "displayName": "Biological twin",
-      "category": "Biological",
-      "inverseId": "biological-twin"
+      "inverseId": "biological-ancestor",
+      "perspectiveLabel": "Descendant of",
+      "preferDirection": true
     },
     {
       "id": "biological-full-sibling",
       "displayName": "Full biological sibling",
       "category": "Biological",
-      "inverseId": "biological-full-sibling"
+      "inverseId": "biological-full-sibling",
+      "perspectiveLabel": "Full biological sibling of",
+      "preferDirection": false
+    },
+    {
+      "id": "biological-grandchild",
+      "displayName": "Biological grandchild",
+      "category": "Biological",
+      "inverseId": "biological-grandparent",
+      "perspectiveLabel": "Grandchild of",
+      "preferDirection": true
+    },
+    {
+      "id": "biological-grandparent",
+      "displayName": "Biological grandparent",
+      "category": "Biological",
+      "inverseId": "biological-grandchild",
+      "perspectiveLabel": "Grandparent of",
+      "preferDirection": false
+    },
+    {
+      "id": "biological-great-grandchild",
+      "displayName": "Biological great-grandchild",
+      "category": "Biological",
+      "inverseId": "biological-great-grandparent",
+      "perspectiveLabel": "Great-grandchild of",
+      "preferDirection": true
+    },
+    {
+      "id": "biological-great-grandparent",
+      "displayName": "Biological great-grandparent",
+      "category": "Biological",
+      "inverseId": "biological-great-grandchild",
+      "perspectiveLabel": "Great-grandparent of",
+      "preferDirection": false
     },
     {
       "id": "biological-half-sibling",
       "displayName": "Half biological sibling",
       "category": "Biological",
-      "inverseId": "biological-half-sibling"
+      "inverseId": "biological-half-sibling",
+      "perspectiveLabel": "Half biological sibling of",
+      "preferDirection": false
+    },
+    {
+      "id": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
+      "inverseId": "biological-pibling",
+      "perspectiveLabel": "Niece/nephew (nibling) of",
+      "preferDirection": true
+    },
+    {
+      "id": "biological-parent",
+      "displayName": "Biological parent",
+      "category": "Biological",
+      "inverseId": "biological-child",
+      "perspectiveLabel": "Parent of",
+      "preferDirection": false
+    },
+    {
+      "id": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "inverseId": "biological-nibling",
+      "perspectiveLabel": "Aunt/uncle (pibling) of",
+      "preferDirection": false
+    },
+    {
+      "id": "biological-sibling",
+      "displayName": "Biological sibling",
+      "category": "Biological",
+      "inverseId": "biological-sibling",
+      "perspectiveLabel": "Sibling of",
+      "preferDirection": false
+    },
+    {
+      "id": "biological-twin",
+      "displayName": "Biological twin",
+      "category": "Biological",
+      "inverseId": "biological-twin",
+      "perspectiveLabel": "Twin of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-arranged-betrothed",
+      "displayName": "Arranged betrothed",
+      "category": "Romantic",
+      "inverseId": "romantic-arranged-betrothed",
+      "perspectiveLabel": "Arranged betrothed to",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-consort",
+      "displayName": "Consort",
+      "category": "Romantic",
+      "inverseId": "romantic-consort",
+      "perspectiveLabel": "Consort of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-courting-partner",
+      "displayName": "Courting partner",
+      "category": "Romantic",
+      "inverseId": "romantic-courting-partner",
+      "perspectiveLabel": "Courting partner of",
+      "preferDirection": false
     },
     {
       "id": "romantic-dating",
       "displayName": "Dating partner",
       "category": "Romantic",
-      "inverseId": "romantic-dating"
+      "inverseId": "romantic-dating",
+      "perspectiveLabel": "Dating partner of",
+      "preferDirection": false
     },
     {
       "id": "romantic-engaged",
-      "displayName": "Fianc\u00E9 / fianc\u00E9e",
+      "displayName": "Betrothed",
       "category": "Romantic",
-      "inverseId": "romantic-engaged"
+      "inverseId": "romantic-engaged",
+      "perspectiveLabel": "Betrothed to",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-estranged-spouse",
+      "displayName": "Estranged spouse",
+      "category": "Romantic",
+      "inverseId": "romantic-estranged-spouse",
+      "perspectiveLabel": "Estranged spouse of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-former-betrothed",
+      "displayName": "Former betrothed",
+      "category": "Romantic",
+      "inverseId": "romantic-former-betrothed",
+      "perspectiveLabel": "Former betrothed of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-former-courting-partner",
+      "displayName": "Former courting partner",
+      "category": "Romantic",
+      "inverseId": "romantic-former-courting-partner",
+      "perspectiveLabel": "Former courting partner of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-former-lover",
+      "displayName": "Former lover",
+      "category": "Romantic",
+      "inverseId": "romantic-former-lover",
+      "perspectiveLabel": "Former lover of",
+      "preferDirection": false
     },
     {
       "id": "romantic-former-partner",
       "displayName": "Former partner",
       "category": "Romantic",
-      "inverseId": "romantic-former-partner"
+      "inverseId": "romantic-former-partner",
+      "perspectiveLabel": "Former partner of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-former-spouse",
+      "displayName": "Former spouse",
+      "category": "Romantic",
+      "inverseId": "romantic-former-spouse",
+      "perspectiveLabel": "Former spouse of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-lover",
+      "displayName": "Lover",
+      "category": "Romantic",
+      "inverseId": "romantic-lover",
+      "perspectiveLabel": "Lover of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-on-off-lover",
+      "displayName": "On-and-off lover",
+      "category": "Romantic",
+      "inverseId": "romantic-on-off-lover",
+      "perspectiveLabel": "On-and-off lover of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-paramour",
+      "displayName": "Paramour",
+      "category": "Romantic",
+      "inverseId": "romantic-paramour",
+      "perspectiveLabel": "Paramour of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-political-marriage",
+      "displayName": "Political marriage partner",
+      "category": "Romantic",
+      "inverseId": "romantic-political-marriage",
+      "perspectiveLabel": "Political marriage partner of",
+      "preferDirection": false
     },
     {
       "id": "romantic-spouse",
       "displayName": "Spouse",
       "category": "Romantic",
-      "inverseId": "romantic-spouse"
+      "inverseId": "romantic-spouse",
+      "perspectiveLabel": "Spouse of",
+      "preferDirection": false
     },
     {
       "id": "social-acquaintance",
       "displayName": "Acquaintance",
       "category": "Social",
-      "inverseId": "social-acquaintance"
+      "inverseId": "social-acquaintance",
+      "perspectiveLabel": "Acquaintance of",
+      "preferDirection": false
     },
     {
       "id": "social-ally",
       "displayName": "Ally",
       "category": "Social",
-      "inverseId": "social-ally"
+      "inverseId": "social-ally",
+      "perspectiveLabel": "Ally of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-archrival",
+      "displayName": "Archrival",
+      "category": "Social",
+      "inverseId": "social-archrival",
+      "perspectiveLabel": "Archrival of",
+      "preferDirection": false
     },
     {
       "id": "social-best-friend",
       "displayName": "Best friend",
       "category": "Social",
-      "inverseId": "social-best-friend"
+      "inverseId": "social-best-friend",
+      "perspectiveLabel": "Best friend of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-childhood-companion",
+      "displayName": "Childhood companion",
+      "category": "Social",
+      "inverseId": "social-childhood-companion",
+      "perspectiveLabel": "Childhood companion of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-childhood-friend",
+      "displayName": "Childhood friend",
+      "category": "Social",
+      "inverseId": "social-childhood-friend",
+      "perspectiveLabel": "Childhood friend of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-chosen-family",
+      "displayName": "Chosen family",
+      "category": "Social",
+      "inverseId": "social-chosen-family",
+      "perspectiveLabel": "Chosen family of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-close-friend",
+      "displayName": "Close friend",
+      "category": "Social",
+      "inverseId": "social-close-friend",
+      "perspectiveLabel": "Close friend of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-companion",
+      "displayName": "Companion",
+      "category": "Social",
+      "inverseId": "social-companion",
+      "perspectiveLabel": "Companion of",
+      "preferDirection": false
     },
     {
       "id": "social-confidant",
       "displayName": "Confidant",
       "category": "Social",
-      "inverseId": "social-confidant"
+      "inverseId": "social-confidant",
+      "perspectiveLabel": "Confidant of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-drinking-companion",
+      "displayName": "Drinking companion",
+      "category": "Social",
+      "inverseId": "social-drinking-companion",
+      "perspectiveLabel": "Drinking companion of",
+      "preferDirection": false
     },
     {
       "id": "social-enemy",
       "displayName": "Enemy",
       "category": "Social",
-      "inverseId": "social-enemy"
+      "inverseId": "social-enemy",
+      "perspectiveLabel": "Enemy of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-family-rival",
+      "displayName": "Family rival",
+      "category": "Social",
+      "inverseId": "social-family-rival",
+      "perspectiveLabel": "Family rival of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-fellow-pilgrim",
+      "displayName": "Fellow pilgrim",
+      "category": "Social",
+      "inverseId": "social-fellow-pilgrim",
+      "perspectiveLabel": "Fellow pilgrim of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-former-companion",
+      "displayName": "Former companion",
+      "category": "Social",
+      "inverseId": "social-former-companion",
+      "perspectiveLabel": "Former companion of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-former-enemy",
+      "displayName": "Former enemy",
+      "category": "Social",
+      "inverseId": "social-former-enemy",
+      "perspectiveLabel": "Former enemy of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-former-friend",
+      "displayName": "Former friend",
+      "category": "Social",
+      "inverseId": "social-former-friend",
+      "perspectiveLabel": "Former friend of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-frenemy",
+      "displayName": "Frenemy",
+      "category": "Social",
+      "inverseId": "social-frenemy",
+      "perspectiveLabel": "Frenemy of",
+      "preferDirection": false
     },
     {
       "id": "social-friend",
       "displayName": "Friend",
       "category": "Social",
-      "inverseId": "social-friend"
+      "inverseId": "social-friend",
+      "perspectiveLabel": "Friend of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-friendly-rival",
+      "displayName": "Friendly rival",
+      "category": "Social",
+      "inverseId": "social-friendly-rival",
+      "perspectiveLabel": "Friendly rival of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-guest",
+      "displayName": "Guest",
+      "category": "Social",
+      "inverseId": "social-host",
+      "perspectiveLabel": "Guest of",
+      "preferDirection": true
+    },
+    {
+      "id": "social-healer",
+      "displayName": "Healer",
+      "category": "Social",
+      "inverseId": "social-patient",
+      "perspectiveLabel": "Healer of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-host",
+      "displayName": "Host",
+      "category": "Social",
+      "inverseId": "social-guest",
+      "perspectiveLabel": "Host of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-lifelong-friend",
+      "displayName": "Lifelong friend",
+      "category": "Social",
+      "inverseId": "social-lifelong-friend",
+      "perspectiveLabel": "Lifelong friend of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-neighbour",
+      "displayName": "Neighbour",
+      "category": "Social",
+      "inverseId": "social-neighbour",
+      "perspectiveLabel": "Neighbour of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-oathbound-companion",
+      "displayName": "Oath-bound companion",
+      "category": "Social",
+      "inverseId": "social-oathbound-companion",
+      "perspectiveLabel": "Oath-bound companion of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-patient",
+      "displayName": "Patient",
+      "category": "Social",
+      "inverseId": "social-healer",
+      "perspectiveLabel": "Patient of",
+      "preferDirection": true
     },
     {
       "id": "social-rival",
       "displayName": "Rival",
       "category": "Social",
-      "inverseId": "social-rival"
+      "inverseId": "social-rival",
+      "perspectiveLabel": "Rival of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-sworn-sibling",
+      "displayName": "Sworn sibling",
+      "category": "Social",
+      "inverseId": "social-sworn-sibling",
+      "perspectiveLabel": "Sworn sibling of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-travelling-companion",
+      "displayName": "Travelling companion",
+      "category": "Social",
+      "inverseId": "social-travelling-companion",
+      "perspectiveLabel": "Travelling companion of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-trusted-companion",
+      "displayName": "Trusted companion",
+      "category": "Social",
+      "inverseId": "social-trusted-companion",
+      "perspectiveLabel": "Trusted companion of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-tutor",
+      "displayName": "Tutor",
+      "category": "Social",
+      "inverseId": "social-tutored-pupil",
+      "perspectiveLabel": "Tutor of",
+      "preferDirection": false
+    },
+    {
+      "id": "social-tutored-pupil",
+      "displayName": "Tutored pupil",
+      "category": "Social",
+      "inverseId": "social-tutor",
+      "perspectiveLabel": "Tutored pupil of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-advised-monarch",
+      "displayName": "Advised monarch",
+      "category": "Societal",
+      "inverseId": "societal-royal-advisor",
+      "perspectiveLabel": "Advised monarch of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-apprentice",
+      "displayName": "Apprentice",
+      "category": "Societal",
+      "inverseId": "societal-master",
+      "perspectiveLabel": "Apprentice of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-bodyguard",
+      "displayName": "Bodyguard",
+      "category": "Societal",
+      "inverseId": "societal-protected-charge",
+      "perspectiveLabel": "Bodyguard of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-captain",
+      "displayName": "Captain",
+      "category": "Societal",
+      "inverseId": "societal-soldier",
+      "perspectiveLabel": "Captain of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-clanmate",
+      "displayName": "Clanmate",
+      "category": "Societal",
+      "inverseId": "societal-clanmate",
+      "perspectiveLabel": "Clanmate of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-commander",
+      "displayName": "Commander",
+      "category": "Societal",
+      "inverseId": "societal-subordinate",
+      "perspectiveLabel": "Commander of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-commoner-contact",
+      "displayName": "Commoner contact",
+      "category": "Societal",
+      "inverseId": "societal-noble-contact",
+      "perspectiveLabel": "Commoner contact of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-comrade-in-arms",
+      "displayName": "Comrade-in-arms",
+      "category": "Societal",
+      "inverseId": "societal-comrade-in-arms",
+      "perspectiveLabel": "Comrade-in-arms of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-customer",
+      "displayName": "Customer",
+      "category": "Societal",
+      "inverseId": "societal-merchant",
+      "perspectiveLabel": "Customer of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-diplomatic-ally",
+      "displayName": "Diplomatic ally",
+      "category": "Societal",
+      "inverseId": "societal-diplomatic-ally",
+      "perspectiveLabel": "Diplomatic ally of",
+      "preferDirection": false
     },
     {
       "id": "societal-employee",
       "displayName": "Employee",
       "category": "Societal",
-      "inverseId": "societal-employer"
+      "inverseId": "societal-employer",
+      "perspectiveLabel": "Employee of",
+      "preferDirection": true
     },
     {
       "id": "societal-employer",
       "displayName": "Employer",
       "category": "Societal",
-      "inverseId": "societal-employee"
+      "inverseId": "societal-employee",
+      "perspectiveLabel": "Employer of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-fellow-courtier",
+      "displayName": "Fellow courtier",
+      "category": "Societal",
+      "inverseId": "societal-fellow-courtier",
+      "perspectiveLabel": "Fellow courtier of",
+      "preferDirection": false
     },
     {
       "id": "societal-follower",
-      "displayName": "Follower / subject",
+      "displayName": "Follower",
       "category": "Societal",
-      "inverseId": "societal-leader"
+      "inverseId": "societal-leader",
+      "perspectiveLabel": "Follower of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-foster-child",
+      "displayName": "Foster child",
+      "category": "Societal",
+      "inverseId": "societal-foster-parent",
+      "perspectiveLabel": "Foster child of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-foster-parent",
+      "displayName": "Foster parent",
+      "category": "Societal",
+      "inverseId": "societal-foster-child",
+      "perspectiveLabel": "Foster parent of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-governed-heir",
+      "displayName": "Heir under regency",
+      "category": "Societal",
+      "inverseId": "societal-heirs-regent",
+      "perspectiveLabel": "Heir under regency of",
+      "preferDirection": true
     },
     {
       "id": "societal-guardian",
       "displayName": "Guardian",
       "category": "Societal",
-      "inverseId": "societal-ward"
+      "inverseId": "societal-ward",
+      "perspectiveLabel": "Guardian of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-heirs-regent",
+      "displayName": "Heir\u0027s regent",
+      "category": "Societal",
+      "inverseId": "societal-governed-heir",
+      "perspectiveLabel": "Heir\u0027s regent of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-hired-mercenary",
+      "displayName": "Hired mercenary",
+      "category": "Societal",
+      "inverseId": "societal-mercenary-employer",
+      "perspectiveLabel": "Hired mercenary of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-household-employer",
+      "displayName": "Household employer",
+      "category": "Societal",
+      "inverseId": "societal-servant",
+      "perspectiveLabel": "Household employer of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-household-lord",
+      "displayName": "Household lord",
+      "category": "Societal",
+      "inverseId": "societal-steward",
+      "perspectiveLabel": "Household lord of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-in-law",
+      "displayName": "In-law",
+      "category": "Societal",
+      "inverseId": "societal-in-law",
+      "perspectiveLabel": "In-law of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-knightly-master",
+      "displayName": "Knightly master",
+      "category": "Societal",
+      "inverseId": "societal-squire",
+      "perspectiveLabel": "Knightly master of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-knights-liege",
+      "displayName": "Knight\u0027s liege",
+      "category": "Societal",
+      "inverseId": "societal-sworn-knight",
+      "perspectiveLabel": "Knight\u0027s liege of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-knights-patron",
+      "displayName": "Knight\u0027s patron",
+      "category": "Societal",
+      "inverseId": "societal-sponsored-knight",
+      "perspectiveLabel": "Knight\u0027s patron of",
+      "preferDirection": false
     },
     {
       "id": "societal-leader",
       "displayName": "Leader",
       "category": "Societal",
-      "inverseId": "societal-follower"
+      "inverseId": "societal-follower",
+      "perspectiveLabel": "Leader of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-liege",
+      "displayName": "Liege",
+      "category": "Societal",
+      "inverseId": "societal-vassal",
+      "perspectiveLabel": "Liege of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-master",
+      "displayName": "Master",
+      "category": "Societal",
+      "inverseId": "societal-apprentice",
+      "perspectiveLabel": "Master of",
+      "preferDirection": false
     },
     {
       "id": "societal-mentor",
       "displayName": "Mentor",
       "category": "Societal",
-      "inverseId": "societal-student"
+      "inverseId": "societal-student",
+      "perspectiveLabel": "Mentor of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-mercenary-employer",
+      "displayName": "Mercenary employer",
+      "category": "Societal",
+      "inverseId": "societal-hired-mercenary",
+      "perspectiveLabel": "Mercenary employer of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-merchant",
+      "displayName": "Merchant",
+      "category": "Societal",
+      "inverseId": "societal-customer",
+      "perspectiveLabel": "Merchant of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-merchant-buyer",
+      "displayName": "Merchant buyer",
+      "category": "Societal",
+      "inverseId": "societal-supplier",
+      "perspectiveLabel": "Merchant buyer of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-noble-contact",
+      "displayName": "Noble contact",
+      "category": "Societal",
+      "inverseId": "societal-commoner-contact",
+      "perspectiveLabel": "Noble contact of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-noble-patron",
+      "displayName": "Noble patron",
+      "category": "Societal",
+      "inverseId": "societal-retainer",
+      "perspectiveLabel": "Noble patron of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-patron",
+      "displayName": "Patron",
+      "category": "Societal",
+      "inverseId": "societal-protege",
+      "perspectiveLabel": "Patron of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-political-ally",
+      "displayName": "Political ally",
+      "category": "Societal",
+      "inverseId": "societal-political-ally",
+      "perspectiveLabel": "Political ally of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-political-rival",
+      "displayName": "Political rival",
+      "category": "Societal",
+      "inverseId": "societal-political-rival",
+      "perspectiveLabel": "Political rival of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-protected-charge",
+      "displayName": "Protected charge",
+      "category": "Societal",
+      "inverseId": "societal-bodyguard",
+      "perspectiveLabel": "Protected charge of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-protege",
+      "displayName": "Prot\u00E9g\u00E9",
+      "category": "Societal",
+      "inverseId": "societal-patron",
+      "perspectiveLabel": "Prot\u00E9g\u00E9 of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-pupil",
+      "displayName": "Pupil",
+      "category": "Societal",
+      "inverseId": "societal-teacher",
+      "perspectiveLabel": "Pupil of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-recruit",
+      "displayName": "Recruit",
+      "category": "Societal",
+      "inverseId": "societal-veteran-mentor",
+      "perspectiveLabel": "Recruit of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-regent",
+      "displayName": "Regent",
+      "category": "Societal",
+      "inverseId": "societal-represented-monarch",
+      "perspectiveLabel": "Regent of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-represented-monarch",
+      "displayName": "Represented monarch",
+      "category": "Societal",
+      "inverseId": "societal-regent",
+      "perspectiveLabel": "Represented monarch of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-retainer",
+      "displayName": "Retainer",
+      "category": "Societal",
+      "inverseId": "societal-noble-patron",
+      "perspectiveLabel": "Retainer of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-royal-advisor",
+      "displayName": "Royal advisor",
+      "category": "Societal",
+      "inverseId": "societal-advised-monarch",
+      "perspectiveLabel": "Royal advisor of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-ruler",
+      "displayName": "Ruler",
+      "category": "Societal",
+      "inverseId": "societal-subject",
+      "perspectiveLabel": "Ruler of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-servant",
+      "displayName": "Servant",
+      "category": "Societal",
+      "inverseId": "societal-household-employer",
+      "perspectiveLabel": "Servant of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-soldier",
+      "displayName": "Soldier",
+      "category": "Societal",
+      "inverseId": "societal-captain",
+      "perspectiveLabel": "Soldier of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-sponsored-knight",
+      "displayName": "Sponsored knight",
+      "category": "Societal",
+      "inverseId": "societal-knights-patron",
+      "perspectiveLabel": "Sponsored knight of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-squire",
+      "displayName": "Squire",
+      "category": "Societal",
+      "inverseId": "societal-knightly-master",
+      "perspectiveLabel": "Squire of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-stepchild",
+      "displayName": "Stepchild",
+      "category": "Societal",
+      "inverseId": "societal-stepparent",
+      "perspectiveLabel": "Stepchild of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-stepparent",
+      "displayName": "Stepparent",
+      "category": "Societal",
+      "inverseId": "societal-stepchild",
+      "perspectiveLabel": "Stepparent of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-stepsibling",
+      "displayName": "Stepsibling",
+      "category": "Societal",
+      "inverseId": "societal-stepsibling",
+      "perspectiveLabel": "Stepsibling of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-steward",
+      "displayName": "Steward",
+      "category": "Societal",
+      "inverseId": "societal-household-lord",
+      "perspectiveLabel": "Steward of",
+      "preferDirection": true
     },
     {
       "id": "societal-student",
-      "displayName": "Student",
+      "displayName": "Mentee",
       "category": "Societal",
-      "inverseId": "societal-mentor"
+      "inverseId": "societal-mentor",
+      "perspectiveLabel": "Mentee of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-subject",
+      "displayName": "Subject",
+      "category": "Societal",
+      "inverseId": "societal-ruler",
+      "perspectiveLabel": "Subject of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-subordinate",
+      "displayName": "Subordinate",
+      "category": "Societal",
+      "inverseId": "societal-commander",
+      "perspectiveLabel": "Subordinate of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-supplier",
+      "displayName": "Supplier",
+      "category": "Societal",
+      "inverseId": "societal-merchant-buyer",
+      "perspectiveLabel": "Supplier to",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-sworn-knight",
+      "displayName": "Sworn knight",
+      "category": "Societal",
+      "inverseId": "societal-knights-liege",
+      "perspectiveLabel": "Sworn knight of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-teacher",
+      "displayName": "Teacher",
+      "category": "Societal",
+      "inverseId": "societal-pupil",
+      "perspectiveLabel": "Teacher of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-treaty-partner",
+      "displayName": "Treaty partner",
+      "category": "Societal",
+      "inverseId": "societal-treaty-partner",
+      "perspectiveLabel": "Treaty partner of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-vassal",
+      "displayName": "Vassal",
+      "category": "Societal",
+      "inverseId": "societal-liege",
+      "perspectiveLabel": "Vassal of",
+      "preferDirection": true
+    },
+    {
+      "id": "societal-veteran-mentor",
+      "displayName": "Veteran mentor",
+      "category": "Societal",
+      "inverseId": "societal-recruit",
+      "perspectiveLabel": "Veteran mentor of",
+      "preferDirection": false
     },
     {
       "id": "societal-ward",
       "displayName": "Ward",
       "category": "Societal",
-      "inverseId": "societal-guardian"
+      "inverseId": "societal-guardian",
+      "perspectiveLabel": "Ward of",
+      "preferDirection": true
     }
   ],
   "relationships": [
-    {
-      "sourceCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
-      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
-      "typeId": "social-best-friend",
-      "displayName": "Best friend",
-      "category": "Social",
-      "isInferred": false,
-      "explanation": null
-    },
     {
       "sourceCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
       "targetCharacterId": "197772ed-5b84-4a9e-9e02-3db9e5f60363",
@@ -704,15 +1529,6 @@
       "typeId": "biological-parent",
       "displayName": "Biological parent",
       "category": "Biological",
-      "isInferred": false,
-      "explanation": null
-    },
-    {
-      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
-      "targetCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
-      "typeId": "social-best-friend",
-      "displayName": "Best friend",
-      "category": "Social",
       "isInferred": false,
       "explanation": null
     },
