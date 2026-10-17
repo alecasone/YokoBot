@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-17T21:52:12.5301651+00:00",
+  "generatedAt": "2026-10-17T23:03:20.6899899+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -1489,6 +1489,15 @@
   "relationships": [
     {
       "sourceCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
+      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "typeId": "social-childhood-friend",
+      "displayName": "Childhood friend",
+      "category": "Social",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
       "targetCharacterId": "197772ed-5b84-4a9e-9e02-3db9e5f60363",
       "typeId": "biological-sibling",
       "displayName": "Biological sibling",
@@ -1529,6 +1538,15 @@
       "typeId": "biological-parent",
       "displayName": "Biological parent",
       "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "targetCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
+      "typeId": "social-childhood-friend",
+      "displayName": "Childhood friend",
+      "category": "Social",
       "isInferred": false,
       "explanation": null
     },
