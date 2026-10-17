@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-17T23:18:47.782151+00:00",
+  "generatedAt": "2026-10-17T23:53:22.0299051+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -401,6 +401,30 @@
         "eyecolor": "Blue",
         "hair-colour": "Ginger",
         "quote": "\u201CEnjoy the fruit. I shall reap for you.\u201D"
+      }
+    },
+    {
+      "publicId": "62999042-4409-45d6-babd-b5ab4d2716e6",
+      "name": "Rediviva Bhuyan",
+      "owner": {
+        "displayName": "sumsun30",
+        "discordId": "1362922758870138932"
+      },
+      "aliases": [],
+      "age": "38",
+      "gender": "Female",
+      "region": "Obelia",
+      "occupation": "Solifer of Helios",
+      "approvedAt": "2026-10-17T23:52:21.1598933+00:00",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1-g1Vx4o-Z9hEp7ineRuVJ14JHMxK81A4sWrElYQ7P5k/edit?usp=drivesdk"
+      },
+      "properties": {
+        "eyecolor": "Brown",
+        "hair-colour": "Brown",
+        "quote": "\u201CBelieve in what you see.\u201D"
       }
     },
     {
