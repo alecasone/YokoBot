@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-17T23:12:11.899237+00:00",
+  "generatedAt": "2026-10-17T23:13:21.3348446+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -1570,6 +1570,15 @@
     },
     {
       "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "targetCharacterId": "88ab168e-0d3c-4925-b892-b09bb6d9226b",
+      "typeId": "societal-in-law",
+      "displayName": "In-law",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
       "targetCharacterId": "a01914e1-35f9-4d1e-9d44-5c67e248a201",
       "typeId": "social-friend",
       "displayName": "Friend",
@@ -1709,6 +1718,15 @@
       "typeId": "social-chosen-family",
       "displayName": "Chosen family",
       "category": "Social",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "88ab168e-0d3c-4925-b892-b09bb6d9226b",
+      "targetCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
+      "typeId": "societal-in-law",
+      "displayName": "In-law",
+      "category": "Societal",
       "isInferred": false,
       "explanation": null
     },
