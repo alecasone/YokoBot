@@ -101,7 +101,16 @@ async function initialize() {
     ? payload.characters.filter(isCharacter).sort((left, right) => left.name.localeCompare(right.name))
     : [];
   state.charactersById = new Map(state.characters.map(character => [character.publicId, character]));
-  state.relationshipTypes = Array.isArray(payload.relationshipTypes) ? payload.relationshipTypes : [];
+  // Ship catalog changes with the site without replacing the bot's live character data.
+  // Snapshot-only types remain available when a newer bot publishes additional types.
+  let siteTypes = [];
+  try {
+    const catalogResponse = await fetch("./relationship-catalog.json", { cache: "no-store" });
+    if (catalogResponse.ok) siteTypes = await catalogResponse.json();
+  } catch (error) {
+    console.warn("Using the published relationship catalog.", error);
+  }
+  state.relationshipTypes = mergeRelationshipTypes(payload.relationshipTypes, siteTypes);
   state.relationships = Array.isArray(payload.relationships)
     ? payload.relationships.filter(isRelationship).map(normalizeRelationship)
     : [];
@@ -730,7 +739,7 @@ function renderGraph() {
         class: "map-edge-label",
         "text-anchor": "middle"
       });
-      const text = parentChild || !direction ? relationshipLabel(pair, state.selectedId) : relationshipText(direction);
+      const text = relationshipLabel(pair, !parentChild && direction ? direction.sourceCharacterId : state.selectedId);
       const lines = text.split("\n");
       label.setAttribute("aria-label", lines.join(" "));
       lines.forEach((text, index) => {
@@ -1392,6 +1401,8 @@ function mostConnectedCharacter() {
 
 // A record describes its source character's role relative to its target.
 function relationshipText(record) {
+  const type = state.relationshipTypes.find(type => type.id === record.typeId);
+  if (type?.perspectiveLabel) return type.perspectiveLabel;
   const label = record.displayName.replace(/^Biological /i, "").replace(/^./, letter => letter.toUpperCase());
   if (record.category === "Biological" || record.category === "Adoptive")
     return `${label} of`;
@@ -1401,7 +1412,7 @@ function relationshipText(record) {
     "societal-leader": "Leader of", "societal-follower": "Follower of",
     "societal-employer": "Employer of", "societal-employee": "Employee of"
   };
-  return labels[record.typeId] ?? label;
+  return labels[record.typeId] ?? (type?.inverseId && type.inverseId !== type.id ? `${label} of` : label);
 }
 
 function relationshipDirection(pair) {
@@ -1416,9 +1427,14 @@ function relationshipDirection(pair) {
     "biological-ancestor", "biological-pibling", "adoptive-parent",
     "societal-mentor", "societal-guardian", "societal-leader", "societal-employer"
   ]);
-  const records = pair.records.filter(record => directional.has(record.typeId))
+  const types = new Map(state.relationshipTypes.map(type => [type.id, type]));
+  const isPreferred = record => types.get(record.typeId)?.preferDirection ?? preferred.has(record.typeId);
+  const records = pair.records.filter(record => {
+    const type = types.get(record.typeId);
+    return type?.inverseId ? type.inverseId !== type.id : directional.has(record.typeId);
+  })
     .sort((left, right) => Number(left.isInferred) - Number(right.isInferred) ||
-      Number(preferred.has(right.typeId)) - Number(preferred.has(left.typeId)) ||
+      Number(isPreferred(right)) - Number(isPreferred(left)) ||
       left.typeId.localeCompare(right.typeId) || left.sourceCharacterId.localeCompare(right.sourceCharacterId));
   return records[0] ?? null;
 }
@@ -1450,14 +1466,23 @@ function uniqueRelationship(value, index, array) {
     candidate.typeId === value.typeId) === index;
 }
 
+function mergeRelationshipTypes(published, shipped) {
+  const valid = value => value && typeof value.id === "string" && typeof value.displayName === "string" &&
+    typeof value.category === "string";
+  const types = new Map((Array.isArray(published) ? published : []).filter(valid).map(type => [type.id, type]));
+  for (const type of (Array.isArray(shipped) ? shipped : []).filter(valid))
+    types.set(type.id, { ...types.get(type.id), ...type });
+  return [...types.values()];
+}
+
 function normalizeRelationship(value) {
   const type = state.relationshipTypes.find(candidate => candidate.id === value.typeId);
   return {
     sourceCharacterId: value.sourceCharacterId,
     targetCharacterId: value.targetCharacterId,
     typeId: value.typeId,
-    displayName: value.displayName || type?.displayName || humanize(value.typeId),
-    category: value.category || type?.category || "Other",
+    displayName: type?.displayName || value.displayName || humanize(value.typeId),
+    category: type?.category || value.category || "Other",
     isInferred: Boolean(value.isInferred),
     explanation: value.explanation || null
   };
