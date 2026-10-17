@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Discord;
+using Yoko.Bot.Commands;
 using Yoko.Bot.Models;
 using Yoko.Bot.Services;
 
@@ -9,6 +11,33 @@ internal static class RelationshipChecks
     internal static async Task RunAsync(string directory, Action<bool, string> check)
     {
         var catalog = RelationshipCatalog.Definitions;
+        var command = (SlashCommandProperties)RelationshipCommands.Build();
+        var requestOptions = command.Options.Value.Single(option => option.Name == "request").Options;
+        check(requestOptions.First().Name == "category" && requestOptions.First().IsRequired == true,
+            "Relationship requests must prompt for a required category first.");
+        check(requestOptions.Last().Name == "relation" && requestOptions.Last().IsRequired == true,
+            "Relationship selection must follow the required category.");
+        check(command.Options.Value.Single(option => option.Name == "view").Options
+            .Single(option => option.Name == "category").IsRequired != true, "Viewing all categories should remain available.");
+        check(!RelationshipCatalog.RequestChoices(null, "").Any() && !RelationshipCatalog.RequestChoices("", "friend").Any(),
+            "Autocomplete exposed relationships before category selection.");
+        check(!RelationshipCatalog.RequestChoices("unknown", "").Any(), "An unknown category exposed relationships.");
+        foreach (var category in catalog.Select(type => type.Category).Distinct())
+        {
+            var choices = RelationshipCatalog.RequestChoices(category, "").ToArray();
+            check(choices.Length > 0 && choices.All(type => type.Category == category && type.Requestable),
+                $"Autocomplete leaked another category or an inferred-only type into {category}.");
+            foreach (var type in choices)
+                check(RelationshipCatalog.ResolveRequest(category, type.Id)?.Id == type.Id, $"Valid category selection rejected: {type.Id}.");
+        }
+        check(RelationshipCatalog.ResolveRequest(null, "friend") is null &&
+              RelationshipCatalog.ResolveRequest("Romantic", "friend") is null,
+            "Missing or changed category bypassed request validation.");
+        check(RelationshipCatalog.ResolveRequest("Biological", "ancestor") is null, "An inferred-only type was requestable.");
+        check(RelationshipCatalog.ResolveRequest("Romantic", "married")?.Id == "romantic-spouse", "A valid category alias was rejected.");
+        check(RelationshipCatalog.RequestChoices("Social", "friend").First().Id == "social-friend", "Exact match lost autocomplete priority.");
+        check(RelationshipCatalog.RequestChoices("Biological", "", new HashSet<string> { "biological-cousin" }).First().Id == "biological-cousin",
+            "Inferred family suggestions lost autocomplete priority.");
         var terms = new Dictionary<string, string>();
         foreach (var type in catalog)
         {

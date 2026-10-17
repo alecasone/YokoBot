@@ -237,11 +237,18 @@ function setCategory(category) {
 }
 
 function populateTypes() {
+  elements.type.disabled = !state.category;
+  if (!state.category) {
+    state.typeId = "";
+    elements.type.replaceChildren(new Option("Choose a category first", ""));
+    elements.type.value = "";
+    return;
+  }
   const all = new Map([...state.relationshipTypes, ...state.relationships.map(edge => ({
     id: edge.typeId, displayName: edge.displayName, category: edge.category
   }))].map(type => [type.id, type]));
   elements.type.replaceChildren(new Option("Every status", ""));
-  for (const type of [...all.values()].filter(type => !state.category || state.category === type.category)
+  for (const type of [...all.values()].filter(type => state.category === type.category)
     .sort((a, b) => a.displayName.localeCompare(b.displayName)))
     elements.type.append(new Option(type.displayName, type.id));
   elements.type.value = state.typeId;
@@ -1383,7 +1390,7 @@ function populateCategories() {
   for (const category of categories) {
     const option = document.createElement("option");
     option.value = category;
-    option.textContent = category;
+    option.textContent = category === "Societal" ? "Roles & loyalties" : category;
     elements.category.append(option);
   }
 }

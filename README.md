@@ -194,7 +194,7 @@ The consent-based catalog also includes:
 
 The chosen label describes **your character's role toward their character**. Requesting `mentor` makes your character the mentor and theirs the student after consent. Symmetric relationships such as spouse appear for both characters. These are explicit approved ties, not inferred social assumptions: a friend's friend is not automatically your friend, spouses are not biological relatives, and adoptive ties do not generate blood relationships. Multiple ties can coexist; remove an outdated status with `/relationship remove` when a relationship changes. There is no automatic succession or status-replacement rule yet.
 
-- `/relationship request my-character user their-character relation [category]` posts a request in the current channel. Type a relation such as `friend`, `married`, `dating`, or `rival`; the optional category narrows autocomplete. The receiving owner replies directly to that bot message with `Accept` or `Decline`. Named replies also use the server's scene `reply-name` setting.
+- `/relationship request category my-character user their-character relation` posts a request in the current channel. Choose the required category first, then select a relationship from that category's autocomplete list. No relationships are suggested before a category is selected. Changing the category requires selecting a matching relationship again; submission rejects a relationship from a different category. The receiving owner replies directly to that bot message with `Accept` or `Decline`. Named replies also use the server's scene `reply-name` setting.
 - `/relationship requests` privately lists incoming and outgoing requests.
 - `/relationship approve request` and `/relationship decline request` are command alternatives to replying.
 - `/relationship remove character relationship` removes an approved direct fact involving one of your characters.
@@ -209,6 +209,8 @@ Category tabs separate **All ties, Bloodlines, Adoptive family, Social, Romance,
 The local server includes an eight-character **Vale family graph** split between the two requested accounts. Only eight direct facts are seeded, while sibling, grandparent, great-grandparent, pibling/nibling, cousin, ancestor, and descendant results must be inferred. They are ordinary approved characters: they consume sequential OC-role slots and appear in sanitized GitHub Pages exports with the same owner-attribution and ID-privacy rules as other characters. Internal account mappings remain in ignored local JSON.
 
 ### Expanded medieval relationships
+
+The website also uses category-first selection: the relationship-status picker stays disabled with **Choose a category first** until a category tab or dropdown is selected. **All ties** still shows the complete graph, while choosing a specific status requires a category and includes that status's inverse.
 
 The catalog now includes the core and A-tier character relationships from the medieval expansion: **132 selectable/inferred perspectives**, including inverses. Existing IDs and approved records remain valid. `societal-student` now displays **Mentee**, and `romantic-engaged` displays **Betrothed**. Search still accepts student, fiancé/fiancée, engaged, husband, and wife. Teacher/pupil and master/apprentice are separate from mentor/mentee; ruler/subject, liege/vassal, and commander/subordinate are separate from the original generic leader/follower. Exact typed terms rank ahead of partial autocomplete matches; accents, spaces, and hyphens do not prevent matching.
 

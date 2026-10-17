@@ -15,11 +15,11 @@ internal static class RelationshipCommands
             .WithName("request")
             .WithDescription("Requests a relationship between your character and another character.")
             .WithType(ApplicationCommandOptionType.SubCommand)
+            .AddOption(CategoryOption(required: true))
             .AddOption(CharacterOption("my-character", "Your character"))
             .AddOption("user", ApplicationCommandOptionType.User, "Owner of the other character", isRequired: true)
             .AddOption(CharacterOption("their-character", "Their character"))
-            .AddOption(AutocompleteOption("relation", "Search friend, spouse, rival, mentor, parent… from your character's perspective"))
-            .AddOption(CategoryOption());
+            .AddOption(AutocompleteOption("relation", "Choose a relationship within your selected category, from your character's perspective"));
 
         var requests = new SlashCommandOptionBuilder()
             .WithName("requests")
@@ -262,10 +262,11 @@ internal static class RelationshipCommands
         var targetUser = (IUser)Option(subcommand.Options, "user").Value;
         var targetName = (string)Option(subcommand.Options, "their-character").Value;
         var requestedType = (string)Option(subcommand.Options, "relation").Value;
-        var definition = RelationshipCatalog.Resolve(requestedType);
-        if (definition is not { Requestable: true })
+        var category = subcommand.Options.FirstOrDefault(option => option.Name == "category")?.Value?.ToString();
+        var definition = RelationshipCatalog.ResolveRequest(category, requestedType);
+        if (definition is null)
         {
-            await command.RespondAsync("Choose a relationship from autocomplete. Search a name or category, such as friend, married, rival, social, or biological.", ephemeral: true);
+            await command.RespondAsync("Choose a category first, then choose a relationship from that category's autocomplete list. If you change the category, select the relationship again.", ephemeral: true);
             return;
         }
         if (targetUser.IsBot)
@@ -492,6 +493,11 @@ internal static class RelationshipCommands
         var targetName = options.FirstOrDefault(option => option.Name == "their-character")?.Value?.ToString();
         var targetUserId = ReadUserId(options);
         var category = options.FirstOrDefault(option => option.Name == "category")?.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            await interaction.RespondAsync([]);
+            return;
+        }
         Character? source = null;
         Character? target = null;
         if (!string.IsNullOrWhiteSpace(sourceName))
@@ -508,12 +514,7 @@ internal static class RelationshipCommands
                 .Select(edge => edge.TypeId)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var exactTypeId = RelationshipCatalog.Resolve(typed)?.Id;
-        var choices = RelationshipCatalog.Definitions
-            .Where(definition => definition.Requestable && (category is null || definition.Category == category) && RelationshipCatalog.MatchesSearch(definition, typed))
-            .OrderByDescending(definition => definition.Id == exactTypeId)
-            .ThenByDescending(definition => suggested.Contains(definition.Id))
-            .ThenBy(definition => definition.DisplayName, StringComparer.OrdinalIgnoreCase)
+        var choices = RelationshipCatalog.RequestChoices(category, typed, suggested)
             .Take(25)
             .Select(definition => new AutocompleteResult(
                 TrimChoice($"[{definition.Category}] {definition.DisplayName}" + (suggested.Contains(definition.Id) ? " — inferred from family graph" : string.Empty)),
@@ -630,11 +631,12 @@ internal static class RelationshipCommands
         AutocompleteOption(name, $"{description} ({CharacterSchema.NameMaxLength} characters maximum)")
             .WithMaxLength(CharacterSchema.NameMaxLength);
 
-    private static SlashCommandOptionBuilder CategoryOption() => new SlashCommandOptionBuilder()
-        .WithName("category").WithDescription("Filter by biological, adoptive, social, romantic, or societal ties")
+    private static SlashCommandOptionBuilder CategoryOption(bool required = false) => new SlashCommandOptionBuilder()
+        .WithName("category").WithDescription("Choose a category to narrow the relationship list")
         .WithType(ApplicationCommandOptionType.String)
+        .WithRequired(required)
         .AddChoice("Biological", "Biological").AddChoice("Adoptive", "Adoptive").AddChoice("Social", "Social")
-        .AddChoice("Romantic", "Romantic").AddChoice("Societal", "Societal");
+        .AddChoice("Romantic", "Romantic").AddChoice("Roles & loyalties", "Societal");
 
     private static SlashCommandOptionBuilder AutocompleteOption(string name, string description) =>
         new SlashCommandOptionBuilder()

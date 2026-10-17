@@ -209,6 +209,23 @@ internal static class RelationshipCatalog
             .Concat(definition.Aliases).Any(value => Normalize(value).Contains(normalized, StringComparison.Ordinal));
     }
 
+    public static RelationshipDefinition? ResolveRequest(string? category, string value)
+    {
+        var definition = Resolve(value);
+        return definition is { Requestable: true } && definition.Category == category ? definition : null;
+    }
+
+    public static IEnumerable<RelationshipDefinition> RequestChoices(
+        string? category, string typed, IReadOnlySet<string>? suggested = null)
+    {
+        var exactTypeId = ResolveRequest(category, typed)?.Id;
+        return Definitions
+            .Where(definition => definition.Requestable && definition.Category == category && MatchesSearch(definition, typed))
+            .OrderByDescending(definition => definition.Id == exactTypeId)
+            .ThenByDescending(definition => suggested?.Contains(definition.Id) == true)
+            .ThenBy(definition => definition.DisplayName, StringComparer.OrdinalIgnoreCase);
+    }
+
     // These metadata are also shipped as a static site asset, so a newer website can
     // read older published snapshots without losing the expanded labels or arrows.
     public static IReadOnlyList<PublicRelationshipTypeRecord> PublicTypes() => Definitions

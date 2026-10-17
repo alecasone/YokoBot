@@ -12,13 +12,15 @@ class Element {
   addEventListener() {}
 }
 const elements = new Map();
-const context = { document: {
+const context = { Option: class extends Element {
+  constructor(text, value) { super(); this.textContent = text; this.value = value; }
+}, document: {
   querySelector: selector => { if (!elements.has(selector)) elements.set(selector, new Element()); return elements.get(selector); },
   querySelectorAll: () => [], createElement: () => new Element(), createElementNS: () => new Element()
 } };
 let source = await readFile(new URL("../docs/relationships.js", import.meta.url), "utf8");
 source = source.replace(/initialize\(\)\.catch\(error => \{[\s\S]*?\n\}\);/, "");
-runInNewContext(source + "\nthis.atlas = { state, buildPairs, buildTreePairs, relationshipDirection, relationshipText, createConnectionItem, renderGraph, mergeRelationshipTypes, normalizeRelationship, visibleRelationships, layoutSocialCircles };", context);
+runInNewContext(source + "\nthis.atlas = { state, buildPairs, buildTreePairs, relationshipDirection, relationshipText, createConnectionItem, renderGraph, mergeRelationshipTypes, normalizeRelationship, visibleRelationships, layoutSocialCircles, populateTypes };", context);
 const { atlas } = context;
 const parent = { sourceCharacterId: "godfrey", targetCharacterId: "maribelle", typeId: "biological-parent", displayName: "Biological parent", category: "Biological", isInferred: false };
 const child = { ...parent, sourceCharacterId: "maribelle", targetCharacterId: "godfrey", typeId: "biological-child", displayName: "Biological child" };
@@ -128,3 +130,26 @@ atlas.layoutSocialCircles(atlas.state.graphPairs);
 assert.equal(atlas.state.positions.size, 2);
 assert.equal(atlas.state.socialRings.length, 1);
 console.log(`Expanded catalog: ${catalog.length} labels/filters, ${directed} directional perspectives, coexistence, family exclusions, and social circles passed.`);
+
+// Category selection gates the status picker instead of presenting the entire catalog.
+atlas.state.category = "";
+atlas.state.typeId = "romantic-spouse";
+atlas.populateTypes();
+const picker = elements.get("#type-filter");
+assert.equal(picker.disabled, true);
+assert.equal(picker.children.length, 1);
+assert.equal(picker.children[0].textContent, "Choose a category first");
+assert.equal(atlas.state.typeId, "");
+for (const category of new Set(catalog.map(type => type.category))) {
+  atlas.state.category = category;
+  atlas.populateTypes();
+  assert.equal(picker.disabled, false);
+  const options = picker.children.slice(1);
+  assert.equal(options.length, atlas.state.relationshipTypes.filter(type => type.category === category).length);
+  assert.ok(options.every(option => atlas.state.relationshipTypes.find(type => type.id === option.value)?.category === category));
+}
+atlas.state.category = "";
+atlas.populateTypes();
+assert.equal(picker.disabled, true);
+assert.equal(picker.children.length, 1);
+console.log("Category-first picker, category isolation, and returning to All ties passed.");
