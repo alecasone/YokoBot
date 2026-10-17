@@ -39,7 +39,11 @@ internal sealed class ScheduledMessageGuildSettings
 {
     public List<AutoMessageSchedule> AutoMessages { get; set; } = [];
     public List<ReminderSchedule> Reminders { get; set; } = [];
+    public string? SelectedReminderId { get; set; }
+    public bool ReminderSelectionInitialized { get; set; }
 }
+
+internal sealed record ReminderActivation(ReminderSchedule? Reminder, bool AlreadyPending = false);
 
 internal sealed record ScheduledDelivery(
     ulong GuildId,

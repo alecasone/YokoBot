@@ -100,16 +100,69 @@ internal sealed class ScheduledMessageStore
             return (true, true);
         });
 
+    // Setup and edits save an idle template and select it for the field-free /remind command.
+    // Applying partial edits and changing the selection share the same transaction.
+    public Task<ReminderSchedule?> ConfigureReminderAsync(
+        ulong guildId, string name, TimeSpan? delay, ScheduledDestination? destination, string? message) =>
+        MutateAsync<ReminderSchedule?>(data =>
+        {
+            var guild = GetGuild(data, guildId);
+            var existing = FindByName(guild.Reminders, name);
+            if (existing is null && (delay is null || destination is null || message is null)) return (null, false);
+            var copy = existing is null ? new ReminderSchedule { Name = name } : Clone(existing);
+            if (delay is { } duration) copy.Delay = duration;
+            if (destination is not null) copy.Destination = Clone(destination);
+            if (message is not null) copy.Message = message;
+            Validate(copy);
+            copy.NextDueAt = null;
+            copy.LastError = null;
+            if (existing is null) guild.Reminders.Add(copy);
+            else guild.Reminders[guild.Reminders.IndexOf(existing)] = copy;
+            guild.SelectedReminderId = copy.Id;
+            guild.ReminderSelectionInitialized = true;
+            return (Clone(copy), true);
+        });
+
+    public Task<ReminderSchedule?> GetSelectedReminderAsync(ulong guildId) =>
+        ReadAsync(data => data.TryGetValue(guildId.ToString(), out var guild) &&
+                          guild.Reminders.FirstOrDefault(item => item.Id == guild.SelectedReminderId) is { } reminder
+            ? Clone(reminder) : null);
+
+    public Task<bool> SelectReminderAsync(ulong guildId, string name) =>
+        MutateAsync(data =>
+        {
+            if (!data.TryGetValue(guildId.ToString(), out var guild) || FindByName(guild.Reminders, name) is not { } reminder)
+                return (false, false);
+            guild.SelectedReminderId = reminder.Id;
+            guild.ReminderSelectionInitialized = true;
+            return (true, true);
+        });
+
+    public Task<ReminderActivation> ActivateSelectedReminderAsync(ulong guildId, DateTimeOffset now) =>
+        MutateAsync(data =>
+        {
+            if (!data.TryGetValue(guildId.ToString(), out var guild) ||
+                guild.Reminders.FirstOrDefault(item => item.Id == guild.SelectedReminderId) is not { } reminder)
+                return (new ReminderActivation(null), false);
+            Validate(reminder);
+            if (reminder.NextDueAt.HasValue) return (new ReminderActivation(Clone(reminder), true), false);
+            reminder.NextDueAt = now.Add(reminder.Delay);
+            reminder.LastError = null;
+            return (new ReminderActivation(Clone(reminder)), true);
+        });
+
     public Task<bool> DeleteReminderAsync(ulong guildId, string name) =>
         MutateAsync(data =>
         {
-            var removed = data.TryGetValue(guildId.ToString(), out var guild) &&
-                          guild.Reminders.RemoveAll(schedule => SameName(schedule.Name, name)) > 0;
-            return (removed, removed);
+            if (!data.TryGetValue(guildId.ToString(), out var guild) || FindByName(guild.Reminders, name) is not { } reminder)
+                return (false, false);
+            guild.Reminders.Remove(reminder);
+            if (guild.SelectedReminderId == reminder.Id) guild.SelectedReminderId = null;
+            return (true, true);
         });
 
     // Claims are committed before delivery. An uncertain network failure must not cause
-    // an automatic duplicate send; reminders can be explicitly armed again by name.
+    // an automatic duplicate send; the selected reminder can be explicitly armed by /remind.
     public Task<IReadOnlyList<ScheduledDelivery>> ClaimDueAsync(
         DateTimeOffset now, Random? random = null, int maximumCount = int.MaxValue) =>
         MutateAsync<IReadOnlyList<ScheduledDelivery>>(data =>
@@ -262,6 +315,12 @@ internal sealed class ScheduledMessageStore
             if (data[key] is not { } guild) { data.Remove(key); continue; }
             guild.AutoMessages = (guild.AutoMessages ?? []).OfType<AutoMessageSchedule>().ToList();
             guild.Reminders = (guild.Reminders ?? []).OfType<ReminderSchedule>().ToList();
+            if (!guild.ReminderSelectionInitialized)
+            {
+                // A sole legacy reminder is unambiguous. Never guess among multiple templates.
+                guild.SelectedReminderId = guild.Reminders.Count == 1 ? guild.Reminders[0].Id : null;
+                guild.ReminderSelectionInitialized = true;
+            }
             foreach (var schedule in guild.AutoMessages)
             {
                 schedule.Messages ??= [];
@@ -284,7 +343,7 @@ internal sealed class ScheduledMessageStore
     {
         if (guildId == 0) throw new ArgumentException("A schedule must belong to a server.");
         if (!data.TryGetValue(guildId.ToString(), out var guild))
-            data[guildId.ToString()] = guild = new ScheduledMessageGuildSettings();
+            data[guildId.ToString()] = guild = new ScheduledMessageGuildSettings { ReminderSelectionInitialized = true };
         return guild;
     }
 

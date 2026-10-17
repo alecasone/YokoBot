@@ -132,7 +132,7 @@ internal static class Program
              AutoModerationCommands.Build(), VerificationCommands.VerifyCommand(), VerificationCommands.AdminCommand(),
              DebugCommands.Build(), OverworldCommands.Build(), SceneTrackerCommands.Build(), PermissionCommands.Build(),
              SiteAdminCommands.Build(), RelationshipCommands.Build(), MemberAlertCommands.Build(),
-             AutoMessageCommands.Build(), ReminderCommands.Build()];
+             AutoMessageCommands.Build(), ReminderCommands.Build(), ReminderCommands.BuildRemind()];
 
         var testGuildIdText = Environment.GetEnvironmentVariable("DISCORD_TEST_GUILD_ID");
         if (ulong.TryParse(testGuildIdText, out var testGuildId))
@@ -203,6 +203,9 @@ internal static class Program
                 break;
             case "reminder":
                 await ReminderCommands.HandleAsync(command, ScheduledMessages, Permissions);
+                break;
+            case "remind":
+                await ReminderCommands.HandleRemindAsync(command, ScheduledMessages, Permissions);
                 break;
             default:
                 await command.RespondAsync("I don't know that command yet.", ephemeral: true);
@@ -291,9 +294,10 @@ internal static class Program
 
     private static async Task<bool> AuthorizeCommandAsync(SocketSlashCommand command)
     {
+        var ephemeral = command.Data.Name is "reminder" or "remind" ? ReminderCommands.EphemeralResponses : true;
         if (command.GuildId is not { } guildId)
         {
-            await command.RespondAsync("Yoko's commands can only be used in a server.", ephemeral: true);
+            await command.RespondAsync("Yoko's commands can only be used in a server.", ephemeral: ephemeral);
             return false;
         }
 
@@ -303,7 +307,7 @@ internal static class Program
         var requirement = required.Count == 0
             ? "No permission is configured for this command path."
             : $"Required: {string.Join(" or ", required.Select(permission => $"`{permission}`"))}.";
-        await command.RespondAsync($"You do not have permission to use this command. {requirement}", ephemeral: true);
+        await command.RespondAsync($"You do not have permission to use this command. {requirement}", ephemeral: ephemeral);
         return false;
     }
 

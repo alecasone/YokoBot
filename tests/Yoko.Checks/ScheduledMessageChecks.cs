@@ -10,11 +10,13 @@ internal static class ScheduledMessageChecks
     {
         check(AutoMessageCommands.Build() is not null, "Automessage slash command failed Discord validation.");
         var reminderCommand = (SlashCommandProperties)ReminderCommands.Build();
-        check(reminderCommand.Options.Value.All(option => option.Type != ApplicationCommandOptionType.SubCommand),
-            "Reminder must support a name-only activation without a subcommand.");
+        var remindCommand = (SlashCommandProperties)ReminderCommands.BuildRemind();
+        check(remindCommand.Name.Value == "remind" && (!remindCommand.Options.IsSpecified || !remindCommand.Options.Value.Any()),
+            "/remind must have no fields, including optional fields.");
         check(reminderCommand.Options.Value.Single(option => option.Name == "name").IsRequired == true &&
-              reminderCommand.Options.Value.Where(option => option.Name != "name").All(option => option.IsRequired != true),
-            "Reminder activation requires configuration again.");
+              reminderCommand.Options.Value.Single(option => option.Name == "action").Choices.All(choice => choice.Name != "activate"),
+            "/reminder must manage templates without activating them.");
+        check(!ReminderCommands.EphemeralResponses, "Reminder responses must be public, including authorization errors.");
 
         check(ScheduleRules.TryParseTimespan("1h30m", out var duration) && duration == TimeSpan.FromMinutes(90),
             "Combined schedule timespan was parsed incorrectly.");
@@ -122,6 +124,8 @@ internal static class ScheduledMessageChecks
             "Delivery failure was not recorded or left a reminder armed.");
         await failureScheduler.ProcessDueAsync(now.AddDays(6));
         check(deliveries.Count == 2, "Failed reminder was automatically retried.");
+
+        await ReminderCommandChecks.RunAsync(directory, now, check);
 
         // A slow Discord send must not preclaim unrelated schedules and defeat cancellation.
         var raceStore = new ScheduledMessageStore(Path.Combine(directory, "schedule-dispatch-races.json"));

@@ -47,8 +47,8 @@ Discord only controls visibility at the top-level slash-command name, not separa
 | `alerts.configure.leave` | `/alertadmin leave add`, `/alertadmin leave edit`, and `/alertadmin leave delete` |
 | `alerts.configure.new-account` | `/alertadmin newaccount set` and `/alertadmin newaccount delete` |
 | `automessage.manage` | Every `/automessage` command, including the interactive message editor |
-| `reminder.manage` | Create, cancel, or delete reusable reminders; also activate and view them |
-| `reminder.activate` | `/reminder name:<name>` and `action:view` for an existing reminder |
+| `reminder.manage` | `/reminder`: set up, edit, select, view, cancel, or delete saved reminders; also permits `/remind` |
+| `reminder.activate` | `/remind`: start the server's selected reminder with no fields |
 | `debug.recheck-verified` | `/debug recheck-verified` |
 | `overworld.worlddate` | `/overworld worlddate` |
 | `scenetracker.create` | `/scenetracker create` |
@@ -340,19 +340,29 @@ Modes are `pseudorandom` (a shuffled cycle through every message, avoiding conse
 
 ### Bump reminders
 
-Create and start the first countdown by supplying all settings:
+Step 1 — a manager saves the reminder's settings:
 
 ```text
 /reminder name:bump timespan:2h destination:#bump message:Time to bump the server!
 ```
 
-The reminder sends once and becomes idle. Whenever someone bumps the server, they can start another countdown using only its saved name:
+Setup selects this reminder for the server's `/remind` command and leaves it idle. It does not start a countdown.
+
+Step 2 — whenever someone bumps the server, they start the saved countdown with no fields at all:
 
 ```text
-/reminder name:bump
+/remind
 ```
 
-Activating a pending reminder reports its existing due time without resetting or stacking countdowns. The command does not detect bumps automatically. Use `/reminder name:bump action:view` to inspect settings and delivery errors, `action:cancel` to stop the pending countdown while keeping its settings, or `action:delete` to remove it. To replace the settings, delete the reminder and create it again. Creation requires all three configuration options together; a name-only invocation never creates a blank reminder.
+The reminder sends the saved message to the saved destination once, then becomes idle until `/remind` is used again. Activating a pending reminder reports its existing due time without resetting or stacking countdowns, including simultaneous uses by different members. The command does not detect bumps automatically.
+
+`/reminder` is for management only. Its `name` is a manager-facing template name; users never need it when running `/remind`. Supplying settings saves them (equivalent to `action:setup`). A new reminder requires `timespan`, `destination`, and `message`; an existing reminder accepts partial edits, such as `/reminder name:bump timespan:3h`. Saving settings selects that reminder and cancels its old pending countdown so the next `/remind` starts from the updated settings. Omitted settings are preserved.
+
+Use `/reminder name:bump` or `action:view` to inspect settings and delivery errors, `action:cancel` to stop a pending countdown while keeping its settings, or `action:delete` to remove it. If several templates are saved, `/reminder name:bump action:use` chooses which one `/remind` runs without starting it. Choosing another template does not cancel previously scheduled sends; cancel those explicitly if needed. Deleting the selected template disables `/remind` until a manager saves or selects another one.
+
+Existing installations with exactly one saved reminder automatically use it for `/remind`, preserving any pending countdown. Servers with several legacy reminders require a manager to select one with `action:use`. Selection is per server and persists across restarts. With nothing configured, `/remind` explains that a manager must finish setup; it never creates a blank reminder.
+
+Every `/reminder` and `/remind` response is public in the invoking channel, including setup, view, validation, permission, and countdown responses. None is ephemeral. Scheduled delivery still uses the configured channel or member DM destination.
 
 Admins can configure both features through their normal wildcard grant. Verified members and moderators receive `reminder.activate`, including a one-time migration for existing servers. `automessage.manage` and `reminder.manage` can be granted separately through `/permissions`; for example, `/permissions grant role:@Moderator permission:reminder.manage`.
 
