@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-16T20:35:00.4435579+00:00",
+  "generatedAt": "2026-10-17T04:26:43.8697438+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -204,6 +204,22 @@
         "hair-colour": "Dark brown",
         "quote": "\u201CI am no bird. No net ensnares me.\u201D"
       }
+    },
+    {
+      "publicId": "2574e8c8-777b-436d-9298-fd392f9433c3",
+      "name": "Lizbet Beaumont",
+      "owner": {
+        "displayName": "Juno",
+        "discordId": "415229323365187595"
+      },
+      "aliases": [],
+      "age": "22",
+      "gender": "Female",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-10-17T04:26:23.3188701+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "197772ed-5b84-4a9e-9e02-3db9e5f60363",
