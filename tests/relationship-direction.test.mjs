@@ -18,7 +18,7 @@ const context = { document: {
 } };
 let source = await readFile(new URL("../docs/relationships.js", import.meta.url), "utf8");
 source = source.replace(/initialize\(\)\.catch\(error => \{[\s\S]*?\n\}\);/, "");
-runInNewContext(source + "\nthis.atlas = { state, buildPairs, relationshipDirection, relationshipText, createConnectionItem, renderGraph };", context);
+runInNewContext(source + "\nthis.atlas = { state, buildPairs, buildTreePairs, relationshipDirection, relationshipText, createConnectionItem, renderGraph, mergeRelationshipTypes, normalizeRelationship, visibleRelationships, layoutSocialCircles };", context);
 const { atlas } = context;
 const parent = { sourceCharacterId: "godfrey", targetCharacterId: "maribelle", typeId: "biological-parent", displayName: "Biological parent", category: "Biological", isInferred: false };
 const child = { ...parent, sourceCharacterId: "maribelle", targetCharacterId: "godfrey", typeId: "biological-child", displayName: "Biological child" };
@@ -58,3 +58,73 @@ assert.ok(roleLine.attributes.y2 > 27 && roleLine.attributes.y2 < 50);
 assert.equal(roleLine.attributes["marker-end"], "url(#relationship-arrow)");
 assert.equal(elements.get("#map-edge-labels").children[0].attributes["aria-label"], "Student of");
 console.log("Relationship cards, named parent-to-child arrows, and societal arrows passed.");
+
+const catalog = JSON.parse(await readFile(new URL("../docs/relationship-catalog.json", import.meta.url), "utf8"));
+atlas.state.relationshipTypes = atlas.mergeRelationshipTypes([
+  { id: "societal-student", displayName: "Student", category: "Societal", inverseId: "societal-mentor" },
+  { id: "future-type", displayName: "Future type", category: "Social", inverseId: "future-type" }
+], catalog);
+assert.equal(atlas.state.relationshipTypes.length, catalog.length + 1);
+assert.equal(atlas.normalizeRelationship(student).displayName, "Mentee");
+assert.equal(atlas.relationshipText(student), "Mentee of");
+assert.equal(atlas.relationshipText(parent), "Parent of");
+assert.equal(atlas.relationshipText(child), "Child of");
+assert.equal(atlas.mergeRelationshipTypes(null, null).length, 0);
+assert.equal(atlas.mergeRelationshipTypes([null, {}], {}).length, 0);
+assert.equal(atlas.mergeRelationshipTypes(catalog, null).length, catalog.length);
+
+let directed = 0;
+for (const type of catalog) {
+  const inverse = catalog.find(candidate => candidate.id === type.inverseId);
+  const forward = atlas.normalizeRelationship({ ...parent, typeId: type.id, displayName: "Old snapshot label" });
+  const backward = atlas.normalizeRelationship({ ...child, typeId: inverse.id, displayName: "Old inverse label" });
+  const records = [forward, backward];
+  const current = atlas.buildPairs(records)[0];
+  assert.equal(atlas.buildPairs(records).length, 1, `${type.id} duplicated the inverse edge`);
+  assert.equal(atlas.relationshipText(forward), type.perspectiveLabel);
+  const direction = atlas.relationshipDirection(current);
+  assert.equal(direction, atlas.relationshipDirection({ ...current, records: [...records].reverse() }));
+  if (type.id === inverse.id) assert.equal(direction, null, `${type.id} should be symmetric`);
+  else {
+    directed++;
+    assert.equal(direction.typeId, type.preferDirection ? type.id : inverse.id);
+    atlas.state.graphPairs = [current];
+    for (const selected of ["godfrey", "maribelle"]) {
+      atlas.state.selectedId = selected;
+      atlas.renderGraph();
+      const arrow = elements.get("#map-edges").children[0];
+      assert.ok(arrow.attributes["marker-end"], `${type.id} is missing its arrow`);
+      if (!["biological-parent", "biological-child", "adoptive-parent", "adoptive-child"].includes(type.id)) {
+        assert.equal(arrow.attributes.y1, direction.sourceCharacterId === "godfrey" ? 0 : 200);
+        assert.equal(elements.get("#map-edge-labels").children[0].attributes["aria-label"], atlas.relationshipText(direction));
+      }
+    }
+  }
+  atlas.state.relationships = records;
+  atlas.state.category = type.category;
+  atlas.state.typeId = type.id;
+  assert.equal(atlas.visibleRelationships().length, 2, `${type.id} filter dropped its inverse`);
+  if (!["Biological", "Adoptive"].includes(type.category))
+    assert.equal(atlas.buildTreePairs(records).length, 0, `${type.id} became a family-tree generation`);
+}
+
+// Multiple current and historical ties remain visible; inverse records do not duplicate the line.
+const sharedTypes = ["social-close-friend", "social-friendly-rival", "romantic-spouse", "romantic-former-spouse", "societal-master"];
+const shared = sharedTypes.flatMap(typeId => {
+  const type = catalog.find(candidate => candidate.id === typeId);
+  return [atlas.normalizeRelationship({ ...parent, typeId }), atlas.normalizeRelationship({ ...child, typeId: type.inverseId })];
+});
+atlas.state.relationships = shared;
+atlas.state.category = "";
+atlas.state.typeId = "";
+atlas.state.graphPairs = atlas.buildPairs(atlas.visibleRelationships());
+assert.equal(atlas.state.graphPairs.length, 1);
+assert.equal(atlas.state.graphPairs[0].records.length, 10);
+atlas.renderGraph();
+assert.match(elements.get("#map-edge-labels").children[0].attributes["aria-label"], /\+3$/);
+atlas.state.focusId = "godfrey";
+atlas.state.characters = [{ publicId: "godfrey", name: "Godfrey" }, { publicId: "maribelle", name: "Maribelle" }];
+atlas.layoutSocialCircles(atlas.state.graphPairs);
+assert.equal(atlas.state.positions.size, 2);
+assert.equal(atlas.state.socialRings.length, 1);
+console.log(`Expanded catalog: ${catalog.length} labels/filters, ${directed} directional perspectives, coexistence, family exclusions, and social circles passed.`);

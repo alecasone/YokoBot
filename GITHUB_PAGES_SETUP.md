@@ -87,6 +87,29 @@ Keep editing `docs/index.html`, `docs/relationships.html`, `docs/styles.css`, `d
 
 The publisher only updates JSON: it cannot ship new tabs, scripts, styles, or HTML. For the social/branding/owner-attribution update, deploy **all eight listed asset files together**, restart the host bot with the updated source, and publish a new snapshot. This also replaces the old privacy disclaimers and supplies the social catalog, configured branding, and owner information to the new UI. Do not replace the live Pages data file with the sample file from `main`.
 
+## Deploying the medieval relationship expansion
+
+Commit bot changes, tests, documentation, and website assets on `main`. Deploy only these changed assets to the `pages` branch's `/docs` directory:
+
+- `docs/relationships.html`
+- `docs/relationships.js`
+- `docs/relationship-catalog.json`
+
+Preserve `pages:docs/data/characters.json` exactly; it is live data, not the sample snapshot on `main`. The new static catalog supplies 132 relationship perspectives and merges with published catalog metadata while retaining unknown types from newer snapshots. A missing static catalog falls back to the published catalog. This lets website labels, filters, and arrows update independently of a bot restart. The bot exports the same `perspectiveLabel` and `preferDirection` metadata on subsequent publishes; these are additive schema-version-4 fields.
+
+After deploying the source, restart the bot to make the new request/autocomplete choices available, then use `/siteadmin publish` to refresh the public snapshot. The website remains read-only; deploying its catalog does not create or approve any relationships.
+
+Generate the static catalog from the C# source, without starting Discord or reading live bot data:
+
+```powershell
+dotnet run --project tests/Yoko.Checks -- --write-relationship-catalog docs/relationship-catalog.json
+dotnet run --project tests/Yoko.Checks
+node tests/relationship-direction.test.mjs
+node tests/owner-ui.test.mjs
+```
+
+The checks verify catalog parity, unambiguous aliases, inverse directions, owner consent, coexistence, conservative inference, filters, graph arrows, and social-circle compatibility.
+
 ## Website name and transparent logo letter
 
 The default public name remains Yoko until configured. To use Helios:

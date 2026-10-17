@@ -3,6 +3,15 @@ using Yoko.Bot.Commands;
 using Yoko.Bot.Models;
 using Yoko.Bot.Services;
 
+// Generate only public catalog metadata; never start the bot or load live data.
+if (args is ["--write-relationship-catalog", var catalogPath])
+{
+    await File.WriteAllTextAsync(catalogPath, JsonSerializer.Serialize(RelationshipCatalog.PublicTypes(),
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true }) + "\n");
+    Console.WriteLine($"Wrote {RelationshipCatalog.Definitions.Count} relationship perspectives to {catalogPath}");
+    return;
+}
+
 var testDirectory = Path.Combine(Path.GetTempPath(), "yoko-checks-" + Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(testDirectory);
 var assertions = 0;
@@ -260,6 +269,7 @@ Check(abortWarnings.Count == 1 && abortQueues == 1 && abortRoles == 1, "Role fai
 
 await ManualEditChecks.RunAsync(testDirectory, Check);
 await ScheduledMessageChecks.RunAsync(testDirectory, Check);
+await RelationshipChecks.RunAsync(testDirectory, Check);
 
 Console.WriteLine($"Passed {assertions} checks. Isolated fixture files: {testDirectory}");
 

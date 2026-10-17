@@ -70,18 +70,7 @@ internal sealed class PublicSiteExporter
                     DiscordId = owners[item.OwnerId].HideDiscordId ? null : item.OwnerId.ToString(System.Globalization.CultureInfo.InvariantCulture)
                 }))
                 .ToList(),
-            RelationshipTypes = RelationshipCatalog.Definitions
-                .Select(record => new PublicRelationshipTypeRecord
-                {
-                    Id = record.Id,
-                    DisplayName = record.DisplayName,
-                    Category = record.Category,
-                    InverseId = record.InverseId
-                })
-                .DistinctBy(record => record.Id, StringComparer.OrdinalIgnoreCase)
-                .OrderBy(record => record.Category, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(record => record.DisplayName, StringComparer.OrdinalIgnoreCase)
-                .ToList(),
+            RelationshipTypes = RelationshipCatalog.PublicTypes().ToList(),
             Relationships = relationships
         };
         return JsonSerializer.Serialize(snapshot, JsonOptions) + Environment.NewLine;

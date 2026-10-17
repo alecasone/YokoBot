@@ -508,9 +508,11 @@ internal static class RelationshipCommands
                 .Select(edge => edge.TypeId)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        var exactTypeId = RelationshipCatalog.Resolve(typed)?.Id;
         var choices = RelationshipCatalog.Definitions
             .Where(definition => definition.Requestable && (category is null || definition.Category == category) && RelationshipCatalog.MatchesSearch(definition, typed))
-            .OrderByDescending(definition => suggested.Contains(definition.Id))
+            .OrderByDescending(definition => definition.Id == exactTypeId)
+            .ThenByDescending(definition => suggested.Contains(definition.Id))
             .ThenBy(definition => definition.DisplayName, StringComparer.OrdinalIgnoreCase)
             .Take(25)
             .Select(definition => new AutocompleteResult(

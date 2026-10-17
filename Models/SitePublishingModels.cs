@@ -80,6 +80,8 @@ internal sealed class PublicRelationshipTypeRecord
     public required string DisplayName { get; set; }
     public required string Category { get; set; }
     public string? InverseId { get; set; }
+    public string? PerspectiveLabel { get; set; }
+    public bool PreferDirection { get; set; }
 }
 
 internal sealed class PublicRelationshipRecord

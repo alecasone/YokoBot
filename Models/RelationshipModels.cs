@@ -6,7 +6,9 @@ internal sealed record RelationshipDefinition(
     string InverseId,
     string Category,
     bool Requestable,
-    IReadOnlyList<string> Aliases);
+    IReadOnlyList<string> Aliases,
+    string? PerspectiveLabel = null,
+    bool PreferDirection = false);
 
 internal sealed record RelationshipInferenceRule(
     string Id,
