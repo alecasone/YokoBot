@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-20T05:09:12.6647424+00:00",
+  "generatedAt": "2026-10-21T18:30:18.1022879+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -300,6 +300,22 @@
         "eyecolor": "Green",
         "hair-colour": "Dark brown"
       }
+    },
+    {
+      "publicId": "90fa5724-6ed4-45f9-8b9d-6c0e2a6522ab",
+      "name": "Maithili Chandrika",
+      "owner": {
+        "displayName": ". \u0741\u208A   \u22B9    . \u0741 Sel  \u02D1 \u05B4 \u0597 \u05B4 \u06EB",
+        "discordId": "1010807832490295297"
+      },
+      "aliases": [],
+      "age": "25",
+      "gender": "Female",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-10-21T18:29:57.6723439+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "2a0675b6-0123-41cc-bb94-c64f046a6cf1",
