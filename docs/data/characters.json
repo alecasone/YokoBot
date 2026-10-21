@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-21T18:30:18.1022879+00:00",
+  "generatedAt": "2026-10-21T18:31:19.6438324+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -312,10 +312,18 @@
       "age": "25",
       "gender": "Female",
       "region": "Obelia",
-      "occupation": null,
+      "occupation": "Court Performer",
       "approvedAt": "2026-10-21T18:29:57.6723439+00:00",
-      "reference": null,
-      "properties": {}
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1VAZv5Vwf3Z8lSrVdzO5LaXgcp8Mj9MbkGiqa1lVA_mI/edit?tab=t.0"
+      },
+      "properties": {
+        "eyecolor": "Deep Brown",
+        "hair-colour": "Dark Brown",
+        "quote": "\u201CA smile may welcome a stranger, a dance may captivate a king, and a gentle hand may conceal a thousand unspoken questions.\u201D"
+      }
     },
     {
       "publicId": "2a0675b6-0123-41cc-bb94-c64f046a6cf1",
