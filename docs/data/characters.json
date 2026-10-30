@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-30T12:14:38.7524129+00:00",
+  "generatedAt": "2026-10-30T12:16:13.4065806+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -533,10 +533,14 @@
       "age": "25",
       "gender": "female",
       "region": "Solie",
-      "occupation": null,
+      "occupation": "Hi \u003C@386898938893959169\u003E i noticed your missing the occupation section in your ocs page (or maybe i might have missed it), could you fill that out please?",
       "approvedAt": "2026-10-30T12:14:17.7758814+00:00",
       "reference": null,
-      "properties": {}
+      "properties": {
+        "eyecolor": "test",
+        "hair-colour": "wtf",
+        "quote": "test"
+      }
     }
   ],
   "relationshipTypes": [
