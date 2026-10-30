@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-10-30T02:39:30.3226889+00:00",
+  "generatedAt": "2026-10-30T12:14:38.7524129+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -521,6 +521,22 @@
         "hair-colour": "Dark Brown",
         "quote": "\u201CHow quickly the blade becomes you\u201D"
       }
+    },
+    {
+      "publicId": "22e29e80-1195-4dfc-9188-1610e2734717",
+      "name": "Ximena Van Renesse",
+      "owner": {
+        "displayName": "Kadi",
+        "discordId": "386898938893959169"
+      },
+      "aliases": [],
+      "age": "25",
+      "gender": "female",
+      "region": "Solie",
+      "occupation": null,
+      "approvedAt": "2026-10-30T12:14:17.7758814+00:00",
+      "reference": null,
+      "properties": {}
     }
   ],
   "relationshipTypes": [
