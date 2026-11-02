@@ -63,8 +63,16 @@ internal static class SceneTrackerCommands
             .AddOption(SceneAction("complete", "Marks an active scene as completed."))
             .AddOption(new SlashCommandOptionBuilder()
                 .WithName("history")
-                .WithDescription("Shows all active and completed scenes.")
-                .WithType(ApplicationCommandOptionType.SubCommand))
+                .WithDescription("Shows active and completed scenes; defaults to scenes you created.")
+                .WithType(ApplicationCommandOptionType.SubCommand)
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName("view")
+                    .WithDescription("My: scenes you created; involved: yours plus scenes you joined; all: this server")
+                    .WithType(ApplicationCommandOptionType.String)
+                    .WithRequired(false)
+                    .AddChoice("My scenes (default)", "my")
+                    .AddChoice("Involved", "involved")
+                    .AddChoice("All", "all")))
             .AddOption(SceneAction("delete", "Permanently deletes an active scene."))
             .AddOption(edit)
             .AddOption(new SlashCommandOptionBuilder()
@@ -167,7 +175,9 @@ internal static class SceneTrackerCommands
 
         if (root.Name == "history")
         {
-            await SendHistoryAsync(command, await scenes.GetAllAsync(guildId));
+            var view = OptionalString(root.Options, "view") ?? "my";
+            var history = FilterHistory(await scenes.GetAllAsync(guildId), command.User.Id, view);
+            await SendHistoryAsync(command, history, view);
             return;
         }
 
@@ -442,16 +452,37 @@ internal static class SceneTrackerCommands
         return true;
     }
 
-    private static async Task SendHistoryAsync(SocketSlashCommand command, IReadOnlyList<SceneRecord> scenes)
+    internal static IReadOnlyList<SceneRecord> FilterHistory(
+        IEnumerable<SceneRecord> scenes, ulong userId, string view = "my") =>
+        scenes.Where(scene => view switch
+        {
+            "all" => true,
+            "involved" => scene.CreatedBy == userId || scene.Participants.Any(p => p.UserId == userId),
+            _ => scene.CreatedBy == userId
+        }).ToArray();
+
+    private static async Task SendHistoryAsync(
+        SocketSlashCommand command, IReadOnlyList<SceneRecord> scenes, string view)
     {
         if (scenes.Count == 0)
         {
-            await command.RespondAsync("No current or past scenes are stored.");
+            await command.RespondAsync(view switch
+            {
+                "all" => "No current or past scenes are stored in this server.",
+                "involved" => "You have no current or past scenes you created or joined.",
+                _ => "You have no current or past scenes you created."
+            });
             return;
         }
 
+        var label = view switch
+        {
+            "all" => "All server scenes",
+            "involved" => "Scenes you created or joined",
+            _ => "Scenes you created"
+        };
         var pages = new List<string>();
-        var page = "**Scene history**\n\n";
+        var page = $"**Scene history — {label}**\n\n";
         foreach (var scene in scenes)
         {
             var participants = scene.Participants.Count == 0
@@ -465,7 +496,7 @@ internal static class SceneTrackerCommands
             if (page.Length + block.Length > 1900)
             {
                 pages.Add(page);
-                page = "**Scene history (continued)**\n\n";
+                page = $"**Scene history — {label} (continued)**\n\n";
             }
             page += block;
         }

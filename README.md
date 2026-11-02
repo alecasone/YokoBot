@@ -272,7 +272,7 @@ Active scenes are managed with:
 - `/scenetracker edit remove-character scene user character` removes one character; a participant with no remaining characters is removed.
 - `/scenetracker edit remove-user scene user` removes the member and all their characters.
 - `/scenetracker delete scene` permanently deletes an active scene.
-- `/scenetracker history` publicly shows every active and completed scene, using public continuation pages when needed.
+- `/scenetracker history [view]` publicly shows active and completed scenes, using public continuation pages when needed. The default `my` view shows scenes you created; `involved` includes those plus scenes you joined; `all` shows every scene in the current server. For example, use `/scenetracker history view:involved` to include scenes you joined.
 
 Members with `scenetracker.manage.own` can manage scenes in which they participate. `scenetracker.manage.any` permits management without participating, and Discord Administrators always bypass both checks. This access remains intentionally trust-based. Completed scenes remain in `data/scenes.json` for history; deleted scenes do not.
 

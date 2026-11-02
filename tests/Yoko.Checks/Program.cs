@@ -28,6 +28,28 @@ var b = (await characters.AddAsync(1, 10, "Birch", 10))!;
 var c = (await characters.AddAsync(1, 20, "Cedar", 20))!;
 var date = new WorldDate { Day = 1, Month = 9, Year = 2026 };
 
+// History distinguishes creators from participants, across both scene statuses.
+SceneRecord[] history =
+[
+    new() { Id = "own-active", CreatedBy = 10, Participants = [new() { UserId = 10 }] },
+    new() { Id = "joined-completed", CreatedBy = 20, CompletedAt = DateTimeOffset.UtcNow,
+        Participants = [new() { UserId = 10 }] },
+    new() { Id = "other", CreatedBy = 20, Participants = [new() { UserId = 20 }] },
+    new() { Id = "own-completed", CreatedBy = 10, CompletedAt = DateTimeOffset.UtcNow },
+    new() { Id = "joined-active", CreatedBy = 20, Participants = [new() { UserId = 10 }] }
+];
+Check(SceneTrackerCommands.FilterHistory(history, 10).Select(s => s.Id)
+    .SequenceEqual(["own-active", "own-completed"]), "Default history must show only created scenes, even after leaving.");
+Check(SceneTrackerCommands.FilterHistory(history, 10, "my").Select(s => s.Id)
+    .SequenceEqual(["own-active", "own-completed"]), "Explicit my history differs from the default.");
+Check(SceneTrackerCommands.FilterHistory(history, 10, "involved").Select(s => s.Id)
+    .SequenceEqual(["own-active", "joined-completed", "own-completed", "joined-active"]),
+    "Involved history must include created and joined scenes once, preserving order and both statuses.");
+Check(SceneTrackerCommands.FilterHistory(history, 10, "all").SequenceEqual(history), "All history omitted or reordered scenes.");
+Check(SceneTrackerCommands.FilterHistory(history, 30).Count == 0, "My history leaked other users' scenes.");
+Check(SceneTrackerCommands.FilterHistory(history, 30, "involved").Count == 0, "Involved history leaked unrelated scenes.");
+Check(SceneTrackerCommands.FilterHistory([], 10, "all").Count == 0, "Empty history failed.");
+
 // Concurrent creations must claim capacity under the same store lock.
 var batch = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => store.CreateAsync(1, 10, a, date, null)));
 Check(batch.Count(result => result.Scene is not null) == 4, "Concurrent creates exceeded four scenes.");
