@@ -84,6 +84,7 @@ internal sealed class SceneStore
             var data = await LoadUnsafeAsync();
             return TryGetGuild(data, guildId, out var guild)
                 ? guild!.Scenes
+                    .Where(scene => !scene.IsDeleted)
                     .OrderBy(scene => scene.WorldDate.Year)
                     .ThenBy(scene => scene.WorldDate.Month)
                     .ThenBy(scene => scene.WorldDate.Day)
@@ -261,10 +262,10 @@ internal sealed class SceneStore
         {
             var data = await LoadUnsafeAsync();
             if (!TryGetGuild(data, guildId, out var guild) ||
-                Find(guild!, sceneId) is not { IsCompleted: false } scene)
+                Find(guild!, sceneId) is not { } scene)
                 return false;
-            guild!.Scenes.Remove(scene);
-            guild.PendingInvites.RemoveAll(invite => invite.SceneId == scene.Id);
+            scene.DeletedAt = DateTimeOffset.UtcNow;
+            guild!.PendingInvites.RemoveAll(invite => invite.SceneId == scene.Id);
             await SaveUnsafeAsync(data);
             return true;
         }
@@ -365,7 +366,7 @@ internal sealed class SceneStore
     }
 
     private static SceneCapacity Capacity(SceneGuildData guild, ulong userId, Guid characterId) => new(
-        guild.Scenes.Count(scene => !scene.IsCompleted && scene.Participants.Any(p =>
+        guild.Scenes.Count(scene => !scene.IsDeleted && !scene.IsCompleted && scene.Participants.Any(p =>
             p.UserId == userId && p.CharacterIds.ContainsValue(characterId))),
         guild.Settings.ActiveLimitPerCharacter,
         guild.Settings.ExtraSlotsByUser.GetValueOrDefault(userId));
@@ -452,11 +453,12 @@ internal sealed class SceneStore
 
     private static SceneRecord? Find(SceneGuildData guild, string sceneId)
     {
-        var exact = guild.Scenes.FirstOrDefault(scene =>
+        var visible = guild.Scenes.Where(scene => !scene.IsDeleted);
+        var exact = visible.FirstOrDefault(scene =>
             scene.Id.Equals(sceneId, StringComparison.OrdinalIgnoreCase));
         if (exact is not null) return exact;
 
-        var prefixMatches = guild.Scenes
+        var prefixMatches = visible
             .Where(scene => scene.Id.StartsWith(sceneId, StringComparison.OrdinalIgnoreCase))
             .Take(2)
             .ToArray();

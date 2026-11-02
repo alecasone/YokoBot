@@ -35,10 +35,14 @@ internal sealed class SceneRecord
     public ulong CreatedBy { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? CompletedAt { get; set; }
+    public DateTimeOffset? DeletedAt { get; set; }
     public List<SceneParticipant> Participants { get; set; } = [];
 
     [JsonIgnore]
     public bool IsCompleted => CompletedAt is not null;
+
+    [JsonIgnore]
+    public bool IsDeleted => DeletedAt is not null;
 }
 
 internal sealed class SceneParticipant

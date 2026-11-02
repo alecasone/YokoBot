@@ -49,6 +49,50 @@ Check(SceneTrackerCommands.FilterHistory(history, 10, "all").SequenceEqual(histo
 Check(SceneTrackerCommands.FilterHistory(history, 30).Count == 0, "My history leaked other users' scenes.");
 Check(SceneTrackerCommands.FilterHistory(history, 30, "involved").Count == 0, "Involved history leaked unrelated scenes.");
 Check(SceneTrackerCommands.FilterHistory([], 10, "all").Count == 0, "Empty history failed.");
+var deletedHistory = history.Select(s => new SceneRecord
+    { CreatedBy = s.CreatedBy, Participants = s.Participants, CompletedAt = s.CompletedAt, DeletedAt = DateTimeOffset.UtcNow }).ToArray();
+foreach (var view in new[] { "my", "involved", "all" })
+    Check(SceneTrackerCommands.FilterHistory(deletedHistory, 10, view).Count == 0, "Deleted scenes leaked into " + view + " history.");
+
+// Deletion retains recoverable records but removes all normal access and capacity usage.
+var archivePath = Path.Combine(testDirectory, "archive-scenes.json");
+var archiveStore = new SceneStore(archivePath, characters);
+var archivedActive = (await archiveStore.CreateAsync(1, 10, a, date, "Archive active")).Scene!;
+var archivedCompleted = (await archiveStore.CreateAsync(1, 10, a, date, "Archive completed")).Scene!;
+Check(await archiveStore.AddPendingInviteAsync(1, new PendingSceneInvite
+    { InvitationMessageId = 999, SceneId = archivedActive.Id, InvitedUserId = 20,
+      CharacterName = c.Name, CharacterId = c.PublicId }) == SceneMutationStatus.Success, "Archive fixture invitation failed.");
+Check(await archiveStore.CompleteAsync(1, archivedCompleted.Id), "Completion failed.");
+Check((await archiveStore.GetAllAsync(1)).Count == 2 &&
+    (await archiveStore.GetAsync(1, archivedCompleted.Id)) is { IsCompleted: true, IsDeleted: false },
+    "Completion must retain visible history without deleting the scene.");
+Check(await archiveStore.DeleteAsync(1, archivedActive.Id), "Active scene deletion failed.");
+Check(await archiveStore.DeleteAsync(1, archivedCompleted.Id), "Completed scene deletion failed.");
+archiveStore = new SceneStore(archivePath, characters);
+Check((await archiveStore.GetAllAsync(1)).Count == 0 && (await archiveStore.GetActiveAsync(1)).Count == 0,
+    "Archived scenes reappeared after reopening storage.");
+Check(await archiveStore.GetAsync(1, archivedActive.Id) is null &&
+    await archiveStore.GetAsync(1, archivedCompleted.Id[..8]) is null, "Archived scenes remained accessible by ID or prefix.");
+Check((await archiveStore.GetCapacityAsync(1, 10, a.PublicId)).Active == 0, "Archived scene consumed capacity.");
+Check(await archiveStore.GetPendingInviteAsync(1, 999) is null, "Archiving retained a pending invitation.");
+Check(!await archiveStore.DeleteAsync(1, archivedActive.Id) && !await archiveStore.CompleteAsync(1, archivedActive.Id),
+    "Archived scene accepted another deletion or completion.");
+Check(await archiveStore.AddCharacterAsync(1, archivedActive.Id, 20, c) == SceneMutationStatus.NotFound,
+    "Archived scene accepted a participant.");
+var archivedData = JsonSerializer.Deserialize<Dictionary<string, SceneGuildData>>(await File.ReadAllTextAsync(archivePath), jsonOptions)!;
+Check(archivedData["1"].Scenes.Count == 2 && archivedData["1"].Scenes.All(s => s.IsDeleted && s.Participants.Count == 1),
+    "Deletion discarded the archived records or their participants.");
+Check(archivedData["1"].Scenes.Single(s => s.Id == archivedCompleted.Id).IsCompleted &&
+    !archivedData["1"].Scenes.Single(s => s.Id == archivedActive.Id).IsCompleted, "Deletion changed completion status.");
+foreach (var archivedScene in archivedData["1"].Scenes) archivedScene.DeletedAt = null;
+await File.WriteAllTextAsync(archivePath, JsonSerializer.Serialize(archivedData, jsonOptions));
+Check((await archiveStore.GetAllAsync(1)).Count == 2 && (await archiveStore.GetActiveAsync(1)).Count == 1 &&
+    (await archiveStore.GetCapacityAsync(1, 10, a.PublicId)).Active == 1, "Manual recovery lost scene status or capacity.");
+await archiveStore.DeleteAsync(1, archivedActive.Id);
+await archiveStore.DeleteAsync(1, archivedCompleted.Id);
+await archiveStore.RemoveCharactersAsync(1, [new OwnedCharacter(10, a)]);
+archivedData = JsonSerializer.Deserialize<Dictionary<string, SceneGuildData>>(await File.ReadAllTextAsync(archivePath), jsonOptions)!;
+Check(archivedData["1"].Scenes.Count == 0, "Character purge retained empty archived scenes.");
 
 // Concurrent creations must claim capacity under the same store lock.
 var batch = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => store.CreateAsync(1, 10, a, date, null)));

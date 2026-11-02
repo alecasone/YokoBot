@@ -271,10 +271,12 @@ Active scenes are managed with:
 - `/scenetracker complete scene` marks the scene completed and removes it from active-scene autocomplete.
 - `/scenetracker edit remove-character scene user character` removes one character; a participant with no remaining characters is removed.
 - `/scenetracker edit remove-user scene user` removes the member and all their characters.
-- `/scenetracker delete scene` permanently deletes an active scene.
+- `/scenetracker delete scene` archives an active or completed scene. Deleted scenes disappear from every history view, scene lookup, and autocomplete, stop using ongoing-scene slots, and lose pending invitations. Their records remain in storage for manual recovery.
 - `/scenetracker history [view]` publicly shows active and completed scenes, using public continuation pages when needed. The default `my` view shows scenes you created; `involved` includes those plus scenes you joined; `all` shows every scene in the current server. For example, use `/scenetracker history view:involved` to include scenes you joined.
 
-Members with `scenetracker.manage.own` can manage scenes in which they participate. `scenetracker.manage.any` permits management without participating, and Discord Administrators always bypass both checks. This access remains intentionally trust-based. Completed scenes remain in `data/scenes.json` for history; deleted scenes do not.
+Members with `scenetracker.manage.own` can manage scenes in which they participate. `scenetracker.manage.any` permits management without participating, and Discord Administrators always bypass both checks. This access remains intentionally trust-based. Completed scenes remain visible in history; deleted scenes remain in `data/scenes.json` with a `deletedAt` timestamp and are hidden from all normal commands. `/scenetracker view` and `/scenetracker delete` can select completed scenes, while actions requiring an active scene cannot.
+
+To recover an archived scene, stop the bot, back up `data/scenes.json`, locate the scene by its ID in the correct server's `scenes` list, and set only its `deletedAt` field to `null`. Restart the bot. Its previous active/completed status is preserved; restoring an active scene uses ongoing-scene slots again, so check capacity first. Canceled invitations are not restored. There is no restore slash command. Character deletion still removes that character's participation from archived records and permanently removes scenes left empty. Scenes permanently deleted before archiving was introduced require an older backup to recover. Previously posted Discord history messages are not retroactively edited.
 
 ## Discord setup
 

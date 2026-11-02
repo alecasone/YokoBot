@@ -73,7 +73,7 @@ internal static class SceneTrackerCommands
                     .AddChoice("My scenes (default)", "my")
                     .AddChoice("Involved", "involved")
                     .AddChoice("All", "all")))
-            .AddOption(SceneAction("delete", "Permanently deletes an active scene."))
+            .AddOption(SceneAction("delete", "Archives an active or completed scene, hiding it from history."))
             .AddOption(edit)
             .AddOption(new SlashCommandOptionBuilder()
                 .WithName("settings")
@@ -198,7 +198,7 @@ internal static class SceneTrackerCommands
             return;
         }
 
-        if (scene.IsCompleted)
+        if (scene.IsCompleted && root.Name != "delete")
         {
             await command.RespondAsync("That active scene no longer exists.", ephemeral: true);
             return;
@@ -225,8 +225,8 @@ internal static class SceneTrackerCommands
         {
             var deleted = await scenes.DeleteAsync(guildId, sceneId);
             await command.RespondAsync(deleted
-                ? $"Scene **{scene.Title}** was permanently deleted."
-                : "That scene is no longer active.", ephemeral: true);
+                ? $"Scene **{scene.Title}** was deleted from view and history. Its archived record is retained for recovery."
+                : "That scene no longer exists.", ephemeral: true);
             return;
         }
 
@@ -340,8 +340,10 @@ internal static class SceneTrackerCommands
         var typed = interaction.Data.Current.Value?.ToString() ?? string.Empty;
         if (interaction.Data.Current.Name == "scene")
         {
-            var active = await scenes.GetActiveAsync(guildId);
-            await interaction.RespondAsync(active
+            var candidates = interaction.Data.Options.First().Name is "delete" or "view"
+                ? await scenes.GetAllAsync(guildId)
+                : await scenes.GetActiveAsync(guildId);
+            await interaction.RespondAsync(candidates
                 .Where(scene => SceneLabel(scene).Contains(typed, StringComparison.OrdinalIgnoreCase))
                 .Take(25)
                 .Select(scene => new AutocompleteResult(SceneLabel(scene), scene.Id)));
@@ -454,7 +456,7 @@ internal static class SceneTrackerCommands
 
     internal static IReadOnlyList<SceneRecord> FilterHistory(
         IEnumerable<SceneRecord> scenes, ulong userId, string view = "my") =>
-        scenes.Where(scene => view switch
+        scenes.Where(scene => !scene.IsDeleted).Where(scene => view switch
         {
             "all" => true,
             "involved" => scene.CreatedBy == userId || scene.Participants.Any(p => p.UserId == userId),
@@ -628,7 +630,7 @@ internal static class SceneTrackerCommands
     private static SlashCommandOptionBuilder SceneOption() =>
         new SlashCommandOptionBuilder()
             .WithName("scene")
-            .WithDescription("Active scene")
+            .WithDescription("Scene to select")
             .WithType(ApplicationCommandOptionType.String)
             .WithRequired(true)
             .WithAutocomplete(true);
