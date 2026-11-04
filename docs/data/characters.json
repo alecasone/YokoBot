@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-03T06:46:46.5676407+00:00",
+  "generatedAt": "2026-11-04T04:47:39.1485836+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -103,6 +103,22 @@
         "hair-colour": "Dark brown",
         "quote": "\u201CA blade does not need to be loud to be feared.\u201D"
       }
+    },
+    {
+      "publicId": "02cd47e1-04d2-484c-9c6d-0a0a0163da85",
+      "name": "Azar Draven",
+      "owner": {
+        "displayName": "xho.",
+        "discordId": "571110096516677643"
+      },
+      "aliases": [],
+      "age": "26",
+      "gender": "Male",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-11-04T04:47:18.3461794+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
