@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T20:20:53.3642161+00:00",
+  "generatedAt": "2026-11-06T20:24:55.5841184+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -1870,6 +1870,15 @@
       "explanation": null
     },
     {
+      "sourceCharacterId": "197772ed-5b84-4a9e-9e02-3db9e5f60363",
+      "targetCharacterId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
+      "typeId": "social-best-friend",
+      "displayName": "Best friend",
+      "category": "Social",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
       "sourceCharacterId": "1be662e5-613f-42ba-bb95-6461d5dab806",
       "targetCharacterId": "2a0675b6-0123-41cc-bb94-c64f046a6cf1",
       "typeId": "biological-twin",
@@ -1970,6 +1979,15 @@
     },
     {
       "sourceCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
+      "targetCharacterId": "62999042-4409-45d6-babd-b5ab4d2716e6",
+      "typeId": "societal-royal-advisor",
+      "displayName": "Royal advisor",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
       "targetCharacterId": "8891e088-077b-47f9-9476-e0d4040ecdc0",
       "typeId": "social-chosen-family",
       "displayName": "Chosen family",
@@ -2042,6 +2060,15 @@
     },
     {
       "sourceCharacterId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
+      "targetCharacterId": "197772ed-5b84-4a9e-9e02-3db9e5f60363",
+      "typeId": "social-best-friend",
+      "displayName": "Best friend",
+      "category": "Social",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
       "targetCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
       "typeId": "societal-comrade-in-arms",
       "displayName": "Comrade-in-arms",
@@ -2054,6 +2081,15 @@
       "targetCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
       "typeId": "societal-diplomatic-ally",
       "displayName": "Diplomatic ally",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "62999042-4409-45d6-babd-b5ab4d2716e6",
+      "targetCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
+      "typeId": "societal-advised-monarch",
+      "displayName": "Advised monarch",
       "category": "Societal",
       "isInferred": false,
       "explanation": null
