@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T21:37:21.3062564+00:00",
+  "generatedAt": "2026-11-06T21:41:25.9795228+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -2025,6 +2025,15 @@
       "explanation": null
     },
     {
+      "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "targetCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "typeId": "societal-heir-ruler",
+      "displayName": "Heir\u0027s ruler",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
       "sourceCharacterId": "1789ddab-f4b7-4f5f-bee8-8f8b4ea00c41",
       "targetCharacterId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
       "typeId": "social-childhood-friend",
@@ -2405,6 +2414,15 @@
     {
       "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
       "targetCharacterId": "a60afaf7-920b-4c26-a2f6-d676f84ba573",
+      "typeId": "romantic-crush",
+      "displayName": "Crush",
+      "category": "Romantic",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "targetCharacterId": "a60afaf7-920b-4c26-a2f6-d676f84ba573",
       "typeId": "societal-teacher",
       "displayName": "Teacher",
       "category": "Societal",
@@ -2594,6 +2612,15 @@
     {
       "sourceCharacterId": "a60afaf7-920b-4c26-a2f6-d676f84ba573",
       "targetCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "typeId": "romantic-crush-admirer",
+      "displayName": "Crush\u0027s admirer",
+      "category": "Romantic",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "a60afaf7-920b-4c26-a2f6-d676f84ba573",
+      "targetCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
       "typeId": "societal-pupil",
       "displayName": "Pupil",
       "category": "Societal",
@@ -2615,6 +2642,15 @@
       "typeId": "biological-child",
       "displayName": "Biological child",
       "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "d6405b32-34c7-4ab3-93ee-98139e266518",
+      "targetCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "typeId": "societal-heir",
+      "displayName": "Heir",
+      "category": "Societal",
       "isInferred": false,
       "explanation": null
     },
