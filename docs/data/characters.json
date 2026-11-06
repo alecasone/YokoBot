@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T21:19:46.8029704+00:00",
+  "generatedAt": "2026-11-06T21:33:35.8381829+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -877,6 +877,22 @@
       "preferDirection": true
     },
     {
+      "id": "romantic-admired-person",
+      "displayName": "Admired person",
+      "category": "Romantic",
+      "inverseId": "romantic-admirer",
+      "perspectiveLabel": "Admired by",
+      "preferDirection": true
+    },
+    {
+      "id": "romantic-admirer",
+      "displayName": "Admirer",
+      "category": "Romantic",
+      "inverseId": "romantic-admired-person",
+      "perspectiveLabel": "Admires",
+      "preferDirection": false
+    },
+    {
       "id": "romantic-arranged-betrothed",
       "displayName": "Arranged betrothed",
       "category": "Romantic",
@@ -899,6 +915,22 @@
       "inverseId": "romantic-courting-partner",
       "perspectiveLabel": "Courting partner of",
       "preferDirection": false
+    },
+    {
+      "id": "romantic-crush",
+      "displayName": "Crush",
+      "category": "Romantic",
+      "inverseId": "romantic-crush-admirer",
+      "perspectiveLabel": "Has a crush on",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-crush-admirer",
+      "displayName": "Crush\u0027s admirer",
+      "category": "Romantic",
+      "inverseId": "romantic-crush",
+      "perspectiveLabel": "Crush of",
+      "preferDirection": true
     },
     {
       "id": "romantic-dating",
@@ -989,6 +1021,14 @@
       "preferDirection": false
     },
     {
+      "id": "romantic-platonic-soulmate",
+      "displayName": "Platonic soulmate",
+      "category": "Romantic",
+      "inverseId": "romantic-platonic-soulmate",
+      "perspectiveLabel": "Platonic soulmate of",
+      "preferDirection": false
+    },
+    {
       "id": "romantic-political-marriage",
       "displayName": "Political marriage partner",
       "category": "Romantic",
@@ -997,11 +1037,27 @@
       "preferDirection": false
     },
     {
+      "id": "romantic-soulmate",
+      "displayName": "Soulmate",
+      "category": "Romantic",
+      "inverseId": "romantic-soulmate",
+      "perspectiveLabel": "Soulmate of",
+      "preferDirection": false
+    },
+    {
       "id": "romantic-spouse",
       "displayName": "Spouse",
       "category": "Romantic",
       "inverseId": "romantic-spouse",
       "perspectiveLabel": "Spouse of",
+      "preferDirection": false
+    },
+    {
+      "id": "romantic-undefined",
+      "displayName": "Undefined",
+      "category": "Romantic",
+      "inverseId": "romantic-undefined",
+      "perspectiveLabel": "Undefined of",
       "preferDirection": false
     },
     {
@@ -1411,6 +1467,22 @@
       "inverseId": "societal-ward",
       "perspectiveLabel": "Guardian of",
       "preferDirection": false
+    },
+    {
+      "id": "societal-heir",
+      "displayName": "Heir",
+      "category": "Societal",
+      "inverseId": "societal-heir-ruler",
+      "perspectiveLabel": "Heir of",
+      "preferDirection": false
+    },
+    {
+      "id": "societal-heir-ruler",
+      "displayName": "Heir\u0027s ruler",
+      "category": "Societal",
+      "inverseId": "societal-heir",
+      "perspectiveLabel": "Ruler of",
+      "preferDirection": true
     },
     {
       "id": "societal-heirs-regent",
@@ -2333,6 +2405,15 @@
     {
       "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
       "targetCharacterId": "a60afaf7-920b-4c26-a2f6-d676f84ba573",
+      "typeId": "romantic-crush-admirer",
+      "displayName": "Crush\u0027s admirer",
+      "category": "Romantic",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "targetCharacterId": "a60afaf7-920b-4c26-a2f6-d676f84ba573",
       "typeId": "societal-teacher",
       "displayName": "Teacher",
       "category": "Societal",
@@ -2516,6 +2597,15 @@
       "typeId": "religious-advisee",
       "displayName": "Religious advisee",
       "category": "Religion",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "a60afaf7-920b-4c26-a2f6-d676f84ba573",
+      "targetCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "typeId": "romantic-crush",
+      "displayName": "Crush",
+      "category": "Romantic",
       "isInferred": false,
       "explanation": null
     },
