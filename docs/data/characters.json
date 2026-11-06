@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T21:41:25.9795228+00:00",
+  "generatedAt": "2026-11-06T22:07:29.0116098+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -2124,6 +2124,24 @@
       "explanation": "twins are biological siblings"
     },
     {
+      "sourceCharacterId": "1be662e5-613f-42ba-bb95-6461d5dab806",
+      "targetCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "typeId": "societal-diplomatic-ally",
+      "displayName": "Diplomatic ally",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "1be662e5-613f-42ba-bb95-6461d5dab806",
+      "targetCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "typeId": "religious-advisee",
+      "displayName": "Religious advisee",
+      "category": "Religion",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
       "sourceCharacterId": "22e29e80-1195-4dfc-9188-1610e2734717",
       "targetCharacterId": "02cd47e1-04d2-484c-9c6d-0a0a0163da85",
       "typeId": "social-childhood-friend",
@@ -2305,6 +2323,15 @@
     },
     {
       "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "targetCharacterId": "1be662e5-613f-42ba-bb95-6461d5dab806",
+      "typeId": "societal-diplomatic-ally",
+      "displayName": "Diplomatic ally",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
       "targetCharacterId": "22e29e80-1195-4dfc-9188-1610e2734717",
       "typeId": "societal-liege",
       "displayName": "Liege",
@@ -2354,6 +2381,15 @@
       "typeId": "societal-comrade-in-arms",
       "displayName": "Comrade-in-arms",
       "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "targetCharacterId": "1be662e5-613f-42ba-bb95-6461d5dab806",
+      "typeId": "religious-advisor",
+      "displayName": "Religious Advisor",
+      "category": "Religion",
       "isInferred": false,
       "explanation": null
     },
