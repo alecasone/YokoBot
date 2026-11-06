@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-04T04:50:14.0106263+00:00",
+  "generatedAt": "2026-11-06T06:01:22.4743962+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -126,6 +126,30 @@
         "eyecolor": "Amber",
         "hair-colour": "Brown",
         "quote": "\u201CProud child, faithless man; you once knelt before Olympus. Tell me, would you kneel again?\u201D"
+      }
+    },
+    {
+      "publicId": "980a4087-f8ad-4778-879e-f54bfa3b240e",
+      "name": "Carinne Amsel",
+      "owner": {
+        "displayName": "marsystarsy",
+        "discordId": "498178364096380938"
+      },
+      "aliases": [],
+      "age": "26",
+      "gender": "Female",
+      "region": "Obelia",
+      "occupation": "Travelling Apothecary",
+      "approvedAt": "2026-11-06T06:00:25.8358029+00:00",
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1mTqcm5ewML1LvhGV_HDFgVmIK5Vg3brqbW4pm5Ooe-A/edit?tab=t.0"
+      },
+      "properties": {
+        "eyecolor": "Grey",
+        "hair-colour": "Ginger",
+        "quote": "\u201CIf I am to lose my will, then it will be with earth beneath my jagged nails.\u201D"
       }
     },
     {
