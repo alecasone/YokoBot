@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T21:15:46.7411305+00:00",
+  "generatedAt": "2026-11-06T21:19:46.8029704+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -2306,6 +2306,15 @@
     {
       "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
       "targetCharacterId": "62999042-4409-45d6-babd-b5ab4d2716e6",
+      "typeId": "religious-subordinate",
+      "displayName": "Religious subordinate",
+      "category": "Religion",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "targetCharacterId": "62999042-4409-45d6-babd-b5ab4d2716e6",
       "typeId": "societal-follower",
       "displayName": "Follower",
       "category": "Societal",
@@ -2390,6 +2399,15 @@
       "typeId": "societal-advised-monarch",
       "displayName": "Advised monarch",
       "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "62999042-4409-45d6-babd-b5ab4d2716e6",
+      "targetCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "typeId": "religious-superior",
+      "displayName": "Religious superior",
+      "category": "Religion",
       "isInferred": false,
       "explanation": null
     },
