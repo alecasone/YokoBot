@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T20:32:24.8505445+00:00",
+  "generatedAt": "2026-11-06T20:35:30.9186261+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -1799,6 +1799,15 @@
     },
     {
       "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "targetCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "typeId": "societal-diplomatic-ally",
+      "displayName": "Diplomatic ally",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
       "targetCharacterId": "a01914e1-35f9-4d1e-9d44-5c67e248a201",
       "typeId": "societal-employer",
       "displayName": "Employer",
@@ -2006,6 +2015,15 @@
     },
     {
       "sourceCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
+      "targetCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "typeId": "societal-ruler",
+      "displayName": "Ruler",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
       "targetCharacterId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
       "typeId": "social-friend",
       "displayName": "Friend",
@@ -2033,9 +2051,27 @@
     },
     {
       "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "targetCharacterId": "12b688d3-7482-4713-819a-7a8364146654",
+      "typeId": "societal-diplomatic-ally",
+      "displayName": "Diplomatic ally",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
       "targetCharacterId": "22e29e80-1195-4dfc-9188-1610e2734717",
       "typeId": "societal-liege",
       "displayName": "Liege",
+      "category": "Societal",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "targetCharacterId": "2d6e7a7d-cdf6-405d-b87b-1d008f383a01",
+      "typeId": "societal-subject",
+      "displayName": "Subject",
       "category": "Societal",
       "isInferred": false,
       "explanation": null
