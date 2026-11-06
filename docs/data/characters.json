@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T20:50:52.0895828+00:00",
+  "generatedAt": "2026-11-06T20:55:56.6963044+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -629,13 +629,17 @@
       "age": "25",
       "gender": "female",
       "region": "Solie",
-      "occupation": "Hi \u003C@386898938893959169\u003E i noticed your missing the occupation section in your ocs page (or maybe i might have missed it), could you fill that out please?",
+      "occupation": "Vassal of Solie",
       "approvedAt": "2026-10-30T12:14:17.7758814+00:00",
-      "reference": null,
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/194l1XMpJ_dtvzePXFNGcz1LGZ5Ht0ePLev_FGgKr7-c/edit?tab=t.0"
+      },
       "properties": {
-        "eyecolor": "test",
-        "hair-colour": "wtf",
-        "quote": "test"
+        "eyecolor": "Dark Honey",
+        "hair-colour": "Espresso Brown",
+        "quote": "\u201CYet you say my name as if to see dead bones rise.\u201D"
       }
     }
   ],
