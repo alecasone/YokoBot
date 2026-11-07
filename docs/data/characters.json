@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-06T22:07:29.0116098+00:00",
+  "generatedAt": "2026-11-07T01:13:35.8001486+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -617,6 +617,22 @@
         "hair-colour": "Dark Brown",
         "quote": "\u201CHow quickly the blade becomes you\u201D"
       }
+    },
+    {
+      "publicId": "0dff0c41-cb3e-47dc-9ba4-6b3af53d421e",
+      "name": "Sebastien Ashborne",
+      "owner": {
+        "displayName": "Dr. Quack",
+        "discordId": "705799370452500490"
+      },
+      "aliases": [],
+      "age": "25",
+      "gender": "Male",
+      "region": "Solie",
+      "occupation": null,
+      "approvedAt": "2026-11-07T01:12:54.793059+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "22e29e80-1195-4dfc-9188-1610e2734717",
