@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-07T01:53:10.9076388+00:00",
+  "generatedAt": "2026-11-07T23:45:15.5194998+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -2177,6 +2177,15 @@
     {
       "sourceCharacterId": "22e29e80-1195-4dfc-9188-1610e2734717",
       "targetCharacterId": "247007df-a3e3-4305-825b-9feb30012a9d",
+      "typeId": "social-childhood-friend",
+      "displayName": "Childhood friend",
+      "category": "Social",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "22e29e80-1195-4dfc-9188-1610e2734717",
+      "targetCharacterId": "247007df-a3e3-4305-825b-9feb30012a9d",
       "typeId": "societal-protected-charge",
       "displayName": "Protected charge",
       "category": "Societal",
@@ -2195,6 +2204,15 @@
     {
       "sourceCharacterId": "22e29e80-1195-4dfc-9188-1610e2734717",
       "targetCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
+      "typeId": "social-childhood-friend",
+      "displayName": "Childhood friend",
+      "category": "Social",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "247007df-a3e3-4305-825b-9feb30012a9d",
+      "targetCharacterId": "22e29e80-1195-4dfc-9188-1610e2734717",
       "typeId": "social-childhood-friend",
       "displayName": "Childhood friend",
       "category": "Social",
