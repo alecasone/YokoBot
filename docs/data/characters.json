@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-07T01:18:42.1109745+00:00",
+  "generatedAt": "2026-11-07T01:53:10.9076388+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -2383,6 +2383,15 @@
     },
     {
       "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "targetCharacterId": "8ed128d1-cb37-48b1-9e06-f711cd8d7d6f",
+      "typeId": "biological-pibling",
+      "displayName": "Biological aunt/uncle (pibling)",
+      "category": "Biological",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
       "targetCharacterId": "c8a8e6b1-9281-46fc-92ba-8a579fd62d96",
       "typeId": "biological-parent",
       "displayName": "Biological parent",
@@ -2621,6 +2630,15 @@
       "typeId": "romantic-spouse",
       "displayName": "Spouse",
       "category": "Romantic",
+      "isInferred": false,
+      "explanation": null
+    },
+    {
+      "sourceCharacterId": "8ed128d1-cb37-48b1-9e06-f711cd8d7d6f",
+      "targetCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
+      "typeId": "biological-nibling",
+      "displayName": "Biological niece/nephew (nibling)",
+      "category": "Biological",
       "isInferred": false,
       "explanation": null
     },
