@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-08T20:06:11.29912+00:00",
+  "generatedAt": "2026-11-10T16:39:12.9792528+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -296,30 +296,6 @@
         "eyecolor": "Dark Blue",
         "hair-colour": "Light Brown",
         "quote": "Golden child, Lion boy; Tell me what it\u2019s like to conquer."
-      }
-    },
-    {
-      "publicId": "c8a8e6b1-9281-46fc-92ba-8a579fd62d96",
-      "name": "Isidora  Ashborne",
-      "owner": {
-        "displayName": "Cricket",
-        "discordId": "721663957450096680"
-      },
-      "aliases": [],
-      "age": "24",
-      "gender": "Female",
-      "region": "Solie",
-      "occupation": "Admiral of the Ashborne Fleet",
-      "approvedAt": "2026-10-09T04:16:17.8713003+00:00",
-      "reference": {
-        "kind": "sheet",
-        "format": "link",
-        "value": "https://docs.google.com/document/d/1Bdur8jTQvGWrE8rCGEcoE9IPkev6p49uvTUkGCuncBM/edit?usp=sharing"
-      },
-      "properties": {
-        "eyecolor": "Blue green",
-        "hair-colour": "Dark brown",
-        "quote": "\u201CI am no bird. No net ensnares me.\u201D"
       }
     },
     {
@@ -2418,15 +2394,6 @@
       "explanation": null
     },
     {
-      "sourceCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
-      "targetCharacterId": "c8a8e6b1-9281-46fc-92ba-8a579fd62d96",
-      "typeId": "biological-parent",
-      "displayName": "Biological parent",
-      "category": "Biological",
-      "isInferred": false,
-      "explanation": null
-    },
-    {
       "sourceCharacterId": "50996589-1d7b-4032-a64c-71cbf260eed1",
       "targetCharacterId": "02cd47e1-04d2-484c-9c6d-0a0a0163da85",
       "typeId": "social-childhood-friend",
@@ -2738,15 +2705,6 @@
       "typeId": "societal-pupil",
       "displayName": "Pupil",
       "category": "Societal",
-      "isInferred": false,
-      "explanation": null
-    },
-    {
-      "sourceCharacterId": "c8a8e6b1-9281-46fc-92ba-8a579fd62d96",
-      "targetCharacterId": "4dfc0700-806d-4187-83c6-daec05562cf1",
-      "typeId": "biological-child",
-      "displayName": "Biological child",
-      "category": "Biological",
       "isInferred": false,
       "explanation": null
     },
