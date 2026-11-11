@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-10T16:39:12.9792528+00:00",
+  "generatedAt": "2026-11-11T16:54:27.5063845+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -151,6 +151,22 @@
         "hair-colour": "Ginger",
         "quote": "\u201CIf I am to lose my will, then it will be with earth beneath my jagged nails.\u201D"
       }
+    },
+    {
+      "publicId": "0674b182-5a0c-4431-9701-acde4a785a6f",
+      "name": "Cassiel Chaudellier",
+      "owner": {
+        "displayName": "marty",
+        "discordId": "436952133347311616"
+      },
+      "aliases": [],
+      "age": "25",
+      "gender": "Male",
+      "region": "Obelia",
+      "occupation": null,
+      "approvedAt": "2026-11-11T16:54:06.6454554+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "0bd02d12-1f60-4223-8f99-4a533bd93baf",
