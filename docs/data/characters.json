@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-27T19:05:41.7406696+00:00",
+  "generatedAt": "2026-11-27T19:06:28.6566959+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -554,10 +554,17 @@
       "age": "23",
       "gender": "Female",
       "region": "Solie",
-      "occupation": null,
+      "occupation": "Third Council Member of The Forgotten",
       "approvedAt": "2026-11-27T19:05:21.3720713+00:00",
-      "reference": null,
-      "properties": {}
+      "reference": {
+        "kind": "sheet",
+        "format": "link",
+        "value": "https://docs.google.com/document/d/1tNAVDroOsKgdUr3VHUnTeK6GB4bcnxUCY4HROw3qvxI/edit?tab=t.0"
+      },
+      "properties": {
+        "eyecolor": "Brown and Green",
+        "hair-colour": "Deep Brown"
+      }
     },
     {
       "publicId": "2a0675b6-0123-41cc-bb94-c64f046a6cf1",
