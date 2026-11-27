@@ -7,7 +7,7 @@
     "atlasTitle": "Relationship Atlas",
     "tagline": "The children under the great sun of Helios"
   },
-  "generatedAt": "2026-11-25T02:30:00.5185341+00:00",
+  "generatedAt": "2026-11-27T19:05:41.7406696+00:00",
   "characters": [
     {
       "publicId": "51200761-18ea-4ebf-aa2d-7421d6ee1e7d",
@@ -542,6 +542,22 @@
         "hair-colour": "Dark Brown",
         "quote": "\u201CA smile may welcome a stranger, a dance may captivate a king, and a gentle hand may conceal a thousand unspoken questions.\u201D"
       }
+    },
+    {
+      "publicId": "d01077a5-178a-4f49-a0fd-8faa55b845e0",
+      "name": "Manon Verdemourn",
+      "owner": {
+        "displayName": "xho.",
+        "discordId": "571110096516677643"
+      },
+      "aliases": [],
+      "age": "23",
+      "gender": "Female",
+      "region": "Solie",
+      "occupation": null,
+      "approvedAt": "2026-11-27T19:05:21.3720713+00:00",
+      "reference": null,
+      "properties": {}
     },
     {
       "publicId": "2a0675b6-0123-41cc-bb94-c64f046a6cf1",
